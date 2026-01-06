@@ -170,6 +170,38 @@ const HorasList = () => {
     }
   };
 
+  // Función para determinar el estilo de la fila según el estado
+  const getRowStyle = (hora) => {
+    const esValidada = !!hora.fecha_validacion;
+    const esPlanificada = hora.fecha_planificacion && !hora.fecha_validacion;
+    const esPendiente = !hora.fecha_validacion && !hora.fecha_planificacion;
+
+    let className = "";
+    if (esValidada) {
+      className = "hora-validada";
+    } else if (esPlanificada) {
+      className = "hora-planificada";
+    } else if (esPendiente) {
+      className = "hora-pendiente";
+    }
+
+    // Debug: descomentar para ver qué clases se aplican
+    // console.log(
+    //   "Hora:",
+    //   hora.dia_trabajado,
+    //   "Clase:",
+    //   className,
+    //   "Validada:",
+    //   esValidada,
+    //   "Planificada:",
+    //   esPlanificada,
+    //   "Pendiente:",
+    //   esPendiente
+    // );
+
+    return className;
+  };
+
   // ------------------- FILTRADO ------------------- //
   //#region FILTRADO
 
@@ -708,12 +740,12 @@ const HorasList = () => {
             <Form.Control
               type="number"
               size="sm"
-              min="1"
+              min="0"
               max="100"
               value={itemsPerPage}
               onChange={(e) => {
-                const value = parseInt(e.target.value) || 1;
-                setItemsPerPage(Math.max(1, Math.min(100, value)));
+                const value = parseInt(e.target.value) || 0;
+                setItemsPerPage(Math.max(0, Math.min(100, value)));
                 setCurrentPage(1);
               }}
               style={{ maxWidth: "60px", display: "inline-block" }}
@@ -725,7 +757,7 @@ const HorasList = () => {
       {/* TABLA */}
       <div className="table-container">
         {/* La tabla ahora muestra siempre la cabecera */}
-        <Table striped bordered hover className="mt-3">
+        <Table className="mt-3">
           <thead>
             <tr>
               <th style={{ width: 40, textAlign: "center" }}>
@@ -755,8 +787,9 @@ const HorasList = () => {
               horasActuales.length > 0 ? (
                 horasActuales.map((h, idx) => {
                   const rowKey = getRowKey(h);
+                  const rowClassName = getRowStyle(h);
                   return (
-                    <tr key={idx}>
+                    <tr key={idx} className={rowClassName}>
                       <td style={{ textAlign: "center" }}>
                         <Form.Check
                           type="checkbox"
@@ -915,6 +948,59 @@ const HorasList = () => {
               disabled={currentPage === totalPaginas}
             />
           </Pagination>
+        )}
+
+        {/* LEYENDA DE COLORES */}
+        {mostrarListado && horasFiltradas.length > 0 && (
+          <Container className="mt-3">
+            <Row>
+              <div
+                className="d-flex align-items-center justify-content-around"
+                style={{
+                  width: "100%",
+                  gap: "10px",
+                  color: "black",
+                }}
+              >
+                <div
+                  className="d-flex align-items-center justify-content-center"
+                  style={{
+                    backgroundColor: "#f7d39c",
+                    padding: "6px 10px",
+                    borderRadius: "5px",
+                    flex: 1,
+                    border: "1px solid #ddd",
+                  }}
+                >
+                  <small style={{ fontWeight: "bold" }}>Pendiente</small>
+                </div>
+                <div
+                  className="d-flex align-items-center justify-content-center"
+                  style={{
+                    backgroundColor: "#c3ffb5",
+                    padding: "6px 10px",
+                    borderRadius: "5px",
+                    flex: 1,
+                    border: "1px solid #ddd",
+                  }}
+                >
+                  <small style={{ fontWeight: "bold" }}>Planificada</small>
+                </div>
+                <div
+                  className="d-flex align-items-center justify-content-center"
+                  style={{
+                    backgroundColor: "#aeb0af",
+                    padding: "6px 10px",
+                    borderRadius: "5px",
+                    flex: 1,
+                    border: "1px solid #ddd",
+                  }}
+                >
+                  <small style={{ fontWeight: "bold" }}>Validada</small>
+                </div>
+              </div>
+            </Row>
+          </Container>
         )}
       </div>
     </div>

@@ -29,7 +29,7 @@
 }
 
 .alert-warning {
-  background-color: #ffb74d;
+  background-color: #f9b551;
 }
 
 .alert-info {
@@ -82,8 +82,8 @@
 }
 
 .btn-info {
-  background-color: #007BFF;
-  border-color: #007BFF;
+  background-color: #007bff;
+  border-color: #007bff;
   color: white;
 }
 
@@ -98,7 +98,6 @@
 
 .custom-button2 {
   border-radius: 10px !important; /* Asegura que se aplique incluso si hay estilos previos */
-  
 }
 .custom-button {
   border-radius: 10px !important; /* Asegura que se aplique incluso si hay estilos previos */
@@ -128,3 +127,71 @@
   max-width: 150px;
 }
 
+/* Estilos para las filas según el estado de las horas */
+/* Máxima especificidad para sobrescribir cualquier estilo de Bootstrap */
+
+/* PENDIENTE - Rojo claro */
+.table tbody tr.hora-pendiente,
+tbody tr.hora-pendiente,
+tr.hora-pendiente {
+  background-color: #f7d39c !important;
+}
+
+.table tbody tr.hora-pendiente td,
+tbody tr.hora-pendiente td,
+tr.hora-pendiente td {
+  background-color: #f7d39c !important;
+}
+
+.table tbody tr.hora-pendiente:hover,
+.table tbody tr.hora-pendiente:hover td,
+tbody tr.hora-pendiente:hover,
+tbody tr.hora-pendiente:hover td,
+tr.hora-pendiente:hover,
+tr.hora-pendiente:hover td {
+  background-color: #f2bf73 !important;
+}
+
+/* PLANIFICADA - Amarillo claro */
+.table tbody tr.hora-planificada,
+tbody tr.hora-planificada,
+tr.hora-planificada {
+  background-color: #c3ffb5 !important;
+}
+
+.table tbody tr.hora-planificada td,
+tbody tr.hora-planificada td,
+tr.hora-planificada td {
+  background-color: #c3ffb5 !important;
+}
+
+.table tbody tr.hora-planificada:hover,
+.table tbody tr.hora-planificada:hover td,
+tbody tr.hora-planificada:hover,
+tbody tr.hora-planificada:hover td,
+tr.hora-planificada:hover,
+tr.hora-planificada:hover td {
+  background-color: #9dfc88 !important;
+}
+
+/* VALIDADA - Verde claro */
+.table tbody tr.hora-validada,
+tbody tr.hora-validada,
+tr.hora-validada {
+  background-color: #aeb0af !important;
+}
+
+.table tbody tr.hora-validada td,
+tbody tr.hora-validada td,
+tr.hora-validada td {
+  background-color: #aeb0af !important;
+}
+
+.table tbody tr.hora-validada:hover,
+.table tbody tr.hora-validada:hover td,
+tbody tr.hora-validada:hover,
+tbody tr.hora-validada:hover td,
+tr.hora-validada:hover,
+tr.hora-validada:hover td {
+  background-color: #8a8c8b !important;
+}
