@@ -350,3 +350,17 @@ GET http://localhost:3002/api/horas/all
 
 ### Obtener el listado de movimientos del almacén asociado a una obra
 GET http://localhost:3002/api/movimientos-almacen/obra/1232
+
+###### ENDPOINTS USUARIOS #############
+
+### Obtener todos los usuarios
+GET http://localhost:3002/api/usuario
+
+### Login
+POST http://localhost:3002/api/usuario/login
+Content-Type: application/json
+
+{
+    "username": "abaco_andres",
+    "password": "abaco_andres"
+}

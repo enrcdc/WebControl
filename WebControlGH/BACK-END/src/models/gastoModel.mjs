@@ -1,4 +1,4 @@
-import { db } from "../database.js";
+import db from "../database.js";
 
 export class GastoModel {
   static async getAllGastosPorValidar() {

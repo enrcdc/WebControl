@@ -1,5 +1,5 @@
 // Hook atómico para búsqueda genérica con sugerencias
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 
 /**
  * Hook genérico para búsqueda de entidades con sugerencias
@@ -31,6 +31,7 @@ export const useBusquedaEntidad = (buscarFunction, options = {}) => {
   const [sugerencias, setSugerencias] = useState([]);
   const [entidadSeleccionada, setEntidadSeleccionada] = useState(null);
   const [loading, setLoading] = useState(false);
+  const requestRef = useRef(0);
 
   /**
    * Maneja el cambio en el campo de búsqueda
@@ -39,12 +40,17 @@ export const useBusquedaEntidad = (buscarFunction, options = {}) => {
   const handleBuscar = useCallback(
     async (e) => {
       const value = e.target.value;
+      const currentRef = ++requestRef.current;
+
       setBusqueda(value);
 
       if (value.length >= minLength) {
         try {
           setLoading(true);
           const res = await buscarFunction(value);
+
+          if (currentRef !== requestRef.current) return;
+
           const datos = res?.data?.data || res?.data || [];
           setSugerencias(datos);
         } catch (error) {
@@ -57,7 +63,7 @@ export const useBusquedaEntidad = (buscarFunction, options = {}) => {
         setSugerencias([]);
       }
     },
-    [buscarFunction, minLength]
+    [buscarFunction, minLength],
   );
 
   /**

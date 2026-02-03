@@ -1,4 +1,4 @@
-import { db } from "../database.js";
+import db from "../database.js";
 
 // Funciona con varios ids de obras. Necesario para obtener las horas
 //  de las obras subordinadas

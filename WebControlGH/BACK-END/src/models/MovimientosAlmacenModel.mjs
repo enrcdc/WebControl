@@ -1,4 +1,4 @@
-import { db } from "../database.js";
+import db from "../database.js";
 
 // TODO: ZOD PARA VALIDACION
 export class MovimientosAlmacenModel {

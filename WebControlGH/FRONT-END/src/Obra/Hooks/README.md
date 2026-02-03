@@ -60,10 +60,10 @@ La refactorización de hooks sigue una arquitectura de **separación de responsa
 **Propósito**: Gestión genérica de peticiones HTTP con estados de carga y error.
 
 **Uso**:
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
-=======
 
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
+
+
 ```javascript
 import { useApiRequest } from "./useApiRequest.js";
 
@@ -71,13 +71,13 @@ const MiComponente = () => {
   const apiRequest = useApiRequest();
 
   const cargarDatos = async () => {
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
+
     const resultado = await apiRequest.execute(() =>
       miServicio.obtenerDatos()
     );
-=======
+
     const resultado = await apiRequest.execute(() => miServicio.obtenerDatos());
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
     if (resultado) {
       console.log("Datos cargados:", resultado);
     }
@@ -94,10 +94,10 @@ const MiComponente = () => {
 ```
 
 **API**:
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
-=======
 
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
+
+
 - `execute(apiFunction, options)`: Ejecuta petición con manejo de estados
 - `loading`: Estado de carga
 - `error`: Mensaje de error
@@ -111,10 +111,10 @@ const MiComponente = () => {
 **Propósito**: Gestión de estado de formularios con manejo automático de campos.
 
 **Uso**:
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
-=======
 
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
+
+
 ```javascript
 import { useFormulario } from "./useFormulario.js";
 
@@ -127,10 +127,10 @@ const FormularioObra = () => {
   return (
     <form>
       <input name="codigo" value={formData.codigo} onChange={handleChange} />
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
+
       <input name="descripcion" value={formData.descripcion} onChange={handleChange} />
       <input name="horas" type="number" value={formData.horas} onChange={handleChange} />
-=======
+
       <input
         name="descripcion"
         value={formData.descripcion}
@@ -142,17 +142,17 @@ const FormularioObra = () => {
         value={formData.horas}
         onChange={handleChange}
       />
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
     </form>
   );
 };
 ```
 
 **API**:
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
-=======
 
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
+
+
 - `formData`: Objeto con valores del formulario
 - `handleChange(e)`: Handler para inputs
 - `updateFields(objeto)`: Actualiza múltiples campos
@@ -167,10 +167,10 @@ const FormularioObra = () => {
 **Propósito**: Gestión de estado de modales con modo edición.
 
 **Uso**:
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
-=======
 
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
+
+
 ```javascript
 import { useModal } from "./useModal.js";
 
@@ -191,10 +191,10 @@ const ListaConModal = () => {
 ```
 
 **API**:
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
-=======
 
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
+
+
 - `show`: Boolean de visibilidad
 - `editID`: ID en modo edición (null en modo creación)
 - `handleOpen()`: Abre modal en modo creación
@@ -209,10 +209,10 @@ const ListaConModal = () => {
 **Propósito**: Búsqueda genérica con autocompletado y selección.
 
 **Uso**:
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
-=======
 
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
+
+
 ```javascript
 import { useBusquedaEntidad } from "./useBusquedaEntidad.js";
 import { obraService } from "../Services/obraService.js";
@@ -231,11 +231,11 @@ const BuscadorObras = () => {
         placeholder="Buscar obra..."
       />
       <ul>
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
+
         {busqueda.sugerencias.map(obra => (
-=======
+
         {busqueda.sugerencias.map((obra) => (
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
           <li key={obra.id_obra} onClick={() => busqueda.seleccionar(obra)}>
             {obra.codigo_obra} - {obra.descripcion_obra}
           </li>
@@ -253,10 +253,10 @@ const BuscadorObras = () => {
 ```
 
 **API**:
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
-=======
 
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
+
+
 - `busqueda`: Término de búsqueda actual
 - `sugerencias`: Array de resultados
 - `entidadSeleccionada`: Entidad seleccionada (o null)
@@ -272,10 +272,10 @@ const BuscadorObras = () => {
 **Propósito**: Gestión de selección múltiple con checkboxes.
 
 **Uso**:
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
-=======
 
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
+
+
 ```javascript
 import { useSeleccionMultiple } from "./useSeleccionMultiple.js";
 
@@ -289,11 +289,11 @@ const ListaObras = ({ obras }) => {
         checked={seleccion.selectAll}
         onChange={() => seleccion.handleSelectAll(obras)}
       />
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
+
       {obras.map(obra => (
-=======
+
       {obras.map((obra) => (
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
         <div key={obra.id_obra}>
           <input
             type="checkbox"
@@ -311,10 +311,10 @@ const ListaObras = ({ obras }) => {
 ```
 
 **API**:
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
-=======
 
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
+
+
 - `selected`: Array de IDs seleccionados
 - `selectAll`: Estado del checkbox "seleccionar todo"
 - `handleSelect(id)`: Toggle selección de un item
@@ -331,10 +331,10 @@ const ListaObras = ({ obras }) => {
 **Propósito**: Checkbox que ejecuta acciones al marcar/desmarcar.
 
 **Uso**:
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
-=======
 
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
+
+
 ```javascript
 import { useCheckboxCondicional } from "./useCheckboxCondicional.js";
 
@@ -356,10 +356,10 @@ const FormularioObra = () => {
 ```
 
 **API**:
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
-=======
 
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
+
+
 - `checked`: Estado actual del checkbox
 - `handleToggle()`: Cambia estado y ejecuta callbacks
 - `setValue(valor)`: Establece valor sin ejecutar callbacks
@@ -373,10 +373,10 @@ const FormularioObra = () => {
 **Propósito**: Carga de catálogos/dropdowns para formularios de obra.
 
 **Uso**:
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
-=======
 
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
+
+
 ```javascript
 import { useCatalogosBase } from "./useCatalogosBase.js";
 
@@ -393,11 +393,11 @@ const FormularioObra = () => {
     <>
       {loading && <p>Cargando catálogos...</p>}
       <select>
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
+
         {catalogos.tiposObra.map(tipo => (
-=======
+
         {catalogos.tiposObra.map((tipo) => (
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
           <option key={tipo.id_tipo_obra} value={tipo.id_tipo_obra}>
             {tipo.descripcion}
           </option>
@@ -409,10 +409,10 @@ const FormularioObra = () => {
 ```
 
 **API**:
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
-=======
 
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
+
+
 - `catalogos`: Objeto con todos los catálogos
   - `tiposObra`, `estadosObra`, `empresas`, `edificios`, `contactos`, `usuarios`
 - `loading`: Estado de carga
@@ -429,10 +429,10 @@ const FormularioObra = () => {
 **Caso de uso**: Cualquier entidad con operaciones CRUD (pedidos, facturas, gastos, etc.)
 
 **Uso básico**:
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
-=======
 
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
+
+
 ```javascript
 import { useCrudEntidad } from "./useCrudEntidad.js";
 import { pedidoService } from "../Services/pedidoService.js";
@@ -448,11 +448,11 @@ const usePedidos = (idObra) => {
       fechaPedido: "",
       codigoPedido: "",
       importe: "",
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
+
       idObra: idObra
-=======
+
       idObra: idObra,
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
     },
     camposNumericos: ["importe"],
     validarForm: (form) => {
@@ -461,11 +461,11 @@ const usePedidos = (idObra) => {
       }
       return null;
     },
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
+
     confirmDelete: "¿Eliminar este pedido?"
-=======
+
     confirmDelete: "¿Eliminar este pedido?",
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
   });
 
   return {
@@ -479,20 +479,20 @@ const usePedidos = (idObra) => {
     handleEliminar: crud.handleEliminar,
     handleChangeForm: crud.handleChangeForm,
     fetchPedidos: crud.fetchItems,
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
+
     handleCloseModal: crud.handleCloseModal
-=======
+
     handleCloseModal: crud.handleCloseModal,
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
   };
 };
 ```
 
 **Configuración completa**:
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
-=======
 
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
+
+
 ```javascript
 {
   // REQUERIDOS
@@ -524,10 +524,10 @@ const usePedidos = (idObra) => {
 **Propósito**: CRUD + búsqueda de entidades (productos, facturas, etc.)
 
 **Uso**:
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
-=======
 
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
+
+
 ```javascript
 import { useCrudConBusqueda } from "./useCrudConBusqueda.js";
 
@@ -543,11 +543,11 @@ const useGastosAlmacen = (idObra) => {
       cantidad: 0,
       precio: 0,
       idProducto: null,
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
+
       idObra: idObra
-=======
+
       idObra: idObra,
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
     },
 
     // Configuración de búsqueda
@@ -562,11 +562,11 @@ const useGastosAlmacen = (idObra) => {
     onEliminarSeleccion: (updateField) => {
       updateField("idProducto", null);
       updateField("precio", 0);
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
+
     }
-=======
+
     },
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
   });
 
   return {
@@ -577,11 +577,11 @@ const useGastosAlmacen = (idObra) => {
     productoSeleccionado: gastosAlmacen.entidadSeleccionada,
     handleBuscarProducto: gastosAlmacen.handleBuscar,
     handleSeleccionarProducto: gastosAlmacen.handleSeleccionar,
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
+
     handleEliminarProducto: gastosAlmacen.handleEliminarSeleccion
-=======
+
     handleEliminarProducto: gastosAlmacen.handleEliminarSeleccion,
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
   };
 };
 ```
@@ -593,10 +593,10 @@ const useGastosAlmacen = (idObra) => {
 **Propósito**: Gestión completa del formulario de obra (datos + catálogos + checkboxes).
 
 **Uso**:
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
-=======
 
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
+
+
 ```javascript
 import { useObraForm } from "./useObraForm.js";
 
@@ -609,11 +609,11 @@ const CrearObra = () => {
     handleChange,
     handleChangeOfertado,
     handleChangeSeguimiento,
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
+
     fetchContactosEmpresa
-=======
+
     fetchContactosEmpresa,
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
   } = useObraForm();
 
   return (
@@ -625,11 +625,11 @@ const CrearObra = () => {
         onChange={ofertado.handleToggle}
       />
       <select name="tipoObra" value={formObra.tipoObra} onChange={handleChange}>
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
+
         {catalogos.tiposObra.map(tipo => (
-=======
+
         {catalogos.tiposObra.map((tipo) => (
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
           <option key={tipo.id_tipo_obra} value={tipo.id_tipo_obra}>
             {tipo.descripcion}
           </option>
@@ -641,10 +641,10 @@ const CrearObra = () => {
 ```
 
 **API**:
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
-=======
 
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
+
+
 - `formObra`: Datos del formulario
 - `catalogos`: Todos los catálogos cargados
 - `ofertado`: Hook del checkbox "Ofertado"
@@ -663,10 +663,10 @@ const CrearObra = () => {
 **Propósito**: Gestión de relaciones padre-hijos entre obras.
 
 **Uso en creación**:
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
-=======
 
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
+
+
 ```javascript
 import { useObrasRelacionadas } from "./useObrasRelacionadas.js";
 
@@ -680,11 +680,11 @@ const CrearObra = () => {
         value={obrasRelacionadas.obraPadreBusqueda}
         onChange={obrasRelacionadas.handleObraPadreBusqueda}
       />
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
+
       {obrasRelacionadas.sugerenciasPadre.map(obra => (
-=======
+
       {obrasRelacionadas.sugerenciasPadre.map((obra) => (
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
         <div onClick={() => obrasRelacionadas.seleccionarObraPadre(obra)}>
           {obra.codigo_obra}
         </div>
@@ -695,11 +695,11 @@ const CrearObra = () => {
         value={obrasRelacionadas.obraHijaBusqueda}
         onChange={obrasRelacionadas.handleObraHijaBusqueda}
       />
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
+
       {obrasRelacionadas.sugerenciasHijas.map(obra => (
-=======
+
       {obrasRelacionadas.sugerenciasHijas.map((obra) => (
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
         <div onClick={() => obrasRelacionadas.agregarObraHija(obra)}>
           {obra.codigo_obra}
         </div>
@@ -710,10 +710,10 @@ const CrearObra = () => {
 ```
 
 **Uso en edición**:
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
-=======
 
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
+
+
 ```javascript
 const EditarObra = ({ idObra }) => {
   const obrasRelacionadas = useObrasRelacionadas(idObra); // Carga relaciones existentes
@@ -724,10 +724,10 @@ const EditarObra = ({ idObra }) => {
 ```
 
 **API**:
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
-=======
 
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
+
+
 - `obraPadreBusqueda`: Término de búsqueda del padre
 - `sugerenciasPadre`: Sugerencias de obras padre
 - `obraPadreSeleccionada`: Obra padre seleccionada
@@ -750,10 +750,10 @@ const EditarObra = ({ idObra }) => {
 **Propósito**: Gestión de datos completos de una obra individual (vista/edición).
 
 **Uso**:
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
-=======
 
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
+
+
 ```javascript
 import { useObraData } from "./useObraData.js";
 
@@ -770,11 +770,11 @@ const DetalleObra = ({ idObra }) => {
     handleChangeOfertado,
     handleChangeSeguimiento,
     handleGuardarCambios,
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
+
     fetchObra
-=======
+
     fetchObra,
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
   } = useObraData(idObra);
 
   if (loading) return <p>Cargando...</p>;
@@ -796,10 +796,10 @@ const DetalleObra = ({ idObra }) => {
 **Propósito**: Gestión de lista de obras con paginación y selección múltiple.
 
 **Uso**:
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
-=======
 
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
+
+
 ```javascript
 import { useObrasLista } from "./useObrasLista.js";
 
@@ -822,11 +822,11 @@ const GestionObras = () => {
     handleBuscar,
     clearFilters,
     clearSelections,
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
+
     fetchObras
-=======
+
     fetchObras,
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
   } = useObrasLista();
 
   return (
@@ -848,10 +848,10 @@ const GestionObras = () => {
 **Propósito**: Gestión CRUD de pedidos de una obra.
 
 **Uso**:
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
-=======
 
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
+
+
 ```javascript
 import { usePedidos } from "./usePedidos.js";
 
@@ -866,37 +866,37 @@ const PedidosObra = ({ idObra }) => {
     handleGuardar,
     handleEliminar,
     handleChangeForm,
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
+
     handleCloseModal
-=======
+
     handleCloseModal,
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
   } = usePedidos(idObra);
 
   return (
     <>
       <button onClick={handleAgregar}>Nuevo pedido</button>
       <table>
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
+
         {pedidos.map(pedido => (
-=======
+
         {pedidos.map((pedido) => (
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
           <tr key={pedido.id_pedido}>
             <td>{pedido.codigo_pedido}</td>
             <td>{pedido.importe}€</td>
             <td>
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
+
               <button onClick={() => handleEditar(pedido.id_pedido)}>Editar</button>
               <button onClick={() => handleEliminar(pedido.id_pedido)}>Eliminar</button>
-=======
+
               <button onClick={() => handleEditar(pedido.id_pedido)}>
                 Editar
               </button>
               <button onClick={() => handleEliminar(pedido.id_pedido)}>
                 Eliminar
               </button>
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
             </td>
           </tr>
         ))}
@@ -929,10 +929,10 @@ Similar a usePedidos pero con funcionalidad adicional de autocompletar importe d
 **Propósito**: Gestión de gastos (almacén + compras) con búsqueda de productos/facturas.
 
 **Uso**:
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
-=======
 
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
+
+
 ```javascript
 import { useGastos } from "./useGastos.js";
 
@@ -962,11 +962,11 @@ const GastosObra = ({ idObra }) => {
     handleGuardarCompras,
     handleEliminarCompras,
     handleChangeCompras,
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
+
     handleBuscarFactura
-=======
+
     handleBuscarFactura,
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
   } = useGastos(idObra);
 
   return (
@@ -987,12 +987,12 @@ const GastosObra = ({ idObra }) => {
 **Propósito**: Operaciones sobre múltiples obras (finalizar, borrar, copiar, imprimir).
 
 **Uso**:
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
+
 ```javascript
 import { useOperacionesObras } from "./useOperacionesObras.js";
 
 const BarraHerramientas = ({ selectedObras, obras, fetchObras, clearSelections }) => {
-=======
+
 
 ```javascript
 import { useOperacionesObras } from "./useOperacionesObras.js";
@@ -1003,34 +1003,34 @@ const BarraHerramientas = ({
   fetchObras,
   clearSelections,
 }) => {
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
   const {
     handleAgregarObra,
     handleFinalizarObra,
     handleBajaObras,
     handleCopiarObras,
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
+
     handleImprimirObras
-=======
+
     handleImprimirObras,
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
   } = useOperacionesObras(fetchObras, clearSelections, setCurrentPage);
 
   return (
     <>
       <button onClick={handleAgregarObra}>Nueva obra</button>
       <button onClick={() => handleBajaObras(selectedObras)}>Eliminar</button>
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
+
       <button onClick={() => handleCopiarObras(selectedObras, obras)}>Copiar</button>
       <button onClick={() => handleImprimirObras(selectedObras)}>Imprimir</button>
-=======
+
       <button onClick={() => handleCopiarObras(selectedObras, obras)}>
         Copiar
       </button>
       <button onClick={() => handleImprimirObras(selectedObras)}>
         Imprimir
       </button>
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
     </>
   );
 };
@@ -1045,10 +1045,10 @@ const BarraHerramientas = ({
 **Propósito**: Orquestación del proceso completo de creación de obra.
 
 **Uso**:
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
-=======
 
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
+
+
 ```javascript
 import { useCrearObra } from "./useCrearObra.js";
 
@@ -1069,13 +1069,13 @@ const CrearObra = () => {
   return (
     <form onSubmit={handleSubmit}>
       {/* Formulario */}
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
+
       <button type="submit" disabled={loading}>Guardar</button>
-=======
+
       <button type="submit" disabled={loading}>
         Guardar
       </button>
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
       <button onClick={handleCancelar}>Cancelar</button>
     </form>
   );
@@ -1089,12 +1089,12 @@ const CrearObra = () => {
 ### ¿Qué hook usar según tu caso?
 
 #### Caso 1: Necesito un formulario simple
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
+
 ✅ Usar: `useFormulario`
 
 ```javascript
 const { formData, handleChange } = useFormulario({ nombre: "", edad: 0 }, ["edad"]);
-=======
+
 
 ✅ Usar: `useFormulario`
 
@@ -1102,16 +1102,16 @@ const { formData, handleChange } = useFormulario({ nombre: "", edad: 0 }, ["edad
 const { formData, handleChange } = useFormulario({ nombre: "", edad: 0 }, [
   "edad",
 ]);
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
 ```
 
 ---
 
 #### Caso 2: Necesito CRUD completo de una entidad
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
-=======
 
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
+
+
 ✅ Usar: `useCrudEntidad`
 
 ```javascript
@@ -1120,23 +1120,23 @@ const crud = useCrudEntidad({
   createFunction: miServicio.create,
   updateFunction: miServicio.update,
   deleteFunction: miServicio.delete,
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
+
   initialForm: { /* campos */ }
-=======
+
   initialForm: {
     /* campos */
   },
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
 });
 ```
 
 ---
 
 #### Caso 3: Necesito CRUD + búsqueda/selección de otra entidad
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
-=======
 
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
+
+
 ✅ Usar: `useCrudConBusqueda`
 
 Ejemplo: Gastos de almacén que requieren buscar productos
@@ -1144,29 +1144,29 @@ Ejemplo: Gastos de almacén que requieren buscar productos
 ---
 
 #### Caso 4: Necesito buscar y seleccionar una entidad
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
+
 ✅ Usar: `useBusquedaEntidad`
 
 ```javascript
 const busqueda = useBusquedaEntidad(
   (termino) => servicioObras.search(termino)
 );
-=======
+
 
 ✅ Usar: `useBusquedaEntidad`
 
 ```javascript
 const busqueda = useBusquedaEntidad((termino) => servicioObras.search(termino));
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
 ```
 
 ---
 
 #### Caso 5: Necesito selección múltiple con checkboxes
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
-=======
 
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
+
+
 ✅ Usar: `useSeleccionMultiple`
 
 ```javascript
@@ -1176,28 +1176,28 @@ const { selected, handleSelect, handleSelectAll } = useSeleccionMultiple();
 ---
 
 #### Caso 6: Necesito un modal de crear/editar
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
+
 ✅ Usar: `useModal`
 
 ```javascript
 const { show, editID, handleOpen, handleOpenEdit, handleClose, isEditMode } = useModal();
-=======
+
 
 ✅ Usar: `useModal`
 
 ```javascript
 const { show, editID, handleOpen, handleOpenEdit, handleClose, isEditMode } =
   useModal();
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
 ```
 
 ---
 
 #### Caso 7: Necesito hacer peticiones HTTP
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
-=======
 
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
+
+
 ✅ Usar: `useApiRequest`
 
 ```javascript
@@ -1213,10 +1213,10 @@ Los siguientes hooks han sido movidos a `_obsoletos/` y reemplazados:
 ### useCatalogos.js → useCatalogosBase.js
 
 **Antes**:
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
-=======
 
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
+
+
 ```javascript
 import { useCatalogos } from "./useCatalogos.js";
 
@@ -1224,10 +1224,10 @@ const { catalogos, fetchContactosEmpresa } = useCatalogos();
 ```
 
 **Ahora**:
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
-=======
 
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
+
+
 ```javascript
 import { useCatalogosBase } from "./useCatalogosBase.js";
 
@@ -1239,10 +1239,10 @@ const { catalogos, fetchContactosEmpresa } = useCatalogosBase();
 ### useFormObra.js → useObraForm.js
 
 **Antes**:
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
-=======
 
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
+
+
 ```javascript
 import { useFormObra } from "./useFormObra.js";
 
@@ -1252,19 +1252,19 @@ const {
   enSeguimiento,
   handleChange,
   handleChangeOfertado,
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
+
   handleChangeSeguimiento
-=======
+
   handleChangeSeguimiento,
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
 } = useFormObra();
 ```
 
 **Ahora**:
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
-=======
 
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
+
+
 ```javascript
 import { useObraForm } from "./useObraForm.js";
 
@@ -1275,11 +1275,11 @@ const {
   enSeguimiento,
   handleChange,
   handleChangeOfertado,
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
+
   handleChangeSeguimiento
-=======
+
   handleChangeSeguimiento,
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
 } = useObraForm();
 ```
 
@@ -1290,10 +1290,10 @@ const {
 ### useObrasRelacionadasCreacion.js → useObrasRelacionadas.js
 
 **Antes (solo creación)**:
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
-=======
 
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
+
+
 ```javascript
 import { useObrasRelacionadasCreacion } from "./useObrasRelacionadasCreacion.js";
 
@@ -1301,10 +1301,10 @@ const obrasRel = useObrasRelacionadasCreacion();
 ```
 
 **Ahora (creación + edición)**:
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
-=======
 
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
+
+
 ```javascript
 import { useObrasRelacionadas } from "./useObrasRelacionadas.js";
 
@@ -1321,7 +1321,7 @@ const obrasRel = useObrasRelacionadas(idObra);
 
 ## Resumen de Mejoras
 
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
+
 | Hook Refactorizado | Líneas Antes | Líneas Después | Reducción |
 |--------------------|--------------|----------------|-----------|
 | useGastos          | 386          | 170            | **56%** 🏆 |
@@ -1330,7 +1330,7 @@ const obrasRel = useObrasRelacionadas(idObra);
 | usePedidos         | 122          | 90             | **26%** |
 | useObrasLista      | 124          | 100            | **19%** |
 | useOperacionesObras| 140          | 125            | **11%** |
-=======
+
 | Hook Refactorizado  | Líneas Antes | Líneas Después | Reducción  |
 | ------------------- | ------------ | -------------- | ---------- |
 | useGastos           | 386          | 170            | **56%** 🏆 |
@@ -1339,7 +1339,7 @@ const obrasRel = useObrasRelacionadas(idObra);
 | usePedidos          | 122          | 90             | **26%**    |
 | useObrasLista       | 124          | 100            | **19%**    |
 | useOperacionesObras | 140          | 125            | **11%**    |
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
 
 **Total**: ~1,202 líneas → ~735 líneas = **39% reducción global**
 
@@ -1348,37 +1348,37 @@ const obrasRel = useObrasRelacionadas(idObra);
 ## Convenciones y Buenas Prácticas
 
 ### 1. Nomenclatura
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
-=======
 
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
+
+
 - Hooks atómicos: `use` + acción genérica (`useFormulario`, `useModal`)
 - Hooks compuestos: `use` + patrón (`useCrudEntidad`, `useCrudConBusqueda`)
 - Hooks de dominio: `use` + entidad (`useObrasLista`, `usePedidos`)
 
 ### 2. Documentación
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
-=======
 
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
+
+
 - Todos los hooks públicos tienen JSDoc completo
 - Incluyen ejemplos de uso
 - Documentan todos los parámetros y retornos
 
 ### 3. Testing
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
-=======
 
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
+
+
 - Los hooks atómicos son fáciles de testear aisladamente
 - Los hooks compuestos pueden mockearse con sus dependencias
 - Los hooks de dominio testean la integración completa
 
 ### 4. Composición sobre Herencia
-<<<<<<< HEAD:WebControlGH/src/Frontend/Obra/Hooks/README.md
-=======
 
->>>>>>> 502b0d8e716110fb80101427ae70f3087c8f53c0:WebControlGH/FRONT-END/src/Obra/Hooks/README.md
+
+
+
 - Preferir composición de hooks pequeños
 - Evitar hooks gigantes con demasiadas responsabilidades
 - Cada hook debe tener una única razón para cambiar
