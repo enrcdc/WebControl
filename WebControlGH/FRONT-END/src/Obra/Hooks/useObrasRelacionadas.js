@@ -1,7 +1,8 @@
 // Hook refactorizado para gestionar obras relacionadas (padre e hijas)
 import { useState, useEffect } from "react";
 import { useBusquedaEntidad } from "./useBusquedaEntidad.js";
-import { obraService } from "../Services/obraService.js";
+import { obraService } from "../../Services/obraService.js";
+import { relacionObraService } from "../../Services/relacionObraService.js";
 
 /**
  * Hook para gestionar obras relacionadas (padre e hijas)
@@ -43,7 +44,7 @@ export const useObrasRelacionadas = (idObra = null) => {
     if (!idObra) return;
 
     try {
-      const res = await obraService.getObraPadre(idObra);
+      const res = await relacionObraService.getObraPadre(idObra);
       if (res.data.data && res.data.data.length > 0) {
         const padre = res.data.data[0];
         setObraPadre(padre);
@@ -64,7 +65,7 @@ export const useObrasRelacionadas = (idObra = null) => {
     if (!idObra) return;
 
     try {
-      const res = await obraService.getObrasHijas(idObra);
+      const res = await relacionObraService.getObrasHijas(idObra);
       setObrasHijas(res.data.data || []);
     } catch (error) {
       console.error(`Error al obtener las obras hijas - ${error}`);
@@ -117,12 +118,12 @@ export const useObrasRelacionadas = (idObra = null) => {
     try {
       // Guardar obra padre
       const idObraPadre = obraPadre ? obraPadre.id_obra : null;
-      await obraService.setObraPadre({ idObraPadre, idObraHija: idObra });
+      await relacionObraService.setObraPadre({ idObraPadre, idObraHija: idObra });
 
       // Guardar obras hijas
       const idsObrasHijas =
         obrasHijas.length > 0 ? obrasHijas.map((obra) => obra.id_obra) : [];
-      await obraService.setObrasHijas({ idObraPadre: idObra, idsObrasHijas });
+      await relacionObraService.setObrasHijas({ idObraPadre: idObra, idsObrasHijas });
 
       return true;
     } catch (error) {

@@ -7,11 +7,15 @@ import "../../css/NuevoObra.css";
 import { useObraForm } from "../Hooks/useObraForm";
 import { useObrasRelacionadas } from "../Hooks/useObrasRelacionadas";
 import { useCrearObra } from "../Hooks/useCrearObra";
+import { useContactos } from "../Hooks/useContactos";
 
 // Componentes presentacionales
 import FormDatosBasicos from "./Components/FormDatosBasicos";
 import FormInformacionGeneral from "./Components/FormInformacionGeneral";
 import SelectorObrasRelacionadas from "./Components/SelectorObrasRelacionadas";
+
+// Modales
+import ModalContacto from "./Components/Modals/ModalContacto";
 
 const CrearObra = () => {
   // Hook del formulario de obra (incluye catálogos)
@@ -31,13 +35,16 @@ const CrearObra = () => {
   // Hook de creación de obra
   const { loading, handleGuardar, handleCancelar } = useCrearObra();
 
+  // Hook de la modal de contactos
+  const modalContactos = useContactos();
+
   // Handler del submit
   const handleSubmit = async (e) => {
     e.preventDefault();
     await handleGuardar(
       formObra,
       obrasRelacionadas.obraPadre,
-      obrasRelacionadas.obrasHijas
+      obrasRelacionadas.obrasHijas,
     );
   };
 
@@ -78,6 +85,9 @@ const CrearObra = () => {
             onChangeForm={handleChange}
             onChangeOfertado={handleChangeOfertado}
           />
+
+          {/* Modal para la creación de contactos */}
+          <ModalContacto />
 
           {/* Botones de acción */}
           <div className="actions">

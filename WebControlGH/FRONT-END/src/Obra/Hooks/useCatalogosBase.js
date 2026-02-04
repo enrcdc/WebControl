@@ -1,6 +1,15 @@
 // Hook atómico para gestionar la carga de catálogos/desplegables
 import { useState, useEffect, useCallback } from "react";
-import { obraService } from "../Services/obraService.js";
+import { obraService } from "../../Services/obraService.js";
+import { tipoObraService } from "../../Services/tipoObraService.js";
+import { tipoFacturableService } from "../../Services/tipoFacturableService.js";
+import { estadoObraService } from "../../Services/estadoObraService.js"
+import { usuarioService } from "../../Services/usuarioService.js"
+import { empresaService } from "../../Services/empresaService.js"
+import { edificioService } from "../../Services/edificioService.js"
+import { contactoService } from "../../Services/contactoService.js"
+
+
 
 /**
  * Hook para cargar y gestionar catálogos/desplegables
@@ -56,12 +65,12 @@ export const useCatalogosBase = () => {
         empresas,
         edificios,
       ] = await Promise.all([
-        obraService.getTiposObra(),
-        obraService.getTiposFacturables(),
-        obraService.getEstadosObra(),
-        obraService.getUsuarios(),
-        obraService.getEmpresas(),
-        obraService.getEdificios(),
+        tipoObraService.getTiposObra(),
+        tipoFacturableService.getTiposFacturables(),
+        estadoObraService.getEstadosObra(),
+        usuarioService.getUsuarios(),
+        empresaService.getEmpresas(),
+        edificioService.getEdificios(),
       ]);
 
       setCatalogos({
@@ -87,7 +96,7 @@ export const useCatalogosBase = () => {
    */
   const fetchContactosEmpresa = useCallback(async (idEmpresa) => {
     try {
-      const res = await obraService.getContactosEmpresa(idEmpresa);
+      const res = await contactoService.getContactosEmpresa(idEmpresa);
       setCatalogos((prev) => ({
         ...prev,
         contactosEmpresa: res.data.data || [],

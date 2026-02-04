@@ -1,6 +1,6 @@
 // Componente presentacional para la información general de la obra
 import React from "react";
-import { Form, Row, Col } from "react-bootstrap";
+import { Form, Row, Col, Button } from "react-bootstrap";
 
 const FormInformacionGeneral = ({
   formObra,
@@ -250,24 +250,34 @@ const FormInformacionGeneral = ({
         <Form.Label column sm="2">
           <strong>Contacto:</strong>
         </Form.Label>
+
         <Col sm="10">
-          <Form.Control
-            as="select"
-            name="contacto"
-            value={formObra.contacto}
-            onChange={onChangeForm}
-          >
-            <option value="">Seleccionar...</option>
-            {catalogos?.contactosEmpresa?.length > 0 ? (
-              catalogos.contactosEmpresa.map((contacto) => (
-                <option key={contacto.id_contacto} value={contacto.id_contacto}>
-                  {`${contacto.nombre_contacto} ${contacto.apellido1} ${contacto.apellido2}`}
-                </option>
-              ))
-            ) : (
-              <option>Cargando contactos...</option>
-            )}
-          </Form.Control>
+          <div className="d-flex align-items-center gap-2">
+            <Form.Control
+              as="select"
+              name="contacto"
+              value={formObra.contacto}
+              onChange={onChangeForm}
+            >
+              <option value="">Seleccionar...</option>
+              {catalogos?.contactosEmpresa?.length > 0 ? (
+                catalogos.contactosEmpresa.map((contacto) => (
+                  <option
+                    key={contacto.id_contacto}
+                    value={contacto.id_contacto}
+                  >
+                    {`${contacto.nombre_contacto} ${contacto.apellido1} ${contacto.apellido2}`}
+                  </option>
+                ))
+              ) : (
+                <option>Cargando contactos...</option>
+              )}
+            </Form.Control>
+
+            <Button variant="outline-primary" size="sm" type="button">
+              Añadir
+            </Button>
+          </div>
         </Col>
       </Form.Group>
 

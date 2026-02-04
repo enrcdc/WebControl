@@ -20,15 +20,15 @@ import { useBusquedaEntidad } from "./useBusquedaEntidad.js";
  * // Movimientos de almacén con búsqueda de productos
  * const almacenHook = useCrudConBusqueda({
  *   // Configuración CRUD
- *   fetchFunction: () => obraService.getMovimientosAlmacen(idObra),
- *   createFunction: obraService.createMovimientoAlmacen,
- *   updateFunction: obraService.updateMovimientoAlmacen,
- *   deleteFunction: obraService.deleteMovimientoAlmacen,
+ *   fetchFunction: () => almacenService.getMovimientosAlmacen(idObra),
+ *   createFunction: almacenService.createMovimientoAlmacen,
+ *   updateFunction: almacenService.updateMovimientoAlmacen,
+ *   deleteFunction: almacenService.deleteMovimientoAlmacen,
  *   initialForm: { idReferencia: '', cantidad: 0, ... },
  *   // ... más config CRUD
  * }, {
  *   // Configuración búsqueda
- *   buscarFunction: (termino) => obraService.buscarProductos(termino),
+ *   buscarFunction: (termino) => almacenService.buscarProductos(termino),
  *   fieldName: 'idReferencia',
  *   minLength: 2,
  * });

@@ -13,4 +13,15 @@ export class EdificioModel {
     const [result] = await db.query(query);
     return result;
   }
+
+  static async getByNombre({ nombre }) {
+    const query = `
+    SELECT
+      id_edficio,
+      nombre
+    FROM edificios 
+    WHERE nombre LIKE CONCAT('%', ?, '%')`;
+    const [result] = await db.query(query, [nombre]);
+    return result;
+  }
 }

@@ -1,7 +1,7 @@
 // Hook refactorizado para operaciones sobre obras (finalizar, borrar, copiar, imprimir)
 import { useNavigate } from "react-router-dom";
 import { useApiRequest } from "./useApiRequest.js";
-import { obraService } from "../Services/obraService.js";
+import { obraService } from "../../Services/obraService.js";
 import { normalizarFecha } from "../Utils/fechas.js";
 
 /**

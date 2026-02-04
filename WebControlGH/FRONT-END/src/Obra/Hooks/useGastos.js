@@ -1,7 +1,7 @@
 // Hook refactorizado para gestión de gastos usando useCrudConBusqueda
 import { useState, useEffect } from "react";
 import { useCrudConBusqueda } from "./useCrudConBusqueda.js";
-import { obraService } from "../Services/obraService.js";
+import { almacenService } from "../../Services/almacenService.js";
 import { getTiposGastos } from "../Utils/calculos.js";
 
 /**
@@ -26,10 +26,10 @@ export const useGastos = (idObra) => {
   const almacenHook = useCrudConBusqueda(
     {
       // Config CRUD
-      fetchFunction: () => obraService.getMovimientosAlmacen(idObra),
-      createFunction: obraService.createMovimientoAlmacen,
-      updateFunction: obraService.updateMovimientoAlmacen,
-      deleteFunction: obraService.deleteMovimientoAlmacen,
+      fetchFunction: () => almacenService.getMovimientosAlmacen(idObra),
+      createFunction: almacenService.createMovimientoAlmacen,
+      updateFunction: almacenService.updateMovimientoAlmacen,
+      deleteFunction: almacenService.deleteMovimientoAlmacen,
       initialForm: {
         idReferencia: "",
         fechaAlta: "",
@@ -66,7 +66,7 @@ export const useGastos = (idObra) => {
     },
     {
       // Config Búsqueda
-      buscarFunction: (termino) => obraService.buscarProductos(termino),
+      buscarFunction: (termino) => almacenService.buscarProductos(termino),
       fieldName: "idReferencia",
       minLength: 3,
     }
@@ -76,10 +76,10 @@ export const useGastos = (idObra) => {
   const comprasHook = useCrudConBusqueda(
     {
       // Config CRUD
-      fetchFunction: () => obraService.getFacturasCompras(idObra),
-      createFunction: obraService.createFacturaCompra,
-      updateFunction: obraService.updateFacturaCompra,
-      deleteFunction: obraService.deleteFacturaCompra,
+      fetchFunction: () => almacenService.getFacturasCompras(idObra),
+      createFunction: almacenService.createFacturaCompra,
+      updateFunction: almacenService.updateFacturaCompra,
+      deleteFunction: almacenService.deleteFacturaCompra,
       initialForm: {
         idObra: Number(idObra),
         idFacturasCompras: "",
@@ -112,7 +112,7 @@ export const useGastos = (idObra) => {
     },
     {
       // Config Búsqueda
-      buscarFunction: (termino) => obraService.buscarFacturas(termino),
+      buscarFunction: (termino) => almacenService.buscarFacturas(termino),
       fieldName: "idFacturasCompras",
       minLength: 3,
     }
@@ -121,7 +121,7 @@ export const useGastos = (idObra) => {
   // === FETCH DE GASTOS (no es CRUD, solo lectura) ===
   const fetchGastos = async (idsObra, tipo = "Padre") => {
     try {
-      const res = await obraService.getGastos(idsObra);
+      const res = await almacenService.getGastos(idsObra);
       if (tipo === "Padre") {
         setGastos(res.data.data);
         setTiposGastos(getTiposGastos(res.data.data));
@@ -137,7 +137,7 @@ export const useGastos = (idObra) => {
   // === FETCH DE HORAS (no es CRUD, solo lectura) ===
   const fetchHoras = async (idsObra, tipo = "Padre") => {
     try {
-      const res = await obraService.getHoras(idsObra);
+      const res = await almacenService.getHoras(idsObra);
       tipo === "Padre" ? setHoras(res.data.data) : setHorasHijas(res.data.data);
     } catch (error) {
       console.error(`Error al obtener horas (${tipo}) - ${error}`);
@@ -147,7 +147,7 @@ export const useGastos = (idObra) => {
   // === FETCH DE HORAS EXTRA (no es CRUD, solo lectura) ===
   const fetchHorasExtra = async (idsObra, tipo = "Padre") => {
     try {
-      const res = await obraService.getHorasExtra(idsObra);
+      const res = await almacenService.getHorasExtra(idsObra);
       tipo === "Padre"
         ? setHorasExtra(res.data.data)
         : setHorasExtraHijas(res.data.data);

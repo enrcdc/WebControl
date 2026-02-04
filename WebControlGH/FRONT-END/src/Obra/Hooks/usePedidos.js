@@ -1,6 +1,6 @@
 // Hook refactorizado para gestión de pedidos usando useCrudEntidad
 import { useCrudEntidad } from "./useCrudEntidad.js";
-import { obraService } from "../Services/obraService.js";
+import { pedidoService } from "../../Services/pedidoService.js";
 
 /**
  * Hook para gestión completa de pedidos (CRUD)
@@ -24,13 +24,13 @@ import { obraService } from "../Services/obraService.js";
 export const usePedidos = (idObra) => {
   const pedidosHook = useCrudEntidad({
     // Configuración de fetch
-    fetchFunction: (ids) => obraService.getPedidos(ids),
+    fetchFunction: (ids) => pedidoService.getPedidos(ids),
     fetchParams: [[idObra]],
 
     // Configuración de operaciones CRUD
-    createFunction: obraService.createPedido,
-    updateFunction: obraService.updatePedido,
-    deleteFunction: obraService.deletePedido,
+    createFunction: pedidoService.createPedido,
+    updateFunction: pedidoService.updatePedido,
+    deleteFunction: pedidoService.deletePedido,
 
     // Formulario inicial
     initialForm: {
@@ -69,7 +69,7 @@ export const usePedidos = (idObra) => {
   // Función separada para fetch de pedidos de obras hijas
   const fetchPedidosHijas = async (idsObras) => {
     try {
-      const res = await obraService.getPedidos(idsObras);
+      const res = await pedidoService.getPedidos(idsObras);
       return res.data.data || [];
     } catch (error) {
       console.error(`Error al obtener pedidos de hijas - ${error}`);

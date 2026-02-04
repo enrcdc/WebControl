@@ -6,6 +6,7 @@ const contactoRouter = Router();
 
 contactoRouter.get("/:idEmpresa", ContactoController.getByEmpresa);
 contactoRouter.get("/", ContactoController.getAll);
+contactoRouter.post("/", ContactoController.create)
 
 contactoRouter.use(errorHandler);
 

@@ -1,5 +1,4 @@
 // ESTE ARCHIVO CONTIENE LA MODAL DE PEDIDOS PARAMETRIZADA
-
 import { Modal, Form, Button } from "react-bootstrap";
 
 const ModalPedido = ({

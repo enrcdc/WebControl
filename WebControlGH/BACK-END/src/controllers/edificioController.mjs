@@ -9,5 +9,14 @@ export class EdificioController {
       next(error);
     }
   }
-}
 
+  static async getByNombre(req, res, next) {
+    try {
+      const { nombre } = req.params;
+      const edificios = await EdificioModel.getByNombre({ nombre });
+      res.status(200).json({ success: true, data: edificios });
+    } catch (error) {
+      next(error);
+    }
+  }
+}

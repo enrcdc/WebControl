@@ -18,4 +18,14 @@ export class ContactoController {
       next(error);
     }
   }
+
+  static async create(req, res, next) {
+    try {
+      const input = req.body;
+      const contactoCreado = await ContactoModel.create(input);
+      res.status(201).json({ success: true, data: contactoCreado });
+    } catch (error) {
+      next(error);
+    }
+  }
 }

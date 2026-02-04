@@ -1,7 +1,7 @@
 // Hook refactorizado para gestión de facturas usando useCrudEntidad
 import { useEffect } from "react";
 import { useCrudEntidad } from "./useCrudEntidad.js";
-import { obraService } from "../Services/obraService.js";
+import { facturaService } from "../../Services/facturaService.js";
 
 /**
  * Hook para gestión completa de facturas (CRUD)
@@ -14,13 +14,13 @@ import { obraService } from "../Services/obraService.js";
 export const useFacturas = (idObra, pedidos = []) => {
   const facturasHook = useCrudEntidad({
     // Configuración de fetch
-    fetchFunction: (ids) => obraService.getFacturas(ids),
+    fetchFunction: (ids) => facturaService.getFacturas(ids),
     fetchParams: [[idObra]],
 
     // Configuración de operaciones CRUD
-    createFunction: obraService.createFactura,
-    updateFunction: obraService.updateFactura,
-    deleteFunction: obraService.deleteFactura,
+    createFunction: facturaService.createFactura,
+    updateFunction: facturaService.updateFactura,
+    deleteFunction: facturaService.deleteFactura,
 
     // Formulario inicial
     initialForm: {
@@ -43,7 +43,7 @@ export const useFacturas = (idObra, pedidos = []) => {
       facturas.map((factura) => ({
         idPedido: factura.id_pedido || "",
         codigoPedido: factura.codigo_pedido || "",
-        fechaFactura: factura.fecha ? factura.fecha.split('T')[0] : "",
+        fechaFactura: factura.fecha ? factura.fecha.split("T")[0] : "",
         codigo: factura.codigo_factura || "",
         posicion: factura.posicion || "",
         importe: factura.importe || 0,
@@ -52,7 +52,9 @@ export const useFacturas = (idObra, pedidos = []) => {
         observaciones: factura.observaciones || "",
         idObra: factura.id_obra,
         cobrado: factura.fecha_cobro ? true : false,
-        fechaCobro: factura.fecha_cobro ? factura.fecha_cobro.split('T')[0] : new Date().toISOString().split("T")[0],
+        fechaCobro: factura.fecha_cobro
+          ? factura.fecha_cobro.split("T")[0]
+          : new Date().toISOString().split("T")[0],
         id_factura: factura.id_factura, // Mantener ID para edición
       })),
 
@@ -77,7 +79,7 @@ export const useFacturas = (idObra, pedidos = []) => {
     // Auto-rellenar importe desde pedido seleccionado
     if (e.target.name === "idPedido" && pedidos) {
       const pedidoSeleccionado = pedidos.find(
-        (p) => p.id_pedido == e.target.value
+        (p) => p.id_pedido == e.target.value,
       );
       if (pedidoSeleccionado) {
         facturasHook.updateField("importe", pedidoSeleccionado.importe);
@@ -88,7 +90,7 @@ export const useFacturas = (idObra, pedidos = []) => {
   // Función separada para fetch de facturas de obras hijas
   const fetchFacturasHijas = async (idsObras) => {
     try {
-      const res = await obraService.getFacturas(idsObras);
+      const res = await facturaService.getFacturas(idsObras);
       return res.data.data || [];
     } catch (error) {
       console.error(`Error al obtener facturas de hijas - ${error}`);

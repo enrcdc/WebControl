@@ -35,4 +35,107 @@ export class ContactoModel {
     const [result] = await db.query(query, [idEmpresa]);
     return result;
   }
+
+  static async create(input) {
+    const valuesString = Object.keys(input)
+      .map(() => "?")
+      .join(", ");
+    const query = `
+    INSERT INTO contactos (
+    nombre_contacto,
+    apellido1,
+    apellido2,
+    num_identificativo,
+    telefono,
+    telefono2,
+    email,
+    email2,
+    direccion,
+    pordefecto,
+    observaciones
+    )
+    VALUES (${valuesString})`;
+
+    const values = [
+      input.nombre,
+      input.apellido1,
+      input.apellido2,
+      input.dni,
+      input.telefono,
+      input.direccion,
+      input.email,
+      input.telefono2,
+      input.email2,
+      input.porDefecto,
+      input.fechaBaja,
+      input.observaciones,
+    ];
+
+    // inserción en la tabla de contactos
+    const [result] = await db.query(query, values);
+
+    // inserción en la tabla de empresas-contactos
+    await db.query(
+      `
+      INSERT INTO empresas_contactos (
+      id_contacto,
+      id_empresa
+      )
+      VALUES (?, ?)`,
+      [result.insertId, input.idEmpresa],
+    );
+
+    // actualizar el nuevo contacto por defecto (si aplica)
+    await this.porDefecto(input.porDefecto, result.insertId, input.idEmpresa);
+
+    // actualizar la tabla edificios_contactos (si aplica)
+    await this.asignarComplejos(result.insertId, input.complejos);
+
+    const [rows] = await db.query(
+      `
+      SELECT * FROM contactos WHERE id_contacto = ?`,
+      [result.insertId],
+    );
+
+    return rows[0] ?? null;
+  }
+
+  static async porDefecto(porDefecto, idContacto, idEmpresa) {
+    if (!porDefecto) return;
+
+    // anterior por defecto
+    await db.query(
+      `UPDATE contactos AS c
+      INNER JOIN empresas_contactos AS ec ON ec.id_contacto = c.id_contacto
+      SET pordefecto = 0
+      WHERE id_contacto = c.id_contacto != ? 
+      AND ec.id_empresa = ? AND c.pordefecto = 1`,
+      [idContacto, idEmpresa],
+    );
+  }
+
+  static async asignarComplejos(idContacto, complejos) {
+    // Eliminar entradas previas
+    const deleteQuery = `DELETE FROM edificios_contactos WHERE id_contacto = ?`;
+    await db.query(deleteQuery, [idContacto]);
+
+    if (!Array.isArray(complejos) || complejos.length === 0) return;
+
+    const insertQuery = `
+    INSERT INTO edificios_contactos (id_contacto, id_edificio) VALUES ?`;
+    const values = complejos.map((c) => [idContacto, c.id]);
+    await db.query(insertQuery, [values]);
+
+    // Devolvemos la inserción
+    const [rows] = await db.query(
+      `
+      SELECT *
+      FROM eficios_contactos
+      WHERE id_contacto = ?
+      `,
+      [idContacto],
+    );
+
+    return rows;
+  }
 }

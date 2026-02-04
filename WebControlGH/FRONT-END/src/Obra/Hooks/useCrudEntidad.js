@@ -26,11 +26,11 @@ import { useModal } from "./useModal.js";
  *
  * @example
  * const pedidosHook = useCrudEntidad({
- *   fetchFunction: (ids) => obraService.getPedidos(ids),
+ *   fetchFunction: (ids) => pedidoService.getPedidos(ids),
  *   fetchParams: [[idObra]],
- *   createFunction: obraService.createPedido,
- *   updateFunction: obraService.updatePedido,
- *   deleteFunction: obraService.deletePedido,
+ *   createFunction: pedidoService.createPedido,
+ *   updateFunction: pedidoService.updatePedido,
+ *   deleteFunction: pedidoService.deletePedido,
  *   initialForm: {
  *     fechaPedido: "",
  *     codigoPedido: "",

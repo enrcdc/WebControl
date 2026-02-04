@@ -1,7 +1,8 @@
 // Hook refactorizado para orquestar la creación de una obra
 import { useNavigate } from "react-router-dom";
 import { useApiRequest } from "./useApiRequest.js";
-import { obraService } from "../Services/obraService.js";
+import { obraService } from "../../Services/obraService.js";
+import { relacionObraService } from "../../Services/relacionObraService.js";
 
 /**
  * Hook para orquestar el proceso completo de creación de obra
@@ -19,12 +20,12 @@ export const useCrearObra = () => {
   const crearObraCompleta = async (
     formObra,
     obraPadreSeleccionada,
-    obrasHijasSeleccionadas
+    obrasHijasSeleccionadas,
   ) => {
     try {
       // 1. Crear la obra
       const nuevaObra = await apiRequest.execute(() =>
-        obraService.createObra(formObra)
+        obraService.createObra(formObra),
       );
 
       if (!nuevaObra) {
@@ -37,14 +38,17 @@ export const useCrearObra = () => {
       const idObraPadre = obraPadreSeleccionada
         ? obraPadreSeleccionada.id_obra
         : null;
-      await obraService.setObraPadre({ idObraPadre, idObraHija: idNuevaObra });
+      await relacionObraService.setObraPadre({ idObraPadre, idObraHija: idNuevaObra });
 
       // 3. Guardar relaciones con obras hijas
       const idsObrasHijas =
         obrasHijasSeleccionadas.length > 0
           ? obrasHijasSeleccionadas.map((obra) => obra.id_obra)
           : [];
-      await obraService.setObrasHijas({ idObraPadre: idNuevaObra, idsObrasHijas });
+      await relacionObraService.setObrasHijas({
+        idObraPadre: idNuevaObra,
+        idsObrasHijas,
+      });
 
       return nuevaObra;
     } catch (error) {
@@ -66,13 +70,13 @@ export const useCrearObra = () => {
   const handleGuardar = async (
     formObra,
     obraPadreSeleccionada,
-    obrasHijasSeleccionadas
+    obrasHijasSeleccionadas,
   ) => {
     try {
       await crearObraCompleta(
         formObra,
         obraPadreSeleccionada,
-        obrasHijasSeleccionadas
+        obrasHijasSeleccionadas,
       );
       alert("Obra guardada con éxito");
       navigate("/home/gestion-obras");

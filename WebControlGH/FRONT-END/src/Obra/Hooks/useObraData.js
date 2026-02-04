@@ -2,7 +2,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { useObraForm } from "./useObraForm.js";
 import { useApiRequest } from "./useApiRequest.js";
-import { obraService } from "../Services/obraService";
+import { obraService } from "../../Services/obraService.js";
+import { rentabilidadService } from "../../Services/rentabilidadService.js";
 import { normalizarFecha } from "../Utils/fechas";
 
 /**
@@ -75,7 +76,7 @@ export const useObraData = (idObra) => {
   const fetchRentabilidad = useCallback(async () => {
     try {
       const res = await apiRequest.execute(() =>
-        obraService.getRentabilidad(idObra)
+        rentabilidadService.getRentabilidad(idObra),
       );
       if (res) {
         setRentabilidad(res);
@@ -100,7 +101,7 @@ export const useObraData = (idObra) => {
 
       console.log("Datos del formulario a enviar:", dataToSend);
       await apiRequest.execute(() =>
-        obraService.updateObra(idObra, dataToSend)
+        obraService.updateObra(idObra, dataToSend),
       );
       await fetchObra();
       setEditarObra(false);

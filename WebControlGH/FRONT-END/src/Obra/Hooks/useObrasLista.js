@@ -1,7 +1,11 @@
 // Hook refactorizado para gestión de lista de obras
 import { useState, useEffect, useCallback } from "react";
 import { useSeleccionMultiple } from "./useSeleccionMultiple.js";
-import { obraService } from "../Services/obraService.js";
+import { obraService } from "../../Services/obraService.js";
+import { tipoObraService } from "../../Services/tipoObraService.js";
+import { estadoObraService } from "../../Services/estadoObraService.js"
+import { empresaService } from "../../Services/empresaService.js"
+import { edificioService } from "../../Services/edificioService.js"
 
 /**
  * Hook para gestión de lista de obras
@@ -65,10 +69,10 @@ export const useObrasLista = () => {
   const fetchCatalogos = useCallback(async () => {
     try {
       const [tiposObra, estadosObra, empresas, edificios] = await Promise.all([
-        obraService.getTiposObra(),
-        obraService.getEstadosObra(),
-        obraService.getEmpresas(),
-        obraService.getEdificios(),
+        tipoObraService.getTiposObra(),
+        estadoObraService.getEstadosObra(),
+        empresaService.getEmpresas(),
+        edificioService.getEdificios(),
       ]);
 
       setCatalogos({
