@@ -1,0 +1,4 @@
+###### ENDPOINTS ESTADO OBRA #############
+
+### Obtener estados obra
+GET http://localhost:3002/api/estado-obra

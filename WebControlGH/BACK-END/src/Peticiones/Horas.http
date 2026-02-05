@@ -1,0 +1,12 @@
+###### ENDPOINTS HORAS #############
+
+### Obtener el listado de horas asociado a una obra
+POST http://localhost:3002/api/horas/buscar
+Content-Type: application/json
+
+{
+    "idsObra": [4037]
+}
+
+### Obtener el listado de todas las horas
+GET http://localhost:3002/api/horas/all

@@ -1,0 +1,13 @@
+###### ENDPOINTS USUARIO #############
+
+### Obtener usuarios
+GET http://localhost:3002/api/usuario
+
+### post para el login
+POST http://localhost:3002/api/usuario/login
+Content-Type: application/json
+
+{
+    "username": "abaco_andres",
+    "password": "abaco_andres"
+}

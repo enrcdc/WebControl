@@ -1,5 +1,4 @@
 // Componente principal orquestador para la creación de obras
-import React, { useEffect } from "react";
 import { Form, Button, Container } from "react-bootstrap";
 import "../../css/NuevoObra.css";
 
@@ -36,7 +35,7 @@ const CrearObra = () => {
   const { loading, handleGuardar, handleCancelar } = useCrearObra();
 
   // Hook de la modal de contactos
-  const modalContactos = useContactos();
+  const contactosHook = useContactos();
 
   // Handler del submit
   const handleSubmit = async (e) => {
@@ -84,10 +83,29 @@ const CrearObra = () => {
             ofertado={ofertado}
             onChangeForm={handleChange}
             onChangeOfertado={handleChangeOfertado}
+            onAgregarContacto={contactosHook.handleAgregar}
           />
 
           {/* Modal para la creación de contactos */}
-          <ModalContacto />
+          <ModalContacto
+            show={contactosHook.showModal}
+            formData={contactosHook.formData}
+            complejos={contactosHook.complejos}
+            busquedaComplejos={contactosHook.busquedaComplejos}
+            sugerenciasComplejos={contactosHook.sugerenciasComplejos}
+            onBuscarComplejo={contactosHook.handleBuscarComplejo}
+            onSeleccionarComplejo={contactosHook.agregarComplejo}
+            onEliminarComplejo={contactosHook.eliminarComplejo}
+            empresa={contactosHook.empresa}
+            busquedaEmpresa={contactosHook.busquedaEmpresa}
+            sugerenciasEmpresas={contactosHook.sugerenciasEmpresas}
+            onBuscarEmpresa={contactosHook.handleBuscarEmpresa}
+            onSeleccionarEmpresa={contactosHook.agregarEmpresa}
+            onEliminarEmpresa={contactosHook.eliminarEmpresa}
+            onHide={contactosHook.handleClose}
+            onChangeForm={contactosHook.handleChangeForm}
+            onGuardar={contactosHook.handleGuardar}
+          />
 
           {/* Botones de acción */}
           <div className="actions">

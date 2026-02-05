@@ -1,0 +1,7 @@
+###### ENDPOINTS EMPRESA #############
+
+### Obtener empresas
+GET http://localhost:3002/api/empresa
+
+### Buscar por nombre
+GET http://localhost:3002/api/empresa/buscar/nombre?nombre=siem

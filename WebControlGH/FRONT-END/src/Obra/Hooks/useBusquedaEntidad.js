@@ -25,7 +25,7 @@ import { useState, useCallback, useRef } from "react";
  * );
  */
 export const useBusquedaEntidad = (buscarFunction, options = {}) => {
-  const { minLength = 3 } = options;
+  const { minLength = 3} = options;
 
   const [busqueda, setBusqueda] = useState("");
   const [sugerencias, setSugerencias] = useState([]);

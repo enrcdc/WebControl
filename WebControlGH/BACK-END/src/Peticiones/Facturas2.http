@@ -1,0 +1,50 @@
+###### ENDPOINTS FACTURAS 2 #############
+
+### Obtener facturas asociadas a una obra
+POST http://localhost:3002/api/ecoFactura/buscar
+Content-Type: application/json
+
+{
+    "idsObras": [4037]
+}
+
+### Crear una factura asociada a una obra
+POST http://localhost:3002/api/ecoFactura/
+Content-Type: application/json
+
+{
+    "idPedido": 6,
+    "fechaFactura": "2016-06-21",
+    "codigo": "FACTURAPRUEBA",
+    "posicion": 10,
+    "importe": 100,
+    "conceptoFactura": "Factura de prueba",
+    "conceptoLinea": "Factura de prueba",
+    "observaciones": "Esta es una factura de prueba",
+    "idObra": 4037
+}
+
+### Actualizar una factura asociada a una obra
+PUT http://localhost:3002/api/ecoFactura/5377
+Content-Type: application/json
+
+{
+    "idPedido": 6,
+    "fechaFactura": "2016-06-21",
+    "codigo": "FACTURAPRUEBA2",
+    "posicion": 10,
+    "importe": 100,
+    "conceptoFactura": "Factura de prueba",
+    "conceptoLinea": "Factura de prueba",
+    "observaciones": "He actualizado la factura",
+    "idObra": 4037
+}
+
+### Borrar una factura asociada a una obra
+DELETE http://localhost:3002/api/ecoFactura/5376
+Content-Type: application/json
+
+{
+    "codigoUsuarioBaja": 4
+}
+

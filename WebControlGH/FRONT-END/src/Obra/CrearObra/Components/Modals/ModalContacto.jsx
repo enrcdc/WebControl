@@ -1,15 +1,22 @@
-// ESTE ARCHIVO CONTIENE LA MODAL DE PEDIDOS PARAMETRIZADA
-import { Modal, Form, Button } from "react-bootstrap";
+// ESTE ARCHIVO CONTIENE LA MODAL DE CONTACTOS PARAMETRIZADA
+import { Modal, Form, Button, ListGroup } from "react-bootstrap";
 
 const ModalContacto = ({
   show,
   formData,
-  busquedaComplejo,
+
+  busquedaComplejos,
   sugerenciasComplejos,
-  complejoSeleccionado,
   onBuscarComplejo,
-  OnSeleccionarComplejo,
-  OnEliminarComplejo,
+  onSeleccionarComplejo,
+  onEliminarComplejo,
+
+  busquedaEmpresa,
+  sugerenciasEmpresas,
+  onBuscarEmpresa,
+  onSeleccionarEmpresa,
+  onEliminarEmpresa,
+
   onHide,
   onChangeForm,
   onGuardar,
@@ -93,21 +100,51 @@ const ModalContacto = ({
               onChange={onChangeForm}
             />
           </Form.Group>
-          <Form.Group>
-            <Form.Check
-              name="porDefecto"
-              label="Por defecto"
-              checked={formData.porDefecto}
-              onChange={onChangeForm}
-            />
-          </Form.Group>
-          <Form.Group>
-            <Form.Label>Empresa del Contacto</Form.Label>
-            <Form.Control
-              name="empresa"
-              defaultValue={formData.empresa}
-              readOnly={true}
-            />
+          <Form.Group className="mb-2">
+            <Form.Label>Empresa del Contacto:</Form.Label>
+            <div className="mb-2 position-relative">
+              <Form.Control
+                type="text"
+                placeholder="Buscar empresa por nombre..."
+                value={busquedaEmpresa}
+                onChange={onBuscarEmpresa}
+                autoComplete="off"
+              />
+              {/* Sugerencias empresas*/}
+              {sugerenciasEmpresas.length > 0 && (
+                <ul
+                  className="list-group position-absolute w-100"
+                  style={{ zIndex: 10 }}
+                >
+                  {sugerenciasEmpresas.map((empresa) => (
+                    <li
+                      key={empresa.id}
+                      className="list-group-item list-group-item-action"
+                      onClick={() => onSeleccionarEmpresa(empresa)}
+                      style={{ cursor: "pointer" }}
+                    >
+                      {empresa.nombre}
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {/* Empresa seleccionada */}
+              {formData.empresa && (
+                <div className="mt-2">
+                  <span>
+                    <strong>Empresa:</strong> {formData.empresa.nombre}
+                  </span>
+                  <Button
+                    variant="outline-danger"
+                    size="sm"
+                    className="ms-2"
+                    onClick={onEliminarEmpresa}
+                  >
+                    Quitar
+                  </Button>
+                </div>
+              )}
+            </div>
           </Form.Group>
           <Form.Group className="mb-2">
             <Form.Label>Complejo del Contacto:</Form.Label>
@@ -115,11 +152,11 @@ const ModalContacto = ({
               <Form.Control
                 type="text"
                 placeholder="Buscar complejo por nombre..."
-                value={busquedaComplejo}
+                value={busquedaComplejos}
                 onChange={onBuscarComplejo}
                 autoComplete="off"
               />
-              {/* Sugerencias productos*/}
+              {/* Sugerencias complejos*/}
               {sugerenciasComplejos.length > 0 && (
                 <ul
                   className="list-group position-absolute w-100"
@@ -127,9 +164,9 @@ const ModalContacto = ({
                 >
                   {sugerenciasComplejos.map((complejo) => (
                     <li
-                      key={complejo.id_edificio}
+                      key={complejo.id}
                       className="list-group-item list-group-item-action"
-                      onClick={() => OnSeleccionarComplejo(complejo)}
+                      onClick={() => onSeleccionarComplejo(complejo)}
                       style={{ cursor: "pointer" }}
                     >
                       {complejo.nombre}
@@ -138,21 +175,24 @@ const ModalContacto = ({
                 </ul>
               )}
               {/* Complejo seleccionado */}
-              {complejoSeleccionado && (
-                <div className="mt-2">
-                  <span>
-                    <strong>Complejo:</strong>{" "}
-                    {complejoSeleccionado.nombre}
-                  </span>
-                  <Button
-                    variant="outline-danger"
-                    size="sm"
-                    className="ms-2"
-                    onClick={OnEliminarComplejo}
-                  >
-                    Quitar
-                  </Button>
-                </div>
+              {formData.complejos.length > 0 && (
+                <ListGroup className="mt-2">
+                  {formData.complejos.map((c) => (
+                    <ListGroup.Item
+                      key={c.id}
+                      className="d-flex justify-content-between align-items-center"
+                    >
+                      <span>{c.nombre}</span>
+                      <Button
+                        variant="outline-danger"
+                        size="sm"
+                        onClick={() => onEliminarComplejo(c)}
+                      >
+                        Quitar
+                      </Button>
+                    </ListGroup.Item>
+                  ))}
+                </ListGroup>
               )}
             </div>
           </Form.Group>

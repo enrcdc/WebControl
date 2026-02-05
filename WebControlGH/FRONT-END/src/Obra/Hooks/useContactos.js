@@ -1,7 +1,8 @@
 import { useBusquedaEntidad } from "./useBusquedaEntidad";
 import { edificioService } from "../../Services/edificioService";
-import { useCrudEntidad } from "./useCrudEntidad";
+import { empresaService } from "../../Services/empresaService";
 import { contactoService } from "../../Services/contactoService";
+import { useCrudEntidad } from "./useCrudEntidad";
 
 /**
  * Hook para gestión completa de contactos (CRUD)
@@ -11,10 +12,7 @@ import { contactoService } from "../../Services/contactoService";
  *
  */
 
-export const useContactos = (empresa) => {
-  // Extracción del id y el nombre de la empresa a la que pertenece el contacto
-  const { idEmpresa = "", nombreEmpresa = "" } = empresa;
-
+export const useContactos = () => {
   // Hook para operaciones CRUD y modal
   const contactosHook = useCrudEntidad({
     fetchFunction: () => contactoService.getAll(),
@@ -29,45 +27,93 @@ export const useContactos = (empresa) => {
       apellido2: "",
       dni: "",
       telefono: "",
-      direccion: "",
-      email: "",
       telefono2: "",
+      email: "",
       email2: "",
-      porDefecto: "",
-      fechaBaja: "",
+      direccion: "",
       observaciones: "",
-      idEmpresa: idEmpresa,
-      empresa: nombreEmpresa,
+      empresa: null,
+      complejos: [],
     },
+    // Una vez creado el usuario con éxito, cargamos los contactos otra vez (TODO: Corregir)
+    onSuccessCreate: () => contactoService.getContactosEmpresa(idEmpresa),
   });
 
-  // Hook useModal que proporciona las operaciones comunes de una modal
-  const { show, handleOpen, handleClose } = useModal();
-
-  // Hook de búsqueda de entidad (complejo en este caso)
-  const {
-    busquedaComplejo,
-    sugerenciasComplejos,
-    complejoSeleccionado,
-    handleBuscar,
-    seleccionarComplejo,
-    eliminarSeleccion,
-    limpiar,
-  } = useBusquedaEntidad(
+  // Hook de búsqueda de entidad (complejo y empresa en este caso)
+  const buscadorComplejos = useBusquedaEntidad(
     (termino) => edificioService.buscarPorNombre(termino),
     { minLength: 3 },
   );
 
+  const buscadorEmpresas = useBusquedaEntidad(
+    (termino) => empresaService.buscarPorNombre(termino),
+    { minLength: 3 },
+  );
+
+  const agregarEmpresa = (empresa) => {
+    contactosHook.updateField("empresa", empresa);
+    buscadorEmpresas.seleccionar(empresa);
+  };
+
+  const eliminarEmpresa = () => {
+    contactosHook.updateField("empresa", null);
+    buscadorEmpresas.eliminarSeleccion();
+  };
+
+  const agregarComplejo = (complejo) => {
+    const complejos = contactosHook.getFieldValue("complejos");
+    if (!complejos.some((c) => c.id === complejo.id)) {
+      contactosHook.updateField("complejos", complejos.concat(complejo));
+    }
+    buscadorComplejos.limpiar();
+  };
+
+  const eliminarComplejo = (complejo) => {
+    const complejos = contactosHook.getFieldValue("complejos");
+    contactosHook.updateField(
+      "complejos",
+      complejos.filter((c) => c.id !== complejo.id),
+    );
+  };
+
+  const handleGuardar = () => {
+    contactosHook.handleGuardar();
+    limpiar();
+  };
+
+  const handleClose = () => {
+    contactosHook.setShowModal(false);
+    limpiar();
+  };
+
+  const limpiar = () => {
+    buscadorComplejos.limpiar();
+    buscadorEmpresas.limpiar();
+  };
+
   return {
-    show,
-    handleOpen,
+    showModal: contactosHook.showModal,
+    formData: contactosHook.formData,
+
+    // Complejos
+    busquedaComplejos: buscadorComplejos.busqueda,
+    sugerenciasComplejos: buscadorComplejos.sugerencias,
+    handleBuscarComplejo: buscadorComplejos.handleBuscar,
+    agregarComplejo,
+    eliminarComplejo,
+
+    // Empresa
+    busquedaEmpresa: buscadorEmpresas.busqueda,
+    sugerenciasEmpresas: buscadorEmpresas.sugerencias,
+    handleBuscarEmpresa: buscadorEmpresas.handleBuscar,
+    agregarEmpresa,
+    eliminarEmpresa,
+
+    setShowModal: contactosHook.setShowModal,
+    // Para abrir la modal
+    handleAgregar: contactosHook.handleAgregar,
+    handleChangeForm: contactosHook.handleChangeForm,
+    handleGuardar: handleGuardar,
     handleClose,
-    busquedaComplejo,
-    sugerenciasComplejos,
-    complejoSeleccionado,
-    handleBuscar,
-    seleccionarComplejo,
-    eliminarSeleccion,
-    limpiar,
   };
 };

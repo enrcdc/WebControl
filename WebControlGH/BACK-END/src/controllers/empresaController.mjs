@@ -9,4 +9,14 @@ export class EmpresaController {
       next(error);
     }
   }
+
+  static async getByNombre(req, res, next) {
+    try {
+      const { nombre } = req.query;
+      const empresas = await EmpresaModel.getByNombre({ nombre });
+      res.status(200).json({ success: true, data: empresas });
+    } catch (error) {
+      next(error);
+    }
+  }
 }

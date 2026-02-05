@@ -8,6 +8,7 @@ const FormInformacionGeneral = ({
   ofertado,
   onChangeForm,
   onChangeOfertado,
+  onAgregarContacto,
 }) => {
   return (
     <fieldset>
@@ -235,7 +236,7 @@ const FormInformacionGeneral = ({
             <option value="">Seleccionar...</option>
             {catalogos?.empresas?.length > 0 ? (
               catalogos.empresas.map((empresa) => (
-                <option key={empresa.id_empresa} value={empresa.id_empresa}>
+                <option key={empresa.id} value={empresa.id}>
                   {empresa.nombre}
                 </option>
               ))
@@ -263,10 +264,10 @@ const FormInformacionGeneral = ({
               {catalogos?.contactosEmpresa?.length > 0 ? (
                 catalogos.contactosEmpresa.map((contacto) => (
                   <option
-                    key={contacto.id_contacto}
-                    value={contacto.id_contacto}
+                    key={contacto.id}
+                    value={contacto.id}
                   >
-                    {`${contacto.nombre_contacto} ${contacto.apellido1} ${contacto.apellido2}`}
+                    {`${contacto.nombre} ${contacto.apellido1} ${contacto.apellido2}`}
                   </option>
                 ))
               ) : (
@@ -274,7 +275,12 @@ const FormInformacionGeneral = ({
               )}
             </Form.Control>
 
-            <Button variant="outline-primary" size="sm" type="button">
+            <Button
+              onClick={onAgregarContacto}
+              variant="outline-primary"
+              size="sm"
+              type="button"
+            >
               Añadir
             </Button>
           </div>
@@ -295,7 +301,7 @@ const FormInformacionGeneral = ({
             <option value="">Seleccionar...</option>
             {catalogos?.edificios?.length > 0 ? (
               catalogos.edificios.map((edificio) => (
-                <option key={edificio.id_edificio} value={edificio.id_edificio}>
+                <option key={edificio.id} value={edificio.id}>
                   {edificio.nombre}
                 </option>
               ))

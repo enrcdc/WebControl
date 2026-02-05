@@ -1,0 +1,23 @@
+###### ENDPOINTS GASTOS #############
+
+### Obtener todos los gastos por validar
+GET http://localhost:3002/api/gastos/por-validar
+
+### Obtener todos los gastos por pagar
+GET http://localhost:3002/api/gastos/por-pagar
+
+### Obtener todos los gastos de una obra
+POST http://localhost:3002/api/gastos/buscar
+Content-Type: application/json
+
+{
+    "idsObra": [4463]
+}
+
+### Obtener el listado de horas extra de una obra
+POST http://localhost:3002/api/gastos/horas-extra/buscar
+Content-Type: application/json
+
+{
+    "idsObra": [4039]
+}

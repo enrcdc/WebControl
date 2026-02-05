@@ -1,0 +1,62 @@
+###### ENDPOINTS ALMACEN #############
+
+### Obtener todos los productos
+GET http://localhost:3002/api/almacen
+
+### Obtener un producto específico
+GET http://localhost:3002/api/almacen/1
+
+### Obtener un producto por la descripción
+GET http://localhost:3002/api/almacen/buscar/descripcion?descripcion=cable
+
+### Crear un producto
+POST http://localhost:3002/api/almacen
+Content-Type: application/json
+
+{
+  "cod": "123456",
+  "descripcion": "Material de prueba",
+  "etiqueta": "uds.",
+  "proveedor": 850,
+  "familia": 2,
+  "tipoUnidad": 3,
+  "fechaAlta": "2016-06-21",
+  "usuarioAlta": 4,
+  "stock": 20,
+  "stockMin": 3,
+  "stockMax": 1000,
+  "marca": 1,
+  "precioUnitario": 1,
+  "precioTotal": 4,
+  "observaciones": "Material de prueba"
+}
+
+### Actualizar un producto
+PUT http://localhost:3002/api/almacen/244
+Content-Type: application/json
+
+{
+  "cod": "123456",
+  "descripcion": "Material de prueba",
+  "etiqueta": "uds.",
+  "proveedor": 850,
+  "familia": 2,
+  "tipoUnidad": 3,
+  "fechaAlta": "2016-06-21",
+  "usuarioAlta": 4,
+  "stock": 20,
+  "stockMin": 3,
+  "stockMax": 1000,
+  "marca": 1,
+  "precioUnitario": 1,
+  "precioTotal": 4,
+  "observaciones": "Observaciones actualizadas"
+}
+
+### Borrar un producto
+DELETE http://localhost:3002/api/almacen/244
+Content-Type: application/json
+
+{
+    "codigoUsuarioBaja": 14
+}

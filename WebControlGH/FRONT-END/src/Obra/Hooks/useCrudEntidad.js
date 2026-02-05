@@ -47,11 +47,11 @@ import { useModal } from "./useModal.js";
  */
 export const useCrudEntidad = (config) => {
   const {
-    fetchFunction,
+    fetchFunction = null,
     fetchParams = [],
-    createFunction,
-    updateFunction,
-    deleteFunction,
+    createFunction = null,
+    updateFunction = null,
+    deleteFunction = null,
     initialForm = {},
     camposNumericos = [],
     validarForm = null,
@@ -98,7 +98,6 @@ export const useCrudEntidad = (config) => {
     } finally {
       setLoading(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   /**
@@ -127,7 +126,7 @@ export const useCrudEntidad = (config) => {
       formulario.setFormData(itemToEdit);
       modal.handleOpenEdit(itemId);
     },
-    [formulario, modal, transformAfterFetch]
+    [formulario, modal, transformAfterFetch],
   );
 
   /**
@@ -161,7 +160,7 @@ export const useCrudEntidad = (config) => {
       } else {
         await createFunction(dataToSave);
         if (onSuccessCreate) {
-          onSuccessCreate(dataToSave);
+          await onSuccessCreate(dataToSave);
         }
       }
 
@@ -217,7 +216,7 @@ export const useCrudEntidad = (config) => {
         setLoading(false);
       }
     },
-    [deleteFunction, confirmDelete, fetchItems, onSuccessDelete]
+    [deleteFunction, confirmDelete, fetchItems, onSuccessDelete],
   );
 
   /**
@@ -249,6 +248,7 @@ export const useCrudEntidad = (config) => {
     setFormData: formulario.setFormData,
     updateFields: formulario.updateFields,
     updateField: formulario.updateField,
+    getFieldValue: formulario.getFieldValue,
 
     // Operaciones CRUD
     handleAgregar,

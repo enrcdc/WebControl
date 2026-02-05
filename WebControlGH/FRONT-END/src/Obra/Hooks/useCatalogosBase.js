@@ -1,6 +1,5 @@
 // Hook atómico para gestionar la carga de catálogos/desplegables
 import { useState, useEffect, useCallback } from "react";
-import { obraService } from "../../Services/obraService.js";
 import { tipoObraService } from "../../Services/tipoObraService.js";
 import { tipoFacturableService } from "../../Services/tipoFacturableService.js";
 import { estadoObraService } from "../../Services/estadoObraService.js"

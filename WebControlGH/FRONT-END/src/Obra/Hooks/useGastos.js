@@ -2,6 +2,9 @@
 import { useState, useEffect } from "react";
 import { useCrudConBusqueda } from "./useCrudConBusqueda.js";
 import { almacenService } from "../../Services/almacenService.js";
+import { horaService } from "../../Services/horaService.js";
+import { compraService } from "../../Services/compraService.js";
+import { gastoService } from "../../Services/gastoService.js";
 import { getTiposGastos } from "../Utils/calculos.js";
 
 /**
@@ -45,7 +48,7 @@ export const useGastos = (idObra) => {
       transformAfterFetch: (gastos) =>
         gastos.map((gasto) => ({
           idReferencia: gasto.id_referencia,
-          fechaAlta: gasto.fecha_alta ? gasto.fecha_alta.split('T')[0] : "",
+          fechaAlta: gasto.fecha_alta ? gasto.fecha_alta.split("T")[0] : "",
           usuarioAlta: gasto.codigo_usuario_alta,
           tipoMovimiento: gasto.id_tipomovimiento,
           conceptoMovimiento: gasto.id_conceptomovimiento,
@@ -57,7 +60,12 @@ export const useGastos = (idObra) => {
           descripcion_referencia: gasto.descripcion_referencia, // Para mostrar producto seleccionado
         })),
       validarForm: (form) => {
-        if (!form.idReferencia || !form.fechaAlta || !form.usuarioAlta || !form.idObra) {
+        if (
+          !form.idReferencia ||
+          !form.fechaAlta ||
+          !form.usuarioAlta ||
+          !form.idObra
+        ) {
           return "Faltan campos obligatorios";
         }
         return null;
@@ -69,17 +77,17 @@ export const useGastos = (idObra) => {
       buscarFunction: (termino) => almacenService.buscarProductos(termino),
       fieldName: "idReferencia",
       minLength: 3,
-    }
+    },
   );
 
   // === CRUD DE COMPRAS (con búsqueda de facturas) ===
   const comprasHook = useCrudConBusqueda(
     {
       // Config CRUD
-      fetchFunction: () => almacenService.getFacturasCompras(idObra),
-      createFunction: almacenService.createFacturaCompra,
-      updateFunction: almacenService.updateFacturaCompra,
-      deleteFunction: almacenService.deleteFacturaCompra,
+      fetchFunction: () => compraService.getFacturasCompras(idObra),
+      createFunction: compraService.createFacturaCompra,
+      updateFunction: compraService.updateFacturaCompra,
+      deleteFunction: compraService.deleteFacturaCompra,
       initialForm: {
         idObra: Number(idObra),
         idFacturasCompras: "",
@@ -103,7 +111,11 @@ export const useGastos = (idObra) => {
           Concepto: compra.Concepto, // Para mostrar factura seleccionada
         })),
       validarForm: (form) => {
-        if (!form.idFacturasCompras || !form.codigoUsuarioAlta || !form.fechaAlta) {
+        if (
+          !form.idFacturasCompras ||
+          !form.codigoUsuarioAlta ||
+          !form.fechaAlta
+        ) {
           return "Faltan campos obligatorios";
         }
         return null;
@@ -112,16 +124,16 @@ export const useGastos = (idObra) => {
     },
     {
       // Config Búsqueda
-      buscarFunction: (termino) => almacenService.buscarFacturas(termino),
+      buscarFunction: (termino) => compraService.buscarFacturas(termino),
       fieldName: "idFacturasCompras",
       minLength: 3,
-    }
+    },
   );
 
   // === FETCH DE GASTOS (no es CRUD, solo lectura) ===
   const fetchGastos = async (idsObra, tipo = "Padre") => {
     try {
-      const res = await almacenService.getGastos(idsObra);
+      const res = await gastoService.getGastos(idsObra);
       if (tipo === "Padre") {
         setGastos(res.data.data);
         setTiposGastos(getTiposGastos(res.data.data));
@@ -137,7 +149,7 @@ export const useGastos = (idObra) => {
   // === FETCH DE HORAS (no es CRUD, solo lectura) ===
   const fetchHoras = async (idsObra, tipo = "Padre") => {
     try {
-      const res = await almacenService.getHoras(idsObra);
+      const res = await horaService.getHoras(idsObra);
       tipo === "Padre" ? setHoras(res.data.data) : setHorasHijas(res.data.data);
     } catch (error) {
       console.error(`Error al obtener horas (${tipo}) - ${error}`);
@@ -147,7 +159,7 @@ export const useGastos = (idObra) => {
   // === FETCH DE HORAS EXTRA (no es CRUD, solo lectura) ===
   const fetchHorasExtra = async (idsObra, tipo = "Padre") => {
     try {
-      const res = await almacenService.getHorasExtra(idsObra);
+      const res = await horaService.getHorasExtra(idsObra);
       tipo === "Padre"
         ? setHorasExtra(res.data.data)
         : setHorasExtraHijas(res.data.data);

@@ -1,0 +1,5 @@
+###### ENDPOINTS TIPO OBRA #############
+
+### Obtener tipos obra
+GET http://localhost:3002/api/tipo-obra
+

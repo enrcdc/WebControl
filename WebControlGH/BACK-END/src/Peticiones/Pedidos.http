@@ -1,0 +1,17 @@
+###### ENDPOINTS PEDIDOS #############
+
+### Obtener pedidos asociados a una obra
+POST http://localhost:3002/api/ecoPedido/buscar
+Content-Type: application/json
+
+{
+    "idsObras": [4037]
+}
+
+### Borrar un pedido asociado a una obra
+DELETE http://localhost:3002/api/ecoPedido/4861
+Content-Type: application/json
+
+{
+    "codigoUsuarioBaja": 4
+}

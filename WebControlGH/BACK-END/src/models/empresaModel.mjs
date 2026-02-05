@@ -6,7 +6,7 @@ export class EmpresaModel {
   static async getAll() {
     const query = `
     SELECT 
-        id_empresa,
+        id_empresa AS id,
         nombre,
         direccion,
         telefono1,
@@ -14,6 +14,17 @@ export class EmpresaModel {
     FROM empresas 
     ORDER BY nombre`;
     const [result] = await db.query(query);
+    return result;
+  }
+
+  static async getByNombre({ nombre }) {
+    const query = `
+    SELECT
+      id_empresa AS id,
+      nombre
+    FROM empresas
+    WHERE nombre LIKE CONCAT('%', ?, '%')`;
+    const [result] = await db.query(query, nombre);
     return result;
   }
 }

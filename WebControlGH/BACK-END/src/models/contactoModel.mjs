@@ -6,8 +6,8 @@ export class ContactoModel {
   static async getAll() {
     const query = `
     SELECT
-        c.id_contacto,
-        c.nombre_contacto,
+        c.id_contacto AS id,
+        c.nombre_contacto AS nombre,
         c.apellido1,
         c.apellido2
     FROM contactos AS c
@@ -20,8 +20,8 @@ export class ContactoModel {
   static async getByEmpresa({ idEmpresa }) {
     const query = `
     SELECT
-        c.id_contacto,
-        c.nombre_contacto,
+        c.id_contacto AS id,
+        c.nombre_contacto AS nombre,
         c.apellido1,
         c.apellido2
     FROM contactos AS c
@@ -37,9 +37,22 @@ export class ContactoModel {
   }
 
   static async create(input) {
-    const valuesString = Object.keys(input)
-      .map(() => "?")
-      .join(", ");
+    console.log(input);
+    const values = [
+      input.nombre,
+      input.apellido1,
+      input.apellido2,
+      input.dni,
+      input.telefono,
+      input.telefono2,
+      input.email,
+      input.email2,
+      input.direccion,
+      input.observaciones,
+    ];
+
+    const valuesString = values.map(() => "?").join(", ");
+
     const query = `
     INSERT INTO contactos (
     nombre_contacto,
@@ -51,25 +64,9 @@ export class ContactoModel {
     email,
     email2,
     direccion,
-    pordefecto,
     observaciones
     )
     VALUES (${valuesString})`;
-
-    const values = [
-      input.nombre,
-      input.apellido1,
-      input.apellido2,
-      input.dni,
-      input.telefono,
-      input.direccion,
-      input.email,
-      input.telefono2,
-      input.email2,
-      input.porDefecto,
-      input.fechaBaja,
-      input.observaciones,
-    ];
 
     // inserción en la tabla de contactos
     const [result] = await db.query(query, values);
@@ -82,11 +79,8 @@ export class ContactoModel {
       id_empresa
       )
       VALUES (?, ?)`,
-      [result.insertId, input.idEmpresa],
+      [result.insertId, input.empresa.id],
     );
-
-    // actualizar el nuevo contacto por defecto (si aplica)
-    await this.porDefecto(input.porDefecto, result.insertId, input.idEmpresa);
 
     // actualizar la tabla edificios_contactos (si aplica)
     await this.asignarComplejos(result.insertId, input.complejos);
@@ -98,20 +92,6 @@ export class ContactoModel {
     );
 
     return rows[0] ?? null;
-  }
-
-  static async porDefecto(porDefecto, idContacto, idEmpresa) {
-    if (!porDefecto) return;
-
-    // anterior por defecto
-    await db.query(
-      `UPDATE contactos AS c
-      INNER JOIN empresas_contactos AS ec ON ec.id_contacto = c.id_contacto
-      SET pordefecto = 0
-      WHERE id_contacto = c.id_contacto != ? 
-      AND ec.id_empresa = ? AND c.pordefecto = 1`,
-      [idContacto, idEmpresa],
-    );
   }
 
   static async asignarComplejos(idContacto, complejos) {
@@ -130,7 +110,7 @@ export class ContactoModel {
     const [rows] = await db.query(
       `
       SELECT *
-      FROM eficios_contactos
+      FROM edificios_contactos
       WHERE id_contacto = ?
       `,
       [idContacto],

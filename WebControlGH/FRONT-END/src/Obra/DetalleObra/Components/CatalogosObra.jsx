@@ -255,7 +255,7 @@ const CatalogosObra = ({
           >
             {catalogos.empresas.length > 0 ? (
               catalogos.empresas.map((empresa) => (
-                <option key={empresa.id_empresa} value={empresa.id_empresa}>
+                <option key={empresa.id} value={empresa.id}>
                   {empresa.nombre}
                 </option>
               ))
@@ -280,8 +280,8 @@ const CatalogosObra = ({
           >
             {catalogos.contactosEmpresa.length > 0 ? (
               catalogos.contactosEmpresa.map((contacto) => (
-                <option key={contacto.id_contacto} value={contacto.id_contacto}>
-                  {`${contacto.nombre_contacto} ${contacto.apellido1} ${contacto.apellido2}`}
+                <option key={contacto.id} value={contacto.id}>
+                  {`${contacto.nombre} ${contacto.apellido1} ${contacto.apellido2}`}
                 </option>
               ))
             ) : (
@@ -305,7 +305,7 @@ const CatalogosObra = ({
           >
             {catalogos.edificios.length > 0 ? (
               catalogos.edificios.map((edificio) => (
-                <option key={edificio.id_edificio} value={edificio.id_edificio}>
+                <option key={edificio.id} value={edificio.id}>
                   {edificio.nombre}
                 </option>
               ))

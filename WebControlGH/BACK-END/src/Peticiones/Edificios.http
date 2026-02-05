@@ -1,0 +1,7 @@
+###### ENDPOINTS EDIFICIO #############
+
+### Obtener edificios
+GET http://localhost:3002/api/edificio
+
+### Buscar por nombre
+GET http://localhost:3002/api/edificio/buscar/nombre?nombre=torre

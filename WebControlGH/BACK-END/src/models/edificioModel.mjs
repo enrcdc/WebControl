@@ -5,7 +5,7 @@ export class EdificioModel {
   static async getAll() {
     const query = `
     SELECT
-        id_edificio,
+        id_edificio AS id,
         nombre
     FROM edificios
     ORDER BY nombre`;
@@ -17,11 +17,11 @@ export class EdificioModel {
   static async getByNombre({ nombre }) {
     const query = `
     SELECT
-      id_edficio,
+      id_edificio AS id,
       nombre
     FROM edificios 
     WHERE nombre LIKE CONCAT('%', ?, '%')`;
-    const [result] = await db.query(query, [nombre]);
+    const [result] = await db.query(query, nombre);
     return result;
   }
 }

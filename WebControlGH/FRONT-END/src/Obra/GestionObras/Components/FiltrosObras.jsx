@@ -57,7 +57,7 @@ const FiltrosObras = ({ formData, catalogos, onChangeForm }) => {
                       {catalogos.edificios.length > 0 ? (
                         catalogos.edificios.map((edificio) => (
                           <option
-                            key={edificio.id_edificio}
+                            key={edificio.id}
                             value={edificio.nombre}
                           >
                             {edificio.nombre}
@@ -83,7 +83,7 @@ const FiltrosObras = ({ formData, catalogos, onChangeForm }) => {
                       {catalogos.empresas.length > 0 ? (
                         catalogos.empresas.map((empresa) => (
                           <option
-                            key={empresa.id_empresa}
+                            key={empresa.id}
                             value={empresa.nombre}
                           >
                             {empresa.nombre}

@@ -1,0 +1,4 @@
+###### ENDPOINTS RENTABILIDAD #############
+
+### Obtener rentabilidad
+GET http://localhost:3002/api/rentabilidad/4758

@@ -1,0 +1,54 @@
+############################ OBRAS ############################
+
+### GET Obras
+GET http://localhost:3002/api/obra
+
+### GET Obra específica
+GET http://localhost:3002/api/obra/1503
+
+### GET Obras por descripción
+GET http://localhost:3002/api/obra/buscar/descripcion?descripcionObra=Cambio
+
+### POST Obra
+POST http://localhost:3002/api/obra
+Content-Type: application/json
+
+{
+  "cod": "3816C10219P0007M003-R0",
+  "contacto": 1,
+  "desc": "CNIO suministro PXC100",
+  "descSeg": null,
+  "edificio": 47,
+  "empresa": 1,
+  "estadoObra": 4,
+  "facturable": 2,
+  "fechaAlta": "2022-06-16",
+  "fechaFin": null,
+  "fechaOferta": "2022-06-16",
+  "fechaSeg": null,
+  "gastoPrevisto": 1106,
+  "horasPrevistas": 0,
+  "importe": 1327.19,
+  "observaciones": "",
+  "observacionesInternas": "PROPIEDAD: CNIO\nGestor Att.: Alejandro Aguilera\n",
+  "tipoObra": 10,
+  "usuarioAlta": 10,
+  "viabilidad": 100
+}
+
+
+### Actualizar obra
+PUT http://localhost:3002/api/obra/5303
+Content-Type: application/json
+
+{
+    "estadoObra": 4
+}
+
+### Eliminar obra
+DELETE http://localhost:3002/api/obra/5302
+Content-Type: application/json
+
+{
+    "codigoUsuarioBaja": 4
+}
