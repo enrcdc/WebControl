@@ -9,6 +9,19 @@ GET http://localhost:3002/api/obra/1503
 ### GET Obras por descripción
 GET http://localhost:3002/api/obra/buscar/descripcion?descripcionObra=Cambio
 
+### GET Obras por filtro
+GET http://localhost:3002/api/obra/filtrar?empresa=1&estado=2
+
+### POST Obras por filtros
+POST http://localhost:3002/api/obra/buscar
+Content-Type: application/json
+
+{
+    "descripcionObra": "Cambio",
+    "nombreEmpresa": "Siemens",
+    "estadoObra": 4
+}
+
 ### POST Obra
 POST http://localhost:3002/api/obra
 Content-Type: application/json

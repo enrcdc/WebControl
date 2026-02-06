@@ -1,4 +1,4 @@
-import db from "../config/database.js";
+import { pool } from "../config/database.js";
 
 export class EcoPedidoModel {
   static async getByObras({ idsObras }) {
@@ -9,7 +9,7 @@ export class EcoPedidoModel {
         ecopedido
     WHERE id_obra IN (${placeholder}) AND fecha_baja IS NULL`;
 
-    const [result] = await db.query(query, idsObras);
+    const [result] = await pool.query(query, idsObras);
     return result;
   }
 
@@ -35,9 +35,9 @@ export class EcoPedidoModel {
       input.idObra,
     ];
 
-    const [result] = await db.query(insertQuery, values);
+    const [result] = await pool.query(insertQuery, values);
 
-    const [rows] = await db.query(
+    const [rows] = await pool.query(
       `
       SELECT *
       FROM ecopedido
@@ -67,9 +67,9 @@ export class EcoPedidoModel {
       observaciones = ?
     WHERE id_pedido = ?`;
 
-    await db.query(query, [...values, idPedido]);
+    await pool.query(query, [...values, idPedido]);
 
-    const [rows] = await db.query(
+    const [rows] = await pool.query(
       `SELECT * FROM ecopedido WHERE id_pedido = ?`,
       [idPedido]
     );
@@ -88,13 +88,13 @@ export class EcoPedidoModel {
     WHERE id_pedido  = ?
     `;
 
-    const [result] = await db.query(query, [codigoUsuarioBaja, idPedido]);
+    const [result] = await pool.query(query, [codigoUsuarioBaja, idPedido]);
 
     if (result.affectedRows === 0) {
       return null;
     }
 
-    const [rows] = await db.query(
+    const [rows] = await pool.query(
       `
       SELECT
         id_pedido,

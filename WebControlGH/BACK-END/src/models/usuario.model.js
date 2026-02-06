@@ -1,4 +1,4 @@
-import db from "../config/database.js";
+import { pool } from "../config/database.js";
 import crypto from "crypto";
 
 export class UsuarioModel {
@@ -14,7 +14,7 @@ export class UsuarioModel {
       FROM usuarios
       ORDER BY codigo_firma`;
 
-    const [result] = await db.query(query);
+    const [result] = await pool.query(query);
     return result;
   }
 
@@ -31,7 +31,7 @@ export class UsuarioModel {
       WHERE usuario_bonita = ? 
       LIMIT 1`;
 
-    const [result] = await db.query(query, [username]);
+    const [result] = await pool.query(query, [username]);
 
     if (result.length === 0) return null;
 

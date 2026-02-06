@@ -1,4 +1,4 @@
-import db from "../config/database.js";
+import { pool } from "../config/database.js";
 
 // Funciona con varios ids de obras. Necesario para obtener las horas
 //  de las obras subordinadas
@@ -24,7 +24,7 @@ export class HoraModel {
         h.id_obra IN (${placeholders})
     `;
 
-    const [result] = await db.query(query, idsObra);
+    const [result] = await pool.query(query, idsObra);
     return result;
   }
 
@@ -74,7 +74,7 @@ export class HoraModel {
   ORDER BY
     h.dia_trabajado DESC, u.codigo_usuario, o.codigo_obra;
   `;
-    const [result] = await db.query(query);
+    const [result] = await pool.query(query);
     return result;
   }
 
@@ -128,7 +128,7 @@ export class HoraModel {
   ORDER BY
     h.dia_trabajado DESC, u.codigo_usuario, o.codigo_obra;
   `;
-    const [result] = await db.query(query, [managerCodigo]);
+    const [result] = await pool.query(query, [managerCodigo]);
     console.log(
       "📊 getHorasBySubordinados - resultados encontrados:",
       result.length
@@ -178,11 +178,11 @@ export class HoraModel {
           version
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)`;
 
-    const [result] = await db.query(query, [...values]);
+    const [result] = await pool.query(query, [...values]);
 
     // Seleccionamos el registro recién insertado y que vamos a devolver
     // como resultado de la operación de creación
-    const [rows] = await db.query(
+    const [rows] = await pool.query(
       `
          SELECT
           codigo_obra,

@@ -1,11 +1,10 @@
 import mysql from "mysql2/promise";
+import { config } from "./env.js";
 
-const db = mysql.createPool({
-  host: "sldk368.piensasolutions.com",
-  user: "qaic837",
-  port: 3306,
-  password: "Abaco2023.",
-  database: "qaic837",
+export const pool = mysql.createPool({
+  host: config.database.host,
+  user: config.database.user,
+  port: config.database.port,
+  password: config.database.password,
+  database: config.database.name,
 });
-
-export default db;

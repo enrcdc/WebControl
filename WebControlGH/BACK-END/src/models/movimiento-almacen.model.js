@@ -1,4 +1,4 @@
-import db from "../config/database.js";
+import { pool } from "../config/database.js";
 
 // TODO: ZOD PARA VALIDACION
 export class MovimientosAlmacenModel {
@@ -27,7 +27,7 @@ export class MovimientosAlmacenModel {
         WHERE
             ma.id_obra = ? AND ma.fecha_baja IS NULL`;
 
-    const [result] = await db.query(query, [idObra]);
+    const [result] = await pool.query(query, [idObra]);
     return result;
   }
 
@@ -61,9 +61,9 @@ export class MovimientosAlmacenModel {
       input.idObra || null,
     ];
 
-    const [result] = await db.query(insertQuery, values);
+    const [result] = await pool.query(insertQuery, values);
 
-    const [rows] = await db.query(
+    const [rows] = await pool.query(
       `
           SELECT *
           FROM movimiento_almacen
@@ -91,9 +91,9 @@ export class MovimientosAlmacenModel {
     const sets = [];
     const values = [];
 
-    Object.entries(camposPermitidos).forEach(([inputField, dbField]) => {
+    Object.entries(camposPermitidos).forEach(([inputField, poolField]) => {
       if (input[inputField] !== undefined) {
-        sets.push(`${dbField} = ?`);
+        sets.push(`${poolField} = ?`);
         values.push(input[inputField]);
       }
     });
@@ -103,9 +103,9 @@ export class MovimientosAlmacenModel {
     SET ${sets.join(", ")}
     WHERE id = ?`;
 
-    await db.query(query, [...values, idMovimiento]);
+    await pool.query(query, [...values, idMovimiento]);
 
-    const [rows] = await db.query(
+    const [rows] = await pool.query(
       `SELECT * FROM movimiento_almacen WHERE id = ?`,
       [idMovimiento]
     );
@@ -125,13 +125,13 @@ export class MovimientosAlmacenModel {
     WHERE id = ?
     `;
 
-    const [result] = await db.query(query, [codigoUsuarioBaja, idMovimiento]);
+    const [result] = await pool.query(query, [codigoUsuarioBaja, idMovimiento]);
 
     if (result.affectedRows === 0) {
       return null;
     }
 
-    const [rows] = await db.query(
+    const [rows] = await pool.query(
       `
       SELECT
         id,

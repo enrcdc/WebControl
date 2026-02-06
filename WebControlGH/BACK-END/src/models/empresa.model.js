@@ -1,4 +1,4 @@
-import db from "../config/database.js";
+import { pool } from "../config/database.js";
 
 // MODELO DE NEGOCIO PARA LAS EMPRESAS
 
@@ -13,7 +13,7 @@ export class EmpresaModel {
         email
     FROM empresas 
     ORDER BY nombre`;
-    const [result] = await db.query(query);
+    const [result] = await pool.query(query);
     return result;
   }
 
@@ -24,7 +24,7 @@ export class EmpresaModel {
       nombre
     FROM empresas
     WHERE nombre LIKE CONCAT('%', ?, '%')`;
-    const [result] = await db.query(query, nombre);
+    const [result] = await pool.query(query, nombre);
     return result;
   }
 }

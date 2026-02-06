@@ -1,4 +1,4 @@
-import db from "../config/database.js";
+import { pool } from "../config/database.js";
 
 // MODELO DE NEGOCIO PARA LOS EDIFICIOS
 export class EdificioModel {
@@ -10,7 +10,7 @@ export class EdificioModel {
     FROM edificios
     ORDER BY nombre`;
 
-    const [result] = await db.query(query);
+    const [result] = await pool.query(query);
     return result;
   }
 
@@ -21,7 +21,7 @@ export class EdificioModel {
       nombre
     FROM edificios 
     WHERE nombre LIKE CONCAT('%', ?, '%')`;
-    const [result] = await db.query(query, nombre);
+    const [result] = await pool.query(query, nombre);
     return result;
   }
 }

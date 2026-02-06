@@ -1,4 +1,4 @@
-import db from "../config/database.js";
+import { pool } from "../config/database.js";
 import {
   validateFactura,
   validatePartialFactura,
@@ -7,7 +7,7 @@ import { ValidationError } from "../validations/ValidationError.js";
 
 export class FacturasModel {
   static async getAll() {
-    const [results] = await db.query(
+    const [results] = await pool.query(
       `SELECT 
             f.id,
             f.id_obra,
@@ -41,12 +41,12 @@ export class FacturasModel {
         LEFT JOIN usuarios AS u ON fo.codigo_usuario_alta = u.codigo_usuario
         WHERE fo.id_obra = ? AND fo.fecha_baja IS NULL`;
 
-    const [result] = await db.query(query, [idObra]);
+    const [result] = await pool.query(query, [idObra]);
     return result;
   }
 
   static async getById({ id }) {
-    const [result] = await db.query(
+    const [result] = await pool.query(
       `SELECT 
                 importe, fecha_alta, codigo_usuario_alta, fecha_actualizacion, fecha_baja, 
                 codigo_usuario_baja, observaciones, version 
@@ -67,7 +67,7 @@ export class FacturasModel {
 		WHERE
 		Concepto LIKE CONCAT('%', ?, '%')`;
 
-    const [result] = await db.query(query, concepto);
+    const [result] = await pool.query(query, concepto);
     return result;
   }
 
@@ -95,7 +95,7 @@ export class FacturasModel {
       validData.version,
     ];
 
-    const [result] = await db.query(
+    const [result] = await pool.query(
       `INSERT INTO facturascompras_obra (
             id_obra, id_facturascompras, importe, fecha_alta, codigo_usuario_alta, 
             fecha_actualizacion, fecha_baja, codigo_usuario_baja, observaciones, version
@@ -104,7 +104,7 @@ export class FacturasModel {
     );
 
     // Seleccionar el registro recién insertado
-    const [rows] = await db.query(
+    const [rows] = await pool.query(
       `SELECT id, id_obra, id_facturascompras, importe, fecha_alta, codigo_usuario_alta, 
                 fecha_actualizacion, fecha_baja, codigo_usuario_baja, observaciones, version
          FROM facturascompras_obra
@@ -156,14 +156,14 @@ export class FacturasModel {
 
     const values = Object.values(valid);
 
-    await db.query(
+    await pool.query(
       `UPDATE facturascompras_obra 
              SET ${fields}
              WHERE id = ?`,
       [...values, id]
     );
 
-    const [rows] = await db.query(
+    const [rows] = await pool.query(
       `SELECT id, id_obra, id_facturascompras, importe, fecha_alta, codigo_usuario_alta,
                     fecha_actualizacion, fecha_baja, codigo_usuario_baja, observaciones, version
              FROM facturascompras_obra
@@ -175,7 +175,7 @@ export class FacturasModel {
   }
 
   static async delete({ id, codigoUsuarioBaja = 67 } = {}) {
-    const [result] = await db.query(
+    const [result] = await pool.query(
       `UPDATE facturascompras_obra 
          SET fecha_baja = NOW(), codigo_usuario_baja = ?
          WHERE id = ?`,
@@ -186,7 +186,7 @@ export class FacturasModel {
       return null;
     }
 
-    const [rows] = await db.query(
+    const [rows] = await pool.query(
       `SELECT id, id_obra, id_facturascompras, importe, fecha_alta, codigo_usuario_alta,
                 fecha_actualizacion, fecha_baja, codigo_usuario_baja, observaciones, version
          FROM facturascompras_obra

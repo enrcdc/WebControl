@@ -1,4 +1,4 @@
-import db from "../config/database.js";
+import { pool } from "../config/database.js";
 
 export class RelacionObrasModel {
   static async getObraPadre({ idObra }) {
@@ -14,7 +14,7 @@ export class RelacionObrasModel {
     WHERE
         r.id_obraHija = ?`;
 
-    const [result] = await db.query(query, [idObra]);
+    const [result] = await pool.query(query, [idObra]);
     return result;
   }
 
@@ -34,14 +34,14 @@ export class RelacionObrasModel {
     WHERE
         r.id_obraPadre = ?`;
 
-    const [result] = await db.query(query, [idObra, idObra]);
+    const [result] = await pool.query(query, [idObra, idObra]);
     return result;
   }
 
   static async setObraPadre({ idObraPadre, idObraHija }) {
     // Eliminamos primero el padre anterior
     const deleteQuery = `DELETE FROM relacionobras WHERE id_obraHija = ?`;
-    await db.query(deleteQuery, [idObraHija]);
+    await pool.query(deleteQuery, [idObraHija]);
 
     // Si no hay una obra padre especificada
     if (!idObraPadre) {
@@ -55,10 +55,10 @@ export class RelacionObrasModel {
             id_obraHija
         ) VALUES (?, ?)`;
 
-    await db.query(insertQuery, [idObraPadre, idObraHija]);
+    await pool.query(insertQuery, [idObraPadre, idObraHija]);
 
     // Devolvemos el resultado de la inserción
-    const [rows] = await db.query(
+    const [rows] = await pool.query(
       `
       SELECT *
       FROM relacionobras
@@ -73,7 +73,7 @@ export class RelacionObrasModel {
   static async setObrasHijas({ idObraPadre, idsObrasHijas }) {
     // Eliminar relaciones hijas actuales
     const deleteQuery = `DELETE FROM relacionobras WHERE id_obraPadre = ?`;
-    await db.query(deleteQuery, [idObraPadre]);
+    await pool.query(deleteQuery, [idObraPadre]);
 
     // Insertar nuevas relaciones (si hay hijas)
     if (!Array.isArray(idsObrasHijas) || idsObrasHijas.length === 0) {
@@ -84,10 +84,10 @@ export class RelacionObrasModel {
       INSERT INTO relacionobras (id_obraPadre, id_obraHija) VALUES ?
     `;
     const values = idsObrasHijas.map((idHija) => [idObraPadre, idHija]);
-    await db.query(insertQuery, [values]);
+    await pool.query(insertQuery, [values]);
 
     // Devolvemos la inserción
-    const [rows] = await db.query(
+    const [rows] = await pool.query(
       `
       SELECT *
       FROM relacionobras

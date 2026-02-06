@@ -1,4 +1,4 @@
-import db from "../config/database.js";
+import { pool } from "../config/database.js";
 
 export class TipoFacturableModel {
   static async getAll() {
@@ -9,7 +9,7 @@ export class TipoFacturableModel {
     FROM tipofacturable
     ORDER BY id_tipo`;
 
-    const [result] = await db.query(query);
+    const [result] = await pool.query(query);
     return result;
   }
 }

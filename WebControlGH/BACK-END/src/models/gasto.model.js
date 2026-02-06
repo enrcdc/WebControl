@@ -1,4 +1,4 @@
-import db from "../config/database.js";
+import { pool } from "../config/database.js";
 
 export class GastoModel {
   static async getAllGastosPorValidar() {
@@ -25,7 +25,7 @@ export class GastoModel {
             usuarios AS u3 ON g.codigo_usuario_pago = u3.codigo_usuario
         WHERE g.codigo_usuario_validacion IS NULL`;
 
-    const [result] = await db.query(query);
+    const [result] = await pool.query(query);
     return result;
   }
 
@@ -53,7 +53,7 @@ export class GastoModel {
             usuarios AS u3 ON g.codigo_usuario_pago = u3.codigo_usuario
         WHERE g.codigo_usuario_pago IS NULL`;
 
-    const [result] = await db.query(query);
+    const [result] = await pool.query(query);
     return result;
   }
 
@@ -82,7 +82,7 @@ export class GastoModel {
             tipogasto AS tg ON g.id_tipogasto = tg.id_tipogasto
         WHERE g.id_obra IN (${placeholders})`;
 
-    const [result] = await db.query(query, idsObra);
+    const [result] = await pool.query(query, idsObra);
     return result;
   }
 
@@ -111,7 +111,7 @@ export class GastoModel {
     WHERE
         tg.descripcion = 'Hora Extra' AND g.id_obra IN (${placeholders})`;
 
-    const [result] = await db.query(query, idsObra);
+    const [result] = await pool.query(query, idsObra);
     return result;
   }
 }

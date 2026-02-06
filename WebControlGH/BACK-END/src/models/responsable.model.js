@@ -1,4 +1,4 @@
-import db from "../config/database.js";
+import { pool } from "../config/database.js";
 
 export class ResponsablesModel {
   static async getSubordinadosByManager(managerCodigo) {
@@ -9,7 +9,7 @@ export class ResponsablesModel {
     WHERE r.cod_usuario_manager = ?
     ORDER BY u.nombre, u.apellido1
   `;
-    const [rows] = await db.query(sql, [managerCodigo]);
+    const [rows] = await pool.query(sql, [managerCodigo]);
     return rows;
   }
 }

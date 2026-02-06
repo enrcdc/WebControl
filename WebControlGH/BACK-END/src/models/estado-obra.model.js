@@ -1,4 +1,4 @@
-import db from "../config/database.js";
+import { pool } from "../config/database.js";
 
 // MODELO DE NEGOCIO PARA LOS ESTADOS DE OBRA
 export class EstadoObraModel {
@@ -11,7 +11,7 @@ export class EstadoObraModel {
     FROM tipoestadosobras
     ORDER BY codigo_estado`;
 
-    const [result] = await db.query(query);
+    const [result] = await pool.query(query);
     return result;
   }
 }

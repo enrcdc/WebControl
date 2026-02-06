@@ -1,4 +1,4 @@
-import db from "../config/database.js";
+import { pool } from "../config/database.js";
 
 export class RentabilidadModel {
   static async getByIdObra({ idObra }) {
@@ -25,7 +25,7 @@ export class RentabilidadModel {
     WHERE r.id_obra = ?
   `;
 
-    const [result] = await db.query(query, [idObra]);
+    const [result] = await pool.query(query, [idObra]);
     return result[0] ?? null;
   }
 }

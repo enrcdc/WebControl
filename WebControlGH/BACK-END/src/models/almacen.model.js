@@ -1,4 +1,4 @@
-import db from "../config/database.js";
+import { pool } from "../config/database.js";
 import {
   validateProducto,
   validatePartialProducto,
@@ -40,7 +40,7 @@ export class AlmacenModel {
     ORDER BY a.descripcion
   `;
 
-    const [result] = await db.query(query);
+    const [result] = await pool.query(query);
     return result;
   }
 
@@ -76,7 +76,7 @@ export class AlmacenModel {
         tipounidad AS tu ON a.id_tipounidad = tu.id
     WHERE a.id = ?
   `;
-    const [result] = await db.query(query, [idProducto]);
+    const [result] = await pool.query(query, [idProducto]);
     return result;
   }
 
@@ -90,7 +90,7 @@ export class AlmacenModel {
     WHERE
       descripcion LIKE CONCAT('%', ?, '%')`;
 
-    const [result] = await db.query(query, descripcion);
+    const [result] = await pool.query(query, descripcion);
     return result;
   }
 
@@ -126,16 +126,16 @@ export class AlmacenModel {
     observaciones)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
-    // Con mysql2/promise el resultado de db.query(...) devuelve dos elementos:
+    // Con mysql2/promise el resultado de pool.query(...) devuelve dos elementos:
     // -> 1º El array de resultados (filas de la consulta)
     // -> 2º Metadatos: Información adicional sobre la consulta
 
     // El principio de desestructuración de JS es posicional, no nombrado.
     // Con esto extraemos el resultado de la consulta
-    const [result] = await db.query(insertQuery, values);
+    const [result] = await pool.query(insertQuery, values);
 
     // Mostramos el producto recién almacenado
-    const [rows] = await db.query(
+    const [rows] = await pool.query(
       `
         SELECT *
         FROM almacen
@@ -179,8 +179,8 @@ export class AlmacenModel {
         observaciones = ?
     WHERE id = ?`;
 
-    await db.query(query, [...values, idProducto]);
-    const [rows] = await db.query(
+    await pool.query(query, [...values, idProducto]);
+    const [rows] = await pool.query(
       `
         SELECT
             codigo, 
@@ -213,12 +213,12 @@ export class AlmacenModel {
     WHERE id = ?
     `;
 
-    const [result] = await db.query(query, [codigoUsuarioBaja, idProducto]);
+    const [result] = await pool.query(query, [codigoUsuarioBaja, idProducto]);
 
     if (result.affectedRows === 0) {
       return null;
     }
-    const [rows] = await db.query(
+    const [rows] = await pool.query(
       `
        SELECT
         codigo,

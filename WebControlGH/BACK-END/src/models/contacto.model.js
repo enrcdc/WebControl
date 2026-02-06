@@ -1,4 +1,4 @@
-import db from "../config/database.js";
+import { pool } from "../config/database.js";
 
 // MODELO DE NEGOCIO PARA LOS CONTACTOS
 
@@ -13,7 +13,7 @@ export class ContactoModel {
     FROM contactos AS c
     ORDER BY c.nombre_contacto`;
 
-    const [result] = await db.query(query);
+    const [result] = await pool.query(query);
     return result;
   }
 
@@ -32,7 +32,7 @@ export class ContactoModel {
     ORDER BY c.nombre_contacto
   `;
 
-    const [result] = await db.query(query, [idEmpresa]);
+    const [result] = await pool.query(query, [idEmpresa]);
     return result;
   }
 
@@ -69,10 +69,10 @@ export class ContactoModel {
     VALUES (${valuesString})`;
 
     // inserción en la tabla de contactos
-    const [result] = await db.query(query, values);
+    const [result] = await pool.query(query, values);
 
     // inserción en la tabla de empresas-contactos
-    await db.query(
+    await pool.query(
       `
       INSERT INTO empresas_contactos (
       id_contacto,
@@ -85,7 +85,7 @@ export class ContactoModel {
     // actualizar la tabla edificios_contactos (si aplica)
     await this.asignarComplejos(result.insertId, input.complejos);
 
-    const [rows] = await db.query(
+    const [rows] = await pool.query(
       `
       SELECT * FROM contactos WHERE id_contacto = ?`,
       [result.insertId],
@@ -97,17 +97,17 @@ export class ContactoModel {
   static async asignarComplejos(idContacto, complejos) {
     // Eliminar entradas previas
     const deleteQuery = `DELETE FROM edificios_contactos WHERE id_contacto = ?`;
-    await db.query(deleteQuery, [idContacto]);
+    await pool.query(deleteQuery, [idContacto]);
 
     if (!Array.isArray(complejos) || complejos.length === 0) return;
 
     const insertQuery = `
     INSERT INTO edificios_contactos (id_contacto, id_edificio) VALUES ?`;
     const values = complejos.map((c) => [idContacto, c.id]);
-    await db.query(insertQuery, [values]);
+    await pool.query(insertQuery, [values]);
 
     // Devolvemos la inserción
-    const [rows] = await db.query(
+    const [rows] = await pool.query(
       `
       SELECT *
       FROM edificios_contactos

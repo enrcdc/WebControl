@@ -1,4 +1,4 @@
-import db from "../config/database.js";
+import { pool } from "../config/database.js";
 import {
   validateObra,
   validatePartialObra,
@@ -74,7 +74,7 @@ export class ObraModel {
     
     ORDER BY o.codigo_obra;`;
 
-    const [result] = await db.query(query);
+    const [result] = await pool.query(query);
     return result;
   }
 
@@ -121,7 +121,7 @@ export class ObraModel {
 
     WHERE o.id_obra = ?`;
 
-    const [result] = await db.query(query, [idObra]);
+    const [result] = await pool.query(query, [idObra]);
     return result;
   }
 
@@ -136,7 +136,7 @@ export class ObraModel {
     WHERE
       descripcion_obra LIKE CONCAT('%', ?, '%')`;
 
-    const [result] = await db.query(query, descripcionObra);
+    const [result] = await pool.query(query, descripcionObra);
     return result;
   }
 
@@ -146,7 +146,7 @@ export class ObraModel {
     if (!validatedData.success) {
       throw new ValidationError(
         "Obra con formato inválido",
-        validatedData.error.issues
+        validatedData.error.issues,
       );
     }
 
@@ -181,11 +181,11 @@ export class ObraModel {
         version
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)`;
 
-    const [result] = await db.query(query, [...values]);
+    const [result] = await pool.query(query, [...values]);
 
     // Seleccionamos el registro recién insertado y que vamos a devolver
     // como resultado de la operación de creación
-    const [rows] = await db.query(
+    const [rows] = await pool.query(
       `
        SELECT
         id_obra,
@@ -210,7 +210,7 @@ export class ObraModel {
         observaciones_internas
       FROM obras
       WHERE id_obra = ?`,
-      [result.insertId]
+      [result.insertId],
     );
     return rows[0] ?? null;
   }
@@ -221,7 +221,7 @@ export class ObraModel {
     if (!updatedInfo.success) {
       throw new ValidationError(
         "Obra con formato inválido",
-        updatedInfo.error.issues
+        updatedInfo.error.issues,
       );
     }
 
@@ -282,19 +282,19 @@ export class ObraModel {
 
     const values = Object.values(valid);
 
-    await db.query(
+    await pool.query(
       `UPDATE obras
       SET  ${fields}
       WHERE id_obra = ?`,
-      [...values, idObra]
+      [...values, idObra],
     );
 
-    const [rows] = await db.query(
+    const [rows] = await pool.query(
       `
        SELECT *
       FROM obras
       WHERE id_obra = ?`,
-      [idObra]
+      [idObra],
     );
     return rows[0] ?? null;
   }
@@ -310,12 +310,12 @@ export class ObraModel {
     WHERE id_obra = ?
     `;
 
-    const [result] = await db.query(query, [codigoUsuarioBaja, idObra]);
+    const [result] = await pool.query(query, [codigoUsuarioBaja, idObra]);
 
     if (result.affectedRows === 0) {
       return null;
     }
-    const [rows] = await db.query(
+    const [rows] = await pool.query(
       `
        SELECT
         codigo_obra,
@@ -324,7 +324,7 @@ export class ObraModel {
         codigo_usuario_baja
       FROM obras
       WHERE id_obra = ?`,
-      [idObra]
+      [idObra],
     );
     return rows[0] ?? null;
   }
