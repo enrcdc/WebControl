@@ -57,6 +57,7 @@ export class GastoModel {
     return result;
   }
 
+  // TODO: Debería funcionar mejor con los códigos de obra en lugar de con el id
   // Puede recibir varios IDs. Necesario para las obras subordinadas
   static async getGastosByObra({ idsObra }) {
     const placeholders = idsObra.map(() => "?").join(", ");
@@ -64,7 +65,7 @@ export class GastoModel {
         SELECT
             g.fecha_gasto,
             u.codigo_firma AS usuario_alta,
-            tg.descripcion AS tipo_gasto,
+            tg.descripcion AS descripcion_gasto,
             g.fecha_validacion,
             u2.codigo_firma AS usuario_validacion,
             g.pagado_visa,

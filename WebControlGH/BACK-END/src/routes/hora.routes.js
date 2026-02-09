@@ -4,12 +4,14 @@ import { errorHandler } from "../middlewares/ErrorHandler.js";
 
 export const horasRouter = Router();
 
+horasRouter.get("/", HoraController.getAllHoras);
+horasRouter.post("/filtrar", HoraController.buscarConFiltros);
 horasRouter.post("/buscar", HoraController.getByObra);
-horasRouter.get("/all", HoraController.getAllHoras);
 horasRouter.get(
   "/subordinados/:managerCodigo",
-  HoraController.getHorasBySubordinados
+  HoraController.getHorasBySubordinados,
 );
+horasRouter.post("/", HoraController.create);
 
 horasRouter.use(errorHandler);
 

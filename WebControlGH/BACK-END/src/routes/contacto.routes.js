@@ -4,9 +4,10 @@ import { errorHandler } from "../middlewares/ErrorHandler.js";
 
 const contactoRouter = Router();
 
-contactoRouter.get("/:idEmpresa", ContactoController.getByEmpresa);
 contactoRouter.get("/", ContactoController.getAll);
-contactoRouter.post("/", ContactoController.create)
+contactoRouter.post("/filtrar", ContactoController.buscarConFiltros);
+contactoRouter.get("/:idEmpresa", ContactoController.getByEmpresa);
+contactoRouter.post("/", ContactoController.create);
 
 contactoRouter.use(errorHandler);
 

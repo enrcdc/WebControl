@@ -36,7 +36,7 @@ export const useContactos = () => {
       complejos: [],
     },
     // Una vez creado el usuario con éxito, cargamos los contactos otra vez (TODO: Corregir)
-    onSuccessCreate: () => contactoService.getContactosEmpresa(idEmpresa),
+    //onSuccessCreate: () => contactoService.getContactosEmpresa(idEmpresa),
   });
 
   // Hook de búsqueda de entidad (complejo y empresa en este caso)

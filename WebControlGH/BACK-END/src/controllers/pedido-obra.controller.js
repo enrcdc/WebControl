@@ -1,13 +1,13 @@
-import { EcoPedidoModel } from "../models/eco-pedido.model.js";
+import { PedidoObraModel } from "../models/pedido-obra.model.js";
 
-export class EcoPedidoController {
+export class PedidoObraController {
   static async getByObras(req, res, next) {
     try {
       const { idsObras } = req.body;
       if (!Array.isArray(idsObras) || idsObras.length === 0) {
         return res.json({ success: true, data: [] });
       }
-      const pedidos = await EcoPedidoModel.getByObras({ idsObras });
+      const pedidos = await PedidoObraModel.getByObras({ idsObras });
       res.json({ success: true, data: pedidos });
     } catch (error) {
       next(error);
@@ -17,7 +17,7 @@ export class EcoPedidoController {
   static async create(req, res, next) {
     try {
       const input = req.body;
-      const nuevoPedido = await EcoPedidoModel.create({ input });
+      const nuevoPedido = await PedidoObraModel.create({ input });
       res.status(201).json({ success: true, data: nuevoPedido });
     } catch (error) {
       next(error);
@@ -28,7 +28,7 @@ export class EcoPedidoController {
     try {
       const { idPedido } = req.params;
       const input = req.body;
-      const pedidoActualizado = await EcoPedidoModel.update({
+      const pedidoActualizado = await PedidoObraModel.update({
         idPedido: Number(idPedido),
         input,
       });
@@ -57,7 +57,7 @@ export class EcoPedidoController {
       }
       */
 
-      const pedidoEliminado = await EcoPedidoModel.delete({
+      const pedidoEliminado = await PedidoObraModel.delete({
         idPedido: Number(idPedido),
         codigoUsuarioBaja,
       });

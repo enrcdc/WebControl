@@ -5,13 +5,14 @@ import {
 } from "../validations/facturasValidator.js";
 import { ValidationError } from "../validations/ValidationError.js";
 
-export class FacturasModel {
+export class FacturaCompraModel {
   static async getAll() {
     const [results] = await pool.query(
       `SELECT 
             f.id,
             f.id_obra,
             o.codigo_obra AS codigo_obra,
+            fc.Concepto AS concepto,
             f.id_facturascompras,
             fc.numero AS num_factura,
             f.importe,

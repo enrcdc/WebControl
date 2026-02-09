@@ -9,4 +9,4 @@ Content-Type: application/json
 }
 
 ### Obtener el listado de todas las horas
-GET http://localhost:3002/api/horas/all
+GET http://localhost:3002/api/horas

@@ -80,7 +80,6 @@ export class HoraModel {
 
   // Obtener horas solo de los subordinados de un manager específico
   static async getHorasBySubordinados(managerCodigo) {
-    console.log("🔍 getHorasBySubordinados - managerCodigo:", managerCodigo);
     const query = `
   SELECT
     u.codigo_usuario,
@@ -129,30 +128,11 @@ export class HoraModel {
     h.dia_trabajado DESC, u.codigo_usuario, o.codigo_obra;
   `;
     const [result] = await pool.query(query, [managerCodigo]);
-    console.log(
-      "📊 getHorasBySubordinados - resultados encontrados:",
-      result.length
-    );
     return result;
   }
 
   // funcion para agregar una nueva hora a la base de datos
   static async create({ input }) {
-    const validatedData = validateObra(input);
-
-    if (!validatedData.success) {
-      // Error personalizado para que lo capture nuesto middleware de gestión de errores
-      const error = new Error("Validation Failed");
-      error.name = "ValidationError";
-      // Lanzamos el error para que lo atrape el controlador
-      throw error;
-    }
-
-    // Extraemos la info
-    const validData = validatedData.data;
-    // Extraemos propiedades de la información validada
-    const values = Object.values(validData);
-
     // Query
     const query = `
       INSERT INTO obras (

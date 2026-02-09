@@ -1,7 +1,7 @@
 ###### ENDPOINTS PEDIDOS #############
 
 ### Obtener pedidos asociados a una obra
-POST http://localhost:3002/api/ecoPedido/buscar
+POST http://localhost:3002/api/pedidoObra/buscar
 Content-Type: application/json
 
 {
@@ -9,7 +9,7 @@ Content-Type: application/json
 }
 
 ### Borrar un pedido asociado a una obra
-DELETE http://localhost:3002/api/ecoPedido/4861
+DELETE http://localhost:3002/api/pedidoObra/4861
 Content-Type: application/json
 
 {

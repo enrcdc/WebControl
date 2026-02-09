@@ -1,19 +1,35 @@
-import { ContactoModel } from "../models/contacto.model.js";
+import { ContactoService } from "../services/contacto.service.js";
 
 export class ContactoController {
   static async getAll(req, res, next) {
     try {
-      const contactos = await ContactoModel.getAll();
+      const contactos = await ContactoService.getAll();
       res.json({ success: true, data: contactos });
     } catch (error) {
       next(error);
     }
   }
+
   static async getByEmpresa(req, res, next) {
     try {
       const { idEmpresa } = req.params;
-      const contactos = await ContactoModel.getByEmpresa({ idEmpresa });
+      const contactos = await ContactoService.getByEmpresa(idEmpresa);
       res.json({ success: true, data: contactos });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async buscarConFiltros(req, res, next) {
+    try {
+      const filtros = req.body;
+      const contactos = await ContactoService.buscarConFiltros(filtros);
+      res.status(200).json({
+        success: true,
+        data: contactos,
+        count: contactos.length,
+        filtros: filtros,
+      });
     } catch (error) {
       next(error);
     }
@@ -21,9 +37,13 @@ export class ContactoController {
 
   static async create(req, res, next) {
     try {
-      const input = req.body;
-      const contactoCreado = await ContactoModel.create(input);
-      res.status(201).json({ success: true, data: contactoCreado });
+      const contactoData = req.body;
+      const nuevoContacto = await ContactoService.create(contactoData);
+      res.status(201).json({
+        success: true,
+        message: "Contacto creado exitosamente",
+        data: nuevoContacto,
+      });
     } catch (error) {
       next(error);
     }

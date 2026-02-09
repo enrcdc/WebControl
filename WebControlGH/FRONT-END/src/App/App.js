@@ -74,7 +74,7 @@ function MainLayout() {
           <Route path="nuevo-obra" element={<CrearObra />} />
           <Route path="nueva-factura" element={<NuevaFactura />} />
           <Route path="nuevo-pedido" element={<NuevoPedido />} />
-          <Route path="nueva-compra" element={<NuevaCompra />} />
+          {<Route path="nueva-compra" element={<NuevaCompra />} />}
           <Route path="nueva-hora" element={<NuevaHora />} />
           <Route path="profitability" element={<ProfitabilityTable />} />
           <Route path="gestion-facturas" element={<GestionFacturas />} />

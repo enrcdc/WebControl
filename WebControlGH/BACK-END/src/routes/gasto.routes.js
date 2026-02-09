@@ -6,6 +6,7 @@ export const gastoRouter = Router();
 
 gastoRouter.get("/por-validar", GastoController.getAllGastosPorValidar);
 gastoRouter.get("/por-pagar", GastoController.getAllGastosPorPagar);
+gastoRouter.post("/filtrar", GastoController.buscarConFiltros);
 gastoRouter.post("/buscar", GastoController.getGastosByObra);
 gastoRouter.post("/horas-extra/buscar", GastoController.getHorasExtraByObra);
 

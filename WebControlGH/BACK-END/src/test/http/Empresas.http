@@ -3,5 +3,13 @@
 ### Obtener empresas
 GET http://localhost:3002/api/empresa
 
-### Buscar por nombre
+### Buscar por nombre (este debería desaparecer)
 GET http://localhost:3002/api/empresa/buscar/nombre?nombre=siem
+
+### Buscar por filtros
+POST http://localhost:3002/api/empresa/filtrar
+Content-Type: application/json
+
+{
+    "nombre": "Siemens"
+}

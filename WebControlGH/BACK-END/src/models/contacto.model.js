@@ -6,12 +6,17 @@ export class ContactoModel {
   static async getAll() {
     const query = `
     SELECT
-        c.id_contacto AS id,
-        c.nombre_contacto AS nombre,
-        c.apellido1,
-        c.apellido2
+      c.id_contacto AS id,
+      c.nombre_contacto AS nombre,
+      c.apellido1,
+      c.apellido2,
+      e.nombre AS nombre_empresa
     FROM contactos AS c
-    ORDER BY c.nombre_contacto`;
+    LEFT JOIN empresas_contactos AS ec 
+      ON c.id_contacto = ec.id_contacto
+    LEFT JOIN empresas AS e 
+      ON ec.id_empresa = e.id_empresa
+    ORDER BY c.nombre_contacto ASC;`;
 
     const [result] = await pool.query(query);
     return result;

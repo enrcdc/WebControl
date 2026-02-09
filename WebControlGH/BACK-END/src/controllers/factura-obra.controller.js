@@ -1,13 +1,13 @@
-import { EcoFacturaModel } from "../models/eco-factura.model.js";
+import { FacturaObraModel } from "../models/factura-obra.model.js";
 
-export class EcoFacturaController {
+export class FacturaObraController {
   static async getByObras(req, res, next) {
     try {
       const { idsObras } = req.body;
       if (!Array.isArray(idsObras) || idsObras.length === 0) {
         return res.json({ success: true, data: [] });
       }
-      const facturas = await EcoFacturaModel.getByObras({ idsObras });
+      const facturas = await FacturaObraModel.getByObras({ idsObras });
       res.json({ success: true, data: facturas });
     } catch (error) {
       next(error);
@@ -17,7 +17,7 @@ export class EcoFacturaController {
   static async create(req, res, next) {
     try {
       const input = req.body;
-      const nuevaFactura = await EcoFacturaModel.create({ input });
+      const nuevaFactura = await FacturaObraModel.create({ input });
       res.status(201).json({ success: true, data: nuevaFactura });
     } catch (error) {
       next(error);
@@ -28,7 +28,7 @@ export class EcoFacturaController {
     try {
       const { idFactura } = req.params;
       const input = req.body;
-      const facturaActualizada = await EcoFacturaModel.update({
+      const facturaActualizada = await FacturaObraModel.update({
         idFactura: Number(idFactura),
         input,
       });
@@ -57,7 +57,7 @@ export class EcoFacturaController {
       }
       */
 
-      const facturaEliminada = await EcoFacturaModel.delete({
+      const facturaEliminada = await FacturaObraModel.delete({
         idFactura: Number(idFactura),
         codigoUsuarioBaja,
       });

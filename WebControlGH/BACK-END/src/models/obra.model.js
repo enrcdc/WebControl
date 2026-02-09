@@ -5,6 +5,30 @@ import {
 } from "../validations/obrasValidator.js";
 import { ValidationError } from "../validations/ValidationError.js";
 
+
+// TODO: Retirar las validaciones de los modelos. La opción más estandarizada es 
+// crear un middleware de validación que luego utilices en los enrutadores de la 
+// siguiente manera
+
+/*
+  // middlewares/validate.js
+  export const validate = (schema) => (req, res, next) => {
+    const result = schema.safeParse(req.body);
+    if (!result.success) {
+      return next(new InvalidDataError("Datos inválidos", result.error.issues));
+    }
+    req.body = result.data; // Datos limpios y tipados
+    next();
+  };
+
+  // routes/obra.routes.js
+  import { validate } from "../middlewares/validate.js";
+  import { createObraSchema } from "../validations/obra.validation.js";
+
+  obraRouter.post("/", validate(createObraSchema), ObraController.create);
+  obraRouter.patch("/:id", validate(updateObraSchema), ObraController.update);
+*/
+
 export class ObraModel {
   static async getAll() {
     const query = `

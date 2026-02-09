@@ -1,6 +1,6 @@
 import { pool } from "../config/database.js";
 
-export class EcoFacturaModel {
+export class FacturaObraModel {
   static async getByObras({ idsObras }) {
     const placeholders = idsObras.map(() => "?").join(", ");
     const query = `

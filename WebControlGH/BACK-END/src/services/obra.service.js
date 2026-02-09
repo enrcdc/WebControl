@@ -16,7 +16,6 @@ import {
   calculateDeviation,
   countBy,
   sumBy,
-  toSnakeCase,
 } from "../utils/index.js";
 
 /**
@@ -49,7 +48,6 @@ export class ObraService {
    * Obtener obra por ID
    */
   static async getById(id) {
-
     const validId = validateId(id, "ID de obra");
 
     const result = await ObraModel.getById({ idObra: validId });
@@ -187,22 +185,34 @@ export class ObraService {
    * Buscar obras con filtros
    */
   static async buscarConFiltros(filtros) {
-    console.log("Antes del getAll");
     let obras = await ObraModel.getAll();
-    console.log("Despues del getAll");
-
-    console.log(filtros);
 
     if (filtros.empresa) {
-      obras = obras.filter((o) => o.id_empresa === Number(filtros.empresa));
+      obras = obras.filter((o) => o.nombre_empresa === filtros.empresa);
     }
 
-    if (filtros.estado) {
-      obras = obras.filter((o) => o.estado_obra === Number(filtros.estado));
+    if (filtros.complejo) {
+      obras = obras.filter((o) => o.nombre_edificio === filtros.complejo);
     }
 
-    if (filtros.tipo) {
-      obras = obras.filter((o) => o.tipo_obra === Number(filtros.tipo));
+    if (filtros.estados && filtros.estados.length > 0) {
+      obras = obras.filter((o) => filtros.estados.includes(o.desc_estado_obra));
+    }
+
+    if (filtros.tipos && filtros.tipos.length > 0) {
+      obras = obras.filter((o) => filtros.tipos.includes(o.desc_tipo_obra));
+    }
+
+    if (filtros.enSeguimiento !== undefined) {
+      obras = filtros.enSeguimiento
+        ? obras.filter((o) => o.fecha_seg !== null)
+        : obras.filter((o) => o.fecha_seg === null);
+    }
+
+    if (filtros.ofertada !== undefined) {
+      obras = filtros.ofertada
+        ? obras.filter((o) => o.fecha_oferta !== null)
+        : obras.filter((o) => o.fecha_oferta === null);
     }
 
     if (filtros.fechaDesde) {
@@ -215,6 +225,69 @@ export class ObraService {
       obras = obras.filter((o) => new Date(o.fecha_alta) <= hasta);
     }
 
+    if (filtros.conPedidos !== undefined) {
+      obras = filtros.conPedidos
+        ? obras.filter((o) => o.total_pedidos !== 0)
+        : obras.filter((o) => o.total_pedidos === 0);
+    }
+
+    if (filtros.conFacturas !== undefined) {
+      obras = filtros.conFacturas
+        ? obras.filter((o) => o.total_facturas !== 0)
+        : obras.filter((o) => o.total_facturas === 0);
+    }
+
+    if (filtros.conHoras !== undefined) {
+      obras = filtros.conHoras
+        ? obras.filter((o) => o.total_horas !== 0)
+        : obras.filter((o) => o.total_horas === 0);
+    }
+
+    if (filtros.conGastos !== undefined) {
+      obras = filtros.conGastos
+        ? obras.filter((o) => o.total_gastos !== 0)
+        : obras.filter((o) => o.total_gastos === 0);
+    }
+
+    if (filtros.mostrarBaja !== undefined) {
+      obras = filtros.mostrarBaja
+        ? obras.filter((o) => o.fecha_baja !== null)
+        : obras.filter((o) => o.fecha_baja === null);
+    }
+
+    if (filtros.relacionEntreObras) {
+      switch (filtros.relacionEntreObras) {
+        case "mostrarHijas":
+          obras = obras.filter((obra) => obra.obra_padre !== null);
+          break;
+
+        case "mostrarPadres":
+          obras = obras.filter((obra) => obra.num_hijas !== 0);
+          break;
+
+        case "mostrarPadresHijas":
+          obras = obras.filter(
+            (obra) => obra.obra_padre !== null || obra.num_hijas !== 0,
+          );
+          break;
+
+        case "ocultarHijas":
+          obras = obras.filter((obra) => obra.obra_padre === null);
+          break;
+
+        case "ocultarPadres":
+          obras = obras.filter((obra) => obra.num_hijas === 0);
+          break;
+
+        case "ocultarPadresHijas":
+          obras = obras.filter(
+            (obra) => obra.obra_padre === null && obra.num_hijas === 0,
+          );
+          break;
+      }
+    }
+
+    // TODO: HAY QUE DARLE UNA VUELTA A ESTE FILTRO
     if (filtros.conAlertas) {
       obras = obras
         .map((o) => this._enrichObraData(o))
@@ -253,7 +326,7 @@ export class ObraService {
     }
 
     // Aquí puedes agregar validaciones que requieran BD:
-    // - Verificar que empresa existe
+    // - Verificar que empresa existe (No hace falta porque lo controlo con un desplegable)
     // - Verificar que contacto pertenece a empresa
     // - etc.
   }
@@ -324,8 +397,8 @@ export class ObraService {
   static _enrichObraData(obra) {
     return {
       ...obra,
-      estadoCalculado: this._calculateEstadoObra(obra),
-      rentabilidadReal: this._calculateRentabilidad(obra),
+      estado_calculado: this._calculateEstadoObra(obra),
+      rentabilidad_real: this._calculateRentabilidad(obra),
       alertas: this._checkAlertas(obra),
     };
   }

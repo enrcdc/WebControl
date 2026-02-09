@@ -1,0 +1,48 @@
+############################ facturaCompra ############################
+
+### GET facturaCompra
+GET http://localhost:3002/api/facturaCompra
+
+### GET FACTURA BY ID
+GET http://localhost:3002/api/facturaCompra/209
+
+### GET facturaCompra BY OBRAS
+GET http://localhost:3002/api/facturaCompra/obra/1503
+
+### GET BY CONCEPTO
+GET http://localhost:3002/api/facturaCompra/buscar/concepto?concepto=SAMSUNG
+
+### BUSCAR POR FILTROS
+POST http://localhost:3002/api/facturaCompra/filtrar
+Content-Type: application/json
+
+{
+    "codigoObra": "13",
+    "concepto": "MATERIAL ELECTRICO"
+}
+
+
+### NUEVA FACTURA
+POST http://localhost:3002/api/facturaCompra/209
+Content-Type: application/json
+
+{
+    "codigoUsuarioAlta": 67,
+    "fechaAlta": "2025-10-09",
+    "idfacturaCompraCompras": 313,
+    "idObra": 1503,
+    "importe": "12",
+    "observaciones": "Esta es una compra de prueba"
+}
+
+### ACTUALIZAR FACTURA
+PATCH  http://localhost:3002/api/facturaCompra/3
+Content-Type: application/json
+
+{
+    "observaciones": "Observaciones actualizadas"               
+}
+
+### DELETE FACTURA
+
+DELETE http://localhost:3002/facturaCompra/15

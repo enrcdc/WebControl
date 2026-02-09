@@ -3,5 +3,14 @@
 ### Obtener edificios
 GET http://localhost:3002/api/edificio
 
-### Buscar por nombre
+### Buscar por nombre (Este debería desaparecer)
 GET http://localhost:3002/api/edificio/buscar/nombre?nombre=torre
+
+### Buscar por nombre (con endpoint POST de filtros)
+POST http://localhost:3002/api/edificio/filtrar
+Content-Type: application/json
+
+{
+    "nombre": "torre"
+}
+

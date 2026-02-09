@@ -10,7 +10,6 @@
  * NO contiene lógica de negocio.
  */
 
-import { success } from "zod";
 import { ObraService } from "../services/obra.service.js";
 
 export class ObraController {
@@ -156,11 +155,11 @@ export class ObraController {
    */
   static async buscarConFiltros(req, res, next) {
     try {
-      const filtros = req.query;
+      const filtros = req.body;
 
       const obras = await ObraService.buscarConFiltros(filtros);
 
-      res.json({
+      res.status(200).json({
         success: true,
         data: obras,
         count: obras.length,
