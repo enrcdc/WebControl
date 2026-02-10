@@ -8,5 +8,30 @@ Content-Type: application/json
     "idsObra": [4037]
 }
 
-### Obtener el listado de todas las horas
+### Crear una hora
+POST http://localhost:3002/api/horas
+Content-Type: application/json
+
+{
+    "diaTrabajado": "2026-02-10",
+    "usuarioAsignado": 67,
+    "obraAsignada": 133,
+    "tareaAsignada": 1,
+    "horasAsignadas": 8,
+    "observaciones": "Hora de prueba para probar POST"
+}
+
+### Búsqueda por filtros
+POST http://localhost:3002/api/horas/filtrar
+Content-Type: application/json
+
+{
+    "idsObras": [4039],
+    "tareas": [18]
+}
+
+
+
+
+### Obtener el listado de todas las horas (Es muy lenta esta consulta)
 GET http://localhost:3002/api/horas

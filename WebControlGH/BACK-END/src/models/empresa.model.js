@@ -1,5 +1,7 @@
 import { pool } from "../config/database.js";
 
+// TODO: Faltan más operaciones CRUD
+
 // MODELO DE NEGOCIO PARA LAS EMPRESAS
 
 export class EmpresaModel {

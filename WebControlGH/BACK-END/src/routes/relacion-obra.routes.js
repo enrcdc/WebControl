@@ -1,15 +1,14 @@
 import { Router } from "express";
+import { RelacionObraController } from "../controllers/relacion-obra.controller.js";
 import { errorHandler } from "../middlewares/ErrorHandler.js";
-import { RelacionObrasController } from "../controllers/relacion-obra.controller.js";
 
-export const relacionObrasRouter = Router();
+const relacionObrasRouter = Router();
 
-relacionObrasRouter.get("/padre/:idObra", RelacionObrasController.getObraPadre);
-relacionObrasRouter.get("/hijas/:idObra", RelacionObrasController.getObrasHijas);
-relacionObrasRouter.post("/padre", RelacionObrasController.setObraPadre);
-relacionObrasRouter.post("/hijas", RelacionObrasController.setObrasHijas);
+relacionObrasRouter.get("/padre/:idObra", RelacionObraController.getObraPadre);
+relacionObrasRouter.get("/hijas/:idObra", RelacionObraController.getObrasHijas);
+relacionObrasRouter.post("/padre", RelacionObraController.setObraPadre);
+relacionObrasRouter.post("/hijas", RelacionObraController.setObrasHijas);
 
 relacionObrasRouter.use(errorHandler);
 
 export default relacionObrasRouter;
-

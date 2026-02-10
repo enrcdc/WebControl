@@ -2,3 +2,21 @@
 
 ### Obtener el listado de movimientos del almacén asociado a una obra
 GET http://localhost:3002/api/movimientos-almacen/obra/1232
+
+### UPDATE de un movimiento de almacen
+PATCH http://localhost:3002/api/movimientos-almacen/28
+Content-Type: application/json
+
+{
+"fechaMovimiento":"2015-05-13",
+"usuarioAlta": 4,
+"tipoMovimiento": 2,
+"conceptoMovimiento": 7,
+"idObra": 1232,
+"idFactura": null,
+"cantidad": 1500,
+"importe": 0.28,
+"observaciones": "Esta es una actualización de prueba para probar PATCH"
+}
+
+### Obtener los movimientos asociados a un producto del almacen con (id

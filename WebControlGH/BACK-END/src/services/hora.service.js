@@ -35,7 +35,7 @@ export class HoraService {
     return horas;
   }
 
-  // TODO: El método create del modelo necesita ser corregido (actualmente inserta en obras)
+  // TODO: Faltan más operaciones CRUD
   static async create(horaData) {
     if (!horaData) {
       throw new InvalidDataError("Los datos de la hora son obligatorios");
@@ -52,28 +52,37 @@ export class HoraService {
 
   // TODO: De momento hay los métodos específicos, pero se pueden unificar.
   static async buscarConFiltros(filtros) {
-    let horas = await HoraModel.getAllHoras();
+    let horas = [];
+
+    // Este filtro sustituye a getByObra
+    if (filtros.idsObras) {
+      this._validateIdsObra(filtros.idsObras);
+      horas = await HoraModel.getByObra({ idsObra: filtros.idsObras });
+    } else {
+      horas = await HoraModel.getAllHoras();
+    }
 
     if (filtros.usuario) {
       horas = horas.filter((h) =>
-        h.nombre_usuario
-          ?.toLowerCase()
-          .includes(filtros.usuario.toLowerCase()),
+        h.nombre_usuario?.toLowerCase().includes(filtros.usuario.toLowerCase()),
       );
     }
 
-    if (filtros.codigoObra) {
-      horas = horas.filter((h) =>
-        h.codigo_obra
-          ?.toLowerCase()
-          .includes(filtros.codigoObra.toLowerCase()),
-      );
+    if (filtros.estadosObra) {
+      horas = horas.filter((h) => filtros.estadosObra.includes(h.estado_obra));
     }
 
-    if (filtros.tarea) {
-      horas = horas.filter((h) =>
-        h.tarea?.toLowerCase().includes(filtros.tarea.toLowerCase()),
-      );
+    if (filtros.tiposObra) {
+      horas = horas.filter((h) => filtros.tiposObra.includes(h.tipo_obra));
+    }
+
+    if (filtros.tareas) {
+      horas = horas.filter((h) => filtros.tareas.includes(h.id_tarea));
+    }
+
+    // Este filtro sustituye a getHorasBySubordinados
+    if (filtros.manager) {
+      horas = horas.filter((h) => h.cod_usuario_manager === filtros.manager);
     }
 
     if (filtros.validadas !== undefined) {

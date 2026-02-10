@@ -1,13 +1,10 @@
-import { FacturaObraModel } from "../models/factura-obra.model.js";
+import { FacturaObraService } from "../services/factura-obra.service.js";
 
 export class FacturaObraController {
   static async getByObras(req, res, next) {
     try {
       const { idsObras } = req.body;
-      if (!Array.isArray(idsObras) || idsObras.length === 0) {
-        return res.json({ success: true, data: [] });
-      }
-      const facturas = await FacturaObraModel.getByObras({ idsObras });
+      const facturas = await FacturaObraService.getByObras(idsObras);
       res.json({ success: true, data: facturas });
     } catch (error) {
       next(error);
@@ -16,8 +13,8 @@ export class FacturaObraController {
 
   static async create(req, res, next) {
     try {
-      const input = req.body;
-      const nuevaFactura = await FacturaObraModel.create({ input });
+      const facturaData = req.body;
+      const nuevaFactura = await FacturaObraService.create(facturaData);
       res.status(201).json({ success: true, data: nuevaFactura });
     } catch (error) {
       next(error);
@@ -27,17 +24,11 @@ export class FacturaObraController {
   static async update(req, res, next) {
     try {
       const { idFactura } = req.params;
-      const input = req.body;
-      const facturaActualizada = await FacturaObraModel.update({
-        idFactura: Number(idFactura),
-        input,
-      });
-
-      if (!facturaActualizada) {
-        const error = new Error("Factura no encontrada o actualizada");
-        error.name = "NotFoundError";
-        throw error;
-      }
+      const updateData = req.body;
+      const facturaActualizada = await FacturaObraService.update(
+        idFactura,
+        updateData,
+      );
       res.json({ success: true, data: facturaActualizada });
     } catch (error) {
       next(error);
@@ -48,26 +39,26 @@ export class FacturaObraController {
     try {
       const { idFactura } = req.params;
       const { codigoUsuarioBaja } = req.body;
-
-      /* 
-      if (!codigoUsuarioBaja) {
-        const error = new Error("codigoUsuarioBaja es requerido para eliminar");
-        error.name = "ValidationError";
-        throw error;
-      }
-      */
-
-      const facturaEliminada = await FacturaObraModel.delete({
-        idFactura: Number(idFactura),
+      const facturaEliminada = await FacturaObraService.delete(
+        idFactura,
         codigoUsuarioBaja,
-      });
-
-      if (!facturaEliminada) {
-        const error = new Error("Factura no encontrada o ya eliminada");
-        error.name = "NotFoundError";
-        throw error;
-      }
+      );
       res.json({ success: true, data: facturaEliminada });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async buscarConFiltros(req, res, next) {
+    try {
+      const filtros = req.body;
+      const facturas = await FacturaObraService.buscarConFiltros(filtros);
+      res.status(200).json({
+        success: true,
+        data: facturas,
+        count: facturas.length,
+        filtros: filtros,
+      });
     } catch (error) {
       next(error);
     }

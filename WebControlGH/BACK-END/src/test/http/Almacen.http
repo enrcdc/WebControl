@@ -6,8 +6,16 @@ GET http://localhost:3002/api/almacen
 ### Obtener un producto específico
 GET http://localhost:3002/api/almacen/1
 
-### Obtener un producto por la descripción
+### Obtener un producto por la descripción (debería ser eliminado)
 GET http://localhost:3002/api/almacen/buscar/descripcion?descripcion=cable
+
+### Obtener un producto por la descripción
+POST http://localhost:3002/api/almacen/filtrar
+Content-Type: application/json
+
+{
+  "unidades": "uds."
+}
 
 ### Crear un producto
 POST http://localhost:3002/api/almacen

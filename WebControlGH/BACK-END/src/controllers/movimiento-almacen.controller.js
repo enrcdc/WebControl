@@ -1,12 +1,10 @@
-import { MovimientosAlmacenModel } from "../models/movimiento-almacen.model.js";
+import { MovimientoAlmacenService } from "../services/movimiento-almacen.service.js";
 
-export class MovimientosAlmacenController {
+export class MovimientoAlmacenController {
   static async getByObra(req, res, next) {
     try {
       const { idObra } = req.params;
-      const movimientos = await MovimientosAlmacenModel.getByObra({
-        idObra: Number(idObra),
-      });
+      const movimientos = await MovimientoAlmacenService.getByObra(idObra);
       res.json({ success: true, data: movimientos });
     } catch (error) {
       next(error);
@@ -15,8 +13,9 @@ export class MovimientosAlmacenController {
 
   static async create(req, res, next) {
     try {
-      const input = req.body;
-      const nuevoMovimiento = await MovimientosAlmacenModel.create({ input });
+      const movimientoData = req.body;
+      const nuevoMovimiento =
+        await MovimientoAlmacenService.create(movimientoData);
       res.status(201).json({ success: true, data: nuevoMovimiento });
     } catch (error) {
       next(error);
@@ -26,16 +25,11 @@ export class MovimientosAlmacenController {
   static async update(req, res, next) {
     try {
       const { idMovimiento } = req.params;
-      const input = req.body;
-      const movimientoActualizado = await MovimientosAlmacenModel.update({
-        idMovimiento: Number(idMovimiento),
-        input,
-      });
-      if (!movimientoActualizado) {
-        const error = new Error("Movimiento no encontrado o actualizado");
-        error.name = "NotFoundError";
-        throw error;
-      }
+      const updateData = req.body;
+      const movimientoActualizado = await MovimientoAlmacenService.update(
+        idMovimiento,
+        updateData,
+      );
       res.json({ success: true, data: movimientoActualizado });
     } catch (error) {
       next(error);
@@ -46,18 +40,27 @@ export class MovimientosAlmacenController {
     try {
       const { idMovimiento } = req.params;
       const { codigoUsuarioBaja } = req.body;
-
-      const movimientoEliminado = await MovimientosAlmacenModel.delete({
-        idMovimiento: Number(idMovimiento),
+      const movimientoEliminado = await MovimientoAlmacenService.delete(
+        idMovimiento,
         codigoUsuarioBaja,
-      });
-      
-      if (!movimientoEliminado) {
-        const error = new Error("Movimiento no encontrado o ya eliminado");
-        error.name = "NotFoundError";
-        throw error;
-      }
+      );
       res.json({ success: true, data: movimientoEliminado });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async buscarConFiltros(req, res, next) {
+    try {
+      const filtros = req.body;
+      const movimientos =
+        await MovimientoAlmacenService.buscarConFiltros(filtros);
+      res.status(200).json({
+        success: true,
+        data: movimientos,
+        count: movimientos.length,
+        filtros: filtros,
+      });
     } catch (error) {
       next(error);
     }

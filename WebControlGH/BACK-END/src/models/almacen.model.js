@@ -1,167 +1,130 @@
 import { pool } from "../config/database.js";
-import {
-  validateProducto,
-  validatePartialProducto,
-} from "../validations/productoValidator.js";
-import { ValidationError } from "../validations/ValidationError.js";
-
-// MODELO DE NEGOCIO PARA LOS PRODUCTOS DEL ALMACÉN
 
 export class AlmacenModel {
   static async getAll() {
     const query = `
-    SELECT
+      SELECT
         a.id,
         a.codigo,
         a.descripcion,
         a.etiqueta,
         p.NombreProveedor,
         a.fecha_alta,
-        f.etiqueta,
-        m.etiqueta,
+        f.etiqueta AS etiqueta_familia,
+        m.etiqueta AS etiqueta_marca,
         a.stock,
         a.stock_min,
         a.stock_max,
         a.codigo_usuario_alta,
-        tu.etiqueta,
+        tu.etiqueta AS etiqueta_unidad,
         a.precio_minimo,
         a.precio_maximo,
         a.precio_total
-    FROM
-        almacen AS a
-    LEFT JOIN
-        proveedores AS p ON a.id_proveedor = p.id
-    LEFT JOIN
-        familias AS f ON a.id_familia = f.id
-    LEFT JOIN
-        marcas AS m ON a.id_marca = m.id
-    LEFT JOIN
-        tipounidad AS tu ON a.id_tipounidad = tu.id
-    ORDER BY a.descripcion
-  `;
+      FROM almacen AS a
+      LEFT JOIN proveedores AS p ON a.id_proveedor = p.id
+      LEFT JOIN familias AS f ON a.id_familia = f.id
+      LEFT JOIN marcas AS m ON a.id_marca = m.id
+      LEFT JOIN tipounidad AS tu ON a.id_tipounidad = tu.id
+      ORDER BY a.descripcion`;
 
     const [result] = await pool.query(query);
     return result;
   }
 
-  static async getById({ idProducto }) {
+  static async getById({ id }) {
     const query = `
-    SELECT
+      SELECT
         a.id,
         a.codigo,
         a.descripcion,
         a.etiqueta,
         p.NombreProveedor,
         a.fecha_alta,
-        f.etiqueta,
-        m.etiqueta,
+        f.etiqueta AS etiqueta_familia,
+        m.etiqueta AS etiqueta_marca,
         a.stock,
         a.stock_min,
         a.stock_max,
         a.codigo_usuario_alta,
-        tu.etiqueta,
+        tu.etiqueta AS etiqueta_unidad,
         a.precio_minimo,
         a.precio_maximo,
         a.precio_total,
-        a.observaciones
-    FROM
-        almacen AS a
-    LEFT JOIN
-        proveedores AS p ON a.id_proveedor = p.id
-    LEFT JOIN
-        familias AS f ON a.id_familia = f.id
-    LEFT JOIN
-        marcas AS m ON a.id_marca = m.id
-    LEFT JOIN
-        tipounidad AS tu ON a.id_tipounidad = tu.id
-    WHERE a.id = ?
-  `;
-    const [result] = await pool.query(query, [idProducto]);
-    return result;
+        a.observaciones,
+        a.fecha_baja
+      FROM almacen AS a
+      LEFT JOIN proveedores AS p ON a.id_proveedor = p.id
+      LEFT JOIN familias AS f ON a.id_familia = f.id
+      LEFT JOIN marcas AS m ON a.id_marca = m.id
+      LEFT JOIN tipounidad AS tu ON a.id_tipounidad = tu.id
+      WHERE a.id = ?`;
+
+    const [rows] = await pool.query(query, [id]);
+    return rows[0] ?? null;
   }
 
   static async getByDescripcion({ descripcion }) {
     const query = `
-    SELECT
-      id,
-      descripcion
-    FROM
-      almacen
-    WHERE
-      descripcion LIKE CONCAT('%', ?, '%')`;
+      SELECT id, descripcion
+      FROM almacen
+      WHERE descripcion LIKE CONCAT('%', ?, '%')`;
 
-    const [result] = await pool.query(query, descripcion);
+    const [result] = await pool.query(query, [descripcion]);
     return result;
   }
 
   static async create({ input }) {
-    const validatedProducto = validateProducto(input);
-
-    if (!validatedProducto.success) {
-      throw new ValidationError(
-        "Producto con formato inválido",
-        validatedProducto.error.issues
-      );
-    }
-
-    const validData = validatedProducto.data;
-    const values = Object.values(validData);
-
     const insertQuery = `
-    INSERT INTO almacen (
-    codigo, 
-    descripcion, 
-    etiqueta, 
-    id_proveedor, 
-    id_familia, 
-    id_tipounidad,
-    fecha_alta, 
-    codigo_usuario_alta, 
-    stock, 
-    stock_min, 
-    stock_max, 
-    id_marca,
-    precio_unitario, 
-    precio_total, 
-    observaciones)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+      INSERT INTO almacen (
+        codigo,
+        descripcion,
+        etiqueta,
+        id_proveedor,
+        id_familia,
+        id_tipounidad,
+        fecha_alta,
+        codigo_usuario_alta,
+        stock,
+        stock_min,
+        stock_max,
+        id_marca,
+        precio_unitario,
+        precio_total,
+        observaciones
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
-    // Con mysql2/promise el resultado de pool.query(...) devuelve dos elementos:
-    // -> 1º El array de resultados (filas de la consulta)
-    // -> 2º Metadatos: Información adicional sobre la consulta
+    const values = [
+      input.cod,
+      input.descripcion,
+      input.etiqueta,
+      input.proveedor,
+      input.familia,
+      input.tipoUnidad,
+      input.fechaAlta,
+      input.usuarioAlta,
+      input.stock,
+      input.stockMin,
+      input.stockMax,
+      input.marca,
+      input.precioUnitario,
+      input.precioTotal,
+      input.observaciones,
+    ];
 
-    // El principio de desestructuración de JS es posicional, no nombrado.
-    // Con esto extraemos el resultado de la consulta
     const [result] = await pool.query(insertQuery, values);
 
-    // Mostramos el producto recién almacenado
     const [rows] = await pool.query(
-      `
-        SELECT *
-        FROM almacen
-        WHERE id = ?
-        `,
-      [result.insertId]
+      "SELECT * FROM almacen WHERE id = ?",
+      [result.insertId],
     );
 
     return rows[0] ?? null;
   }
 
-  static async update({ idProducto, input }) {
-    const updatedInfo = validateProducto(input);
-
-    if (!updatedInfo.success) {
-      throw new ValidationError(
-        "Producto con formato inválido",
-        updatedInfo.error.issues
-      );
-    }
-
-    const valid = updatedInfo.data;
-    const values = Object.values(valid);
-
+  static async update({ id, input }) {
     const query = `
-    UPDATE almacen SET
+      UPDATE almacen SET
         codigo = ?,
         descripcion = ?,
         etiqueta = ?,
@@ -177,58 +140,55 @@ export class AlmacenModel {
         precio_unitario = ?,
         precio_total = ?,
         observaciones = ?
-    WHERE id = ?`;
+      WHERE id = ?`;
 
-    await pool.query(query, [...values, idProducto]);
+    const values = [
+      input.cod,
+      input.descripcion,
+      input.etiqueta,
+      input.proveedor,
+      input.familia,
+      input.tipoUnidad,
+      input.fechaAlta,
+      input.usuarioAlta,
+      input.stock,
+      input.stockMin,
+      input.stockMax,
+      input.marca,
+      input.precioUnitario,
+      input.precioTotal,
+      input.observaciones,
+    ];
+
+    await pool.query(query, [...values, id]);
+
     const [rows] = await pool.query(
-      `
-        SELECT
-            codigo, 
-            etiqueta, 
-            descripcion, 
-            fecha_alta, 
-            codigo_usuario_alta, 
-            id_proveedor, 
-            id_familia, 
-            id_marca, 
-            id_tipounidad, 
-            precio_unitario, 
-            stock_min, 
-            stock_max, 
-            observaciones
-        FROM almacen
-        WHERE id = ?`,
-      [idProducto]
+      "SELECT * FROM almacen WHERE id = ?",
+      [id],
     );
 
     return rows[0] ?? null;
   }
 
-  static async delete({ idProducto, codigoUsuarioBaja }) {
+  // TODO: De momento el codigo de usuario que da de baja esta hardcodeado
+  // Habría que extraer el usuario logeado y asignarle como el que lo da de baja
+  static async delete({ id, codigoUsuarioBaja = 67 }) {
     const query = `
-    UPDATE almacen
-    SET
-      fecha_baja = NOW(),
-      codigo_usuario_baja = ?
-    WHERE id = ?
-    `;
+      UPDATE almacen
+      SET
+        fecha_baja = NOW(),
+        codigo_usuario_baja = ?
+      WHERE id = ?`;
 
-    const [result] = await pool.query(query, [codigoUsuarioBaja, idProducto]);
+    await pool.query(query, [codigoUsuarioBaja, id]);
 
-    if (result.affectedRows === 0) {
-      return null;
-    }
     const [rows] = await pool.query(
-      `
-       SELECT
-        codigo,
-        descripcion,
-        fecha_baja,
-        codigo_usuario_baja
-      FROM almacen
-      WHERE id = ?`,
-      [idProducto]
+      `SELECT id, codigo, descripcion, fecha_baja, codigo_usuario_baja
+       FROM almacen
+       WHERE id = ?`,
+      [id],
     );
+
     return rows[0] ?? null;
   }
 }

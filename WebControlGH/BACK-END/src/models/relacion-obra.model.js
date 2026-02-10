@@ -1,99 +1,73 @@
 import { pool } from "../config/database.js";
 
-export class RelacionObrasModel {
+export class RelacionObraModel {
   static async getObraPadre({ idObra }) {
     const query = `
-    SELECT
+      SELECT
         r.id_obraPadre,
         o.codigo_obra,
         o.descripcion_obra
-    FROM 
-        relacionobras AS r
-    LEFT JOIN
-        obras AS o ON r.id_obraPadre = o.id_obra
-    WHERE
-        r.id_obraHija = ?`;
+      FROM relacionobras AS r
+      LEFT JOIN obras AS o ON r.id_obraPadre = o.id_obra
+      WHERE r.id_obraHija = ?`;
 
     const [result] = await pool.query(query, [idObra]);
-    return result;
+    return result[0] ?? null;
   }
 
   static async getObrasHijas({ idObra }) {
     const query = `
-    SELECT
+      SELECT
         r.id_obraHija,
         o.codigo_obra,
         o.descripcion_obra,
         o.horas_previstas,
         o.gasto_previsto,
         o.importe
-    FROM 
-        relacionobras AS r
-    LEFT JOIN
-      obras AS o ON r.id_obraHija = o.id_obra
-    WHERE
-        r.id_obraPadre = ?`;
+      FROM relacionobras AS r
+      LEFT JOIN obras AS o ON r.id_obraHija = o.id_obra
+      WHERE r.id_obraPadre = ?`;
 
-    const [result] = await pool.query(query, [idObra, idObra]);
+    const [result] = await pool.query(query, [idObra]);
     return result;
   }
 
-  static async setObraPadre({ idObraPadre, idObraHija }) {
-    // Eliminamos primero el padre anterior
-    const deleteQuery = `DELETE FROM relacionobras WHERE id_obraHija = ?`;
-    await pool.query(deleteQuery, [idObraHija]);
+  static async deleteRelacionesPadre({ idObraHija }) {
+    const query = "DELETE FROM relacionobras WHERE id_obraHija = ?";
+    await pool.query(query, [idObraHija]);
+  }
 
-    // Si no hay una obra padre especificada
-    if (!idObraPadre) {
-      return "Obra padre eliminada";
-    }
-
-    // Insertar el nuevo padre
+  static async insertRelacionPadre({ idObraPadre, idObraHija }) {
     const insertQuery = `
-        INSERT INTO relacionobras (
-            id_obraPadre,
-            id_obraHija
-        ) VALUES (?, ?)`;
+      INSERT INTO relacionobras (id_obraPadre, id_obraHija)
+      VALUES (?, ?)`;
 
     await pool.query(insertQuery, [idObraPadre, idObraHija]);
 
-    // Devolvemos el resultado de la inserción
     const [rows] = await pool.query(
-      `
-      SELECT *
-      FROM relacionobras
-      WHERE id_obraPadre = ? AND id_obraHija = ?
-      `,
-      [idObraPadre, idObraHija]
+      "SELECT * FROM relacionobras WHERE id_obraPadre = ? AND id_obraHija = ?",
+      [idObraPadre, idObraHija],
     );
 
     return rows[0] ?? null;
   }
 
-  static async setObrasHijas({ idObraPadre, idsObrasHijas }) {
-    // Eliminar relaciones hijas actuales
-    const deleteQuery = `DELETE FROM relacionobras WHERE id_obraPadre = ?`;
-    await pool.query(deleteQuery, [idObraPadre]);
+  static async deleteRelacionesHijas({ idObraPadre }) {
+    const query = "DELETE FROM relacionobras WHERE id_obraPadre = ?";
+    await pool.query(query, [idObraPadre]);
+  }
 
-    // Insertar nuevas relaciones (si hay hijas)
-    if (!Array.isArray(idsObrasHijas) || idsObrasHijas.length === 0) {
-      return "Obras hijas eliminadas";
-    }
-
+  static async insertRelacionesHijas({ idObraPadre, idsObrasHijas }) {
     const insertQuery = `
-      INSERT INTO relacionobras (id_obraPadre, id_obraHija) VALUES ?
-    `;
+      INSERT INTO relacionobras (id_obraPadre, id_obraHija)
+      VALUES ?`;
+
     const values = idsObrasHijas.map((idHija) => [idObraPadre, idHija]);
     await pool.query(insertQuery, [values]);
 
-    // Devolvemos la inserción
     const [rows] = await pool.query(
-      `
-      SELECT *
-      FROM relacionobras
-      WHERE id_obraPadre = ?
-      `,
-      [idObraPadre]
+      "SELECT * FROM relacionobras WHERE id_obraPadre = ?",
+      [idObraPadre],
     );
 
     return rows;

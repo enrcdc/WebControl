@@ -36,7 +36,6 @@ export class HoraController {
       const nuevaHora = await HoraService.create(horaData);
       res.status(201).json({
         success: true,
-        message: "Hora creada exitosamente",
         data: nuevaHora,
       });
     } catch (error) {

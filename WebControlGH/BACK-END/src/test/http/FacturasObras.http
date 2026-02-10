@@ -24,6 +24,14 @@ Content-Type: application/json
     "idObra": 4037
 }
 
+### Buscar con filtros 
+POST http://localhost:3002/api/facturaObra/filtrar
+Content-Type: application/json
+
+{
+    "idsObras": [4037]
+}
+
 ### Actualizar una factura asociada a una obra
 PUT http://localhost:3002/api/facturaObra/5377
 Content-Type: application/json

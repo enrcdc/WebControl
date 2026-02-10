@@ -1,10 +1,11 @@
 import { pool } from "../config/database.js";
-import crypto from "crypto";
+
+// TODO: Faltan más operaciones CRUD
 
 export class UsuarioModel {
   static async getAll() {
     const query = `
-      SELECT 
+      SELECT
         codigo_usuario,
         usuario_bonita AS nombre_usuario,
         nombre,
@@ -18,36 +19,20 @@ export class UsuarioModel {
     return result;
   }
 
-  static async verifyCredentials(username, plainPassword) {
+  static async getByUsername({ username }) {
     const query = `
       SELECT
-      usuario_bonita AS nombre_usuario,
-      password,
-      codigo_usuario,
-      nombre,
-      apellido1,
-      apellido2
-      FROM usuarios 
-      WHERE usuario_bonita = ? 
+        usuario_bonita AS nombre_usuario,
+        password,
+        codigo_usuario,
+        nombre,
+        apellido1,
+        apellido2
+      FROM usuarios
+      WHERE usuario_bonita = ?
       LIMIT 1`;
 
-    const [result] = await pool.query(query, [username]);
-
-    if (result.length === 0) return null;
-
-    const user = result[0];
-
-    // Hashear la contraseña con MD5
-    const hashedPassword = crypto
-      .createHash("md5")
-      .update(plainPassword)
-      .digest("hex");
-
-    // Comparar hashes
-    if (hashedPassword !== user.password) return null;
-
-    // NO retornar contraseña
-    const { password, ...userWithoutPassword } = user;
-    return userWithoutPassword;
+    const [rows] = await pool.query(query, [username]);
+    return rows[0] ?? null;
   }
 }

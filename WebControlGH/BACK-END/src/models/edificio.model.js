@@ -1,5 +1,7 @@
 import { pool } from "../config/database.js";
 
+// TODO: Faltan más operaciones CRUD
+
 // MODELO DE NEGOCIO PARA LOS EDIFICIOS
 export class EdificioModel {
   static async getAll() {

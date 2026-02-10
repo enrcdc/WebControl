@@ -1,5 +1,8 @@
 import { pool } from "../config/database.js";
 
+// TODO: Faltan dos modelos más. Los proveedores (Operacioes CRUD Completas)
+// y los tipos de gastos (Operaciones CRUD completas)
+
 export class TipoObraModel {
   static async getAll() {
     const query = `

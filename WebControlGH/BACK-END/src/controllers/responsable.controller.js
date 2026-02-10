@@ -1,20 +1,11 @@
-import { ResponsablesModel } from "../models/responsable.model.js";
+import { ResponsableService } from "../services/responsable.service.js";
 
-export class ResponsablesController {
+export class ResponsableController {
   static async getSubordinados(req, res, next) {
     try {
       const { codigoResponsable } = req.params;
-
-      if (!codigoResponsable) {
-        return res.status(400).json({
-          success: false,
-          message: "Código de responsable requerido",
-        });
-      }
-
-      const subordinados = await ResponsablesModel.getSubordinadosByManager(
-        codigoResponsable
-      );
+      const subordinados =
+        await ResponsableService.getSubordinados(codigoResponsable);
       res.json({ success: true, data: subordinados });
     } catch (error) {
       next(error);

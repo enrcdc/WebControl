@@ -1,9 +1,9 @@
-import { AlmacenModel } from "../models/almacen.model.js";
+import { AlmacenService } from "../services/almacen.service.js";
 
 export class AlmacenController {
   static async getAll(req, res, next) {
     try {
-      const productos = await AlmacenModel.getAll();
+      const productos = await AlmacenService.getAll();
       res.json({ success: true, data: productos });
     } catch (error) {
       next(error);
@@ -13,7 +13,7 @@ export class AlmacenController {
   static async getById(req, res, next) {
     try {
       const { idProducto } = req.params;
-      const producto = await AlmacenModel.getById({ idProducto });
+      const producto = await AlmacenService.getById(idProducto);
       res.json({ success: true, data: producto });
     } catch (error) {
       next(error);
@@ -23,7 +23,7 @@ export class AlmacenController {
   static async getByDescripcion(req, res, next) {
     try {
       const { descripcion } = req.query;
-      const productos = await AlmacenModel.getByDescripcion({ descripcion });
+      const productos = await AlmacenService.getByDescripcion(descripcion);
       res.json({ success: true, data: productos });
     } catch (error) {
       next(error);
@@ -32,8 +32,8 @@ export class AlmacenController {
 
   static async create(req, res, next) {
     try {
-      const input = req.body;
-      const nuevoProducto = await AlmacenModel.create({ input });
+      const productoData = req.body;
+      const nuevoProducto = await AlmacenService.create(productoData);
       res.status(201).json({ success: true, data: nuevoProducto });
     } catch (error) {
       next(error);
@@ -43,18 +43,11 @@ export class AlmacenController {
   static async update(req, res, next) {
     try {
       const { idProducto } = req.params;
-      const input = req.body;
-
-      const productoActualizado = await AlmacenModel.update({
-        idProducto: Number(idProducto),
-        input,
-      });
-
-      if (!productoActualizado) {
-        const error = new Error("Producto no encontrado o actualizado");
-        error.name = "NotFoundError";
-        throw error;
-      }
+      const updateData = req.body;
+      const productoActualizado = await AlmacenService.update(
+        idProducto,
+        updateData,
+      );
       res.json({ success: true, data: productoActualizado });
     } catch (error) {
       next(error);
@@ -65,23 +58,26 @@ export class AlmacenController {
     try {
       const { idProducto } = req.params;
       const { codigoUsuarioBaja } = req.body;
-
-      if (!codigoUsuarioBaja) {
-        const error = new Error("codigoUsuarioBaja es requerido para eliminar");
-        error.name = "ValidationError";
-        throw error;
-      }
-      const productoEliminado = await AlmacenModel.delete({
-        idProducto: Number(idProducto),
+      const productoEliminado = await AlmacenService.delete(
+        idProducto,
         codigoUsuarioBaja,
-      });
-
-      if (!productoEliminado) {
-        const error = new Error("Producto no encontrado o ya eliminado");
-        error.name = "NotFoundError";
-        throw error;
-      }
+      );
       res.json({ success: true, data: productoEliminado });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async buscarConFiltros(req, res, next) {
+    try {
+      const filtros = req.body;
+      const productos = await AlmacenService.buscarConFiltros(filtros);
+      res.status(200).json({
+        success: true,
+        data: productos,
+        count: productos.length,
+        filtros: filtros,
+      });
     } catch (error) {
       next(error);
     }

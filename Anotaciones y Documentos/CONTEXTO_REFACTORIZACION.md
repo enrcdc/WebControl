@@ -3,7 +3,7 @@
 Documento complementario al `PLAN_REORGANIZACION.md`.
 Recoge todas las decisiones y especificaciones tomadas durante el progreso de refactorización.
 
-**Última actualización:** 09/02/2026
+**Última actualización:** 10/02/2026
 **Rama de trabajo:** `refactor/project-structure`
 
 ---
@@ -132,23 +132,25 @@ router.delete("/:id", Controller.delete);
 | contacto | ✅ | ✅ | ✅ | getAll, getByEmpresa, create, buscarConFiltros. Filtro por empresa usa nombre (no ID) |
 | gasto | ✅ | ✅ | ✅ | buscarConFiltros requiere campo `tipo` obligatorio: "por-validar", "por-pagar", "por-obras" |
 | factura-compra | ✅ | ✅ | ✅ | CRUD completo, soft delete, _getFacturaOrFail helper. Renombrada de "factura" |
-| hora | ✅ | ✅ | ✅ | Bug detectado: modelo create inserta en tabla `obras` (código copiado sin adaptar) |
+| hora | ✅ | ✅ | ✅ | Bug corregido: create ya inserta en `horasobra`. Filtros y TODOs actualizados por el desarrollador |
+| pedido-obra | ✅ | ✅ | ✅ | CRUD completo, soft delete, _getPedidoOrFail helper, buscarConFiltros por idsObras. PUT→PATCH |
+| factura-obra | ✅ | ✅ | ✅ | CRUD completo, soft delete, _getFacturaOrFail helper, buscarConFiltros por idsObras. JOIN con ecopedido en getByObras. PUT→PATCH |
 
 ### Pendientes
 
+| almacen | ✅ | ✅ | ✅ | CRUD completo, soft delete, _getProductoOrFail, buscarConFiltros. Zod retirado del modelo (será middleware). Bug corregido: getById devolvía array. Bug corregido: ruta parametrizada antes de específica. PUT→PATCH |
+
+| movimiento-almacen | ✅ | ✅ | ✅ | CRUD completo, soft delete, _getMovimientoOrFail, buscarConFiltros por idObra. Update dinámico con camposPermitidos. Clase renombrada a singular. PUT→PATCH. Import corregido en routes |
+
 | Entidad | Notas |
 |---------|-------|
-| pedido-obra | Renombrada de "eco-pedido" |
-| factura-obra | Renombrada de "eco-factura" |
-| almacen | |
-| movimiento-almacen | |
-| relacion-obra | |
-| rentabilidad | |
-| responsable | |
-| estado-obra | |
-| tipo-facturable | |
-| tipo-obra | |
-| usuario | |
+| relacion-obra | ✅ | ✅ | ✅ | Tabla de relaciones padre-hijo entre obras. Sin CRUD estándar ni soft delete. Bug corregido: getObrasHijas pasaba 2 params con 1 placeholder. Model refactorizado: operaciones atómicas separadas (delete+insert). Servicio añade validación de auto-referencia |
+| rentabilidad | ✅ | ✅ | ✅ | Solo lectura (getByIdObra). Query con subqueries para gastos_almacen y gastos_compras. TODO existente: crear/actualizar debería estar ligado a obra |
+| responsable | ✅ | ✅ | ✅ | Solo lectura (getSubordinados). Clase renombrada a singular. Validación movida de controller a service. TODO existente: faltan operaciones CRUD |
+| estado-obra | ✅ | ✅ | ✅ | Solo lectura (getAll). Tabla catálogo |
+| tipo-facturable | ✅ | ✅ | ✅ | Solo lectura (getAll). Tabla catálogo |
+| tipo-obra | ✅ | ✅ | ✅ | Solo lectura (getAll). Tabla catálogo. TODO existente: faltan modelos para proveedores y tipos de gastos |
+| usuario | ✅ | ✅ | ✅ | getAll + login. Lógica de autenticación (hash MD5, comparación, stripping password) movida de model a service. console.log de debug eliminado. TODO existente: faltan operaciones CRUD |
 
 ---
 

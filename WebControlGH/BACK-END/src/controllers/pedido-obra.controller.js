@@ -1,13 +1,10 @@
-import { PedidoObraModel } from "../models/pedido-obra.model.js";
+import { PedidoObraService } from "../services/pedido-obra.service.js";
 
 export class PedidoObraController {
   static async getByObras(req, res, next) {
     try {
       const { idsObras } = req.body;
-      if (!Array.isArray(idsObras) || idsObras.length === 0) {
-        return res.json({ success: true, data: [] });
-      }
-      const pedidos = await PedidoObraModel.getByObras({ idsObras });
+      const pedidos = await PedidoObraService.getByObras(idsObras);
       res.json({ success: true, data: pedidos });
     } catch (error) {
       next(error);
@@ -16,8 +13,8 @@ export class PedidoObraController {
 
   static async create(req, res, next) {
     try {
-      const input = req.body;
-      const nuevoPedido = await PedidoObraModel.create({ input });
+      const pedidoData = req.body;
+      const nuevoPedido = await PedidoObraService.create(pedidoData);
       res.status(201).json({ success: true, data: nuevoPedido });
     } catch (error) {
       next(error);
@@ -27,17 +24,11 @@ export class PedidoObraController {
   static async update(req, res, next) {
     try {
       const { idPedido } = req.params;
-      const input = req.body;
-      const pedidoActualizado = await PedidoObraModel.update({
-        idPedido: Number(idPedido),
-        input,
-      });
-
-      if (!pedidoActualizado) {
-        const error = new Error("Pedido no encontradao o actualizado");
-        error.name = "NotFoundError";
-        throw error;
-      }
+      const updateData = req.body;
+      const pedidoActualizado = await PedidoObraService.update(
+        idPedido,
+        updateData,
+      );
       res.json({ success: true, data: pedidoActualizado });
     } catch (error) {
       next(error);
@@ -48,26 +39,26 @@ export class PedidoObraController {
     try {
       const { idPedido } = req.params;
       const { codigoUsuarioBaja } = req.body;
-
-      /* 
-      if (!codigoUsuarioBaja) {
-        const error = new Error("codigoUsuarioBaja es requerido para eliminar");
-        error.name = "ValidationError";
-        throw error;
-      }
-      */
-
-      const pedidoEliminado = await PedidoObraModel.delete({
-        idPedido: Number(idPedido),
+      const pedidoEliminado = await PedidoObraService.delete(
+        idPedido,
         codigoUsuarioBaja,
-      });
-
-      if (!pedidoEliminado) {
-        const error = new Error("Pedido no encontrado o ya eliminado");
-        error.name = "NotFoundError";
-        throw error;
-      }
+      );
       res.json({ success: true, data: pedidoEliminado });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async buscarConFiltros(req, res, next) {
+    try {
+      const filtros = req.body;
+      const pedidos = await PedidoObraService.buscarConFiltros(filtros);
+      res.status(200).json({
+        success: true,
+        data: pedidos,
+        count: pedidos.length,
+        filtros: filtros,
+      });
     } catch (error) {
       next(error);
     }

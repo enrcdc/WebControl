@@ -1,5 +1,12 @@
 import { pool } from "../config/database.js";
 
+// TODO: Hay que darle una vuelta a este modelo.
+// La creación de una entrada en la tabla de rentabilidad debe estar asociada 
+// a una obra recién creada.
+// La actualización de una entrada en la tabla de rentabilidad debe estar asociada 
+// a la actualización de los datos de una obra existente
+
+
 export class RentabilidadModel {
   static async getByIdObra({ idObra }) {
     const query = `

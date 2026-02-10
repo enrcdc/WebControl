@@ -1,5 +1,7 @@
 import { pool } from "../config/database.js";
 
+// TODO: Faltan más operaciones CRUD
+
 export class GastoModel {
   static async getAllGastosPorValidar() {
     const query = `

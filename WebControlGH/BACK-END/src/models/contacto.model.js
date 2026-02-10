@@ -2,6 +2,8 @@ import { pool } from "../config/database.js";
 
 // MODELO DE NEGOCIO PARA LOS CONTACTOS
 
+// TODO: Faltan más operaciones CRUD
+
 export class ContactoModel {
   static async getAll() {
     const query = `

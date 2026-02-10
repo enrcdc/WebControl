@@ -1,5 +1,7 @@
 import { pool } from "../config/database.js";
 
+// TODO: Faltan más operaciones CRUD
+
 // Funciona con varios ids de obras. Necesario para obtener las horas
 //  de las obras subordinadas
 export class HoraModel {
@@ -13,13 +15,26 @@ export class HoraModel {
         h.fecha_validacion,
         u2.codigo_firma AS usuario_validacion,
         h.num_horas,
-        h.precio_hora
+        h.precio_hora,
+        o.id_obra,
+        o.estado_obra,
+        o.tipo_obra,
+        r.cod_usuario_manager,
+        t.etiqueta AS tarea,
+        t.descripcion AS descripcion_tarea
+
     FROM
         horasobra AS h
     LEFT JOIN
         usuarios AS u ON h.codigo_usuario = u.codigo_usuario
     LEFT JOIN
+        responsables r ON u.codigo_usuario = r.cod_usuario
+    LEFT JOIN
         usuarios AS u2 ON h.codigo_usuario_validacion = u2.codigo_usuario
+    LEFT JOIN 
+        tareas t ON h.id_tarea = t.id
+    LEFT JOIN
+        obras o ON h.id_obra = o.id_obra
     WHERE
         h.id_obra IN (${placeholders})
     `;
@@ -37,6 +52,8 @@ export class HoraModel {
     u.apellido1,
     u.apellido2,
     u.usuario_bonita AS nombre_usuario,
+    r.cod_usuario_manager,
+    o.id_obra,
     o.codigo_obra,
     o.descripcion_obra,
     o.observaciones,
@@ -59,6 +76,8 @@ export class HoraModel {
     horasobra h
   JOIN
     usuarios u ON h.codigo_usuario = u.codigo_usuario
+  JOIN
+    responsables r ON u.codigo_usuario = r.cod_usuario
   LEFT JOIN
     usuarios u_validador ON h.codigo_usuario_validacion = u_validador.codigo_usuario
   JOIN
@@ -133,60 +152,44 @@ export class HoraModel {
 
   // funcion para agregar una nueva hora a la base de datos
   static async create({ input }) {
+    // Valores
+    const values = [
+      input.diaTrabajado,
+      input.usuarioAsignado,
+      input.obraAsignada,
+      input.tareaAsignada,
+      input.horasAsignadas,
+      input.observaciones,
+    ];
+
+    const placeholders = values.map((v) => "?").join(", ");
     // Query
     const query = `
-      INSERT INTO obras (
-          codigo_obra,
-          descripcion_obra,
-          fecha_seg,
-          tipo_obra,
-          facturable,
-          estado_obra,
-          fecha_alta,
-          codigo_usuario_alta,
-          fecha_prevista_fin,
-          fecha_oferta,
-          horas_previstas,
-          gasto_previsto,
-          importe,
-          viabilidad,
-          id_empresa,
-          id_contacto,
-          id_edificio,
-          observaciones,
-          observaciones_internas,
-          version
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)`;
+      INSERT INTO horasobra (
+          dia_trabajado,
+          codigo_usuario,
+          id_obra,
+          id_tarea,
+          num_horas,
+          observaciones
+      ) VALUES (${placeholders})`;
 
-    const [result] = await pool.query(query, [...values]);
+    const [result] = await pool.query(query, values);
 
     // Seleccionamos el registro recién insertado y que vamos a devolver
     // como resultado de la operación de creación
     const [rows] = await pool.query(
       `
-         SELECT
-          codigo_obra,
-          descripcion_obra,
-          fecha_seg,
-          tipo_obra,
-          facturable,
-          estado_obra,
-          fecha_alta,
-          codigo_usuario_alta,
-          fecha_prevista_fin,
-          fecha_oferta,
-          horas_previstas,
-          gasto_previsto,
-          importe,
-          viabilidad,
-          id_empresa,
-          id_contacto,
-          id_edificio,
-          observaciones,
-          observaciones_internas
-        FROM obras
-        WHERE id_obra = ?`,
-      [result.insertId]
+      SELECT
+        dia_trabajado,
+        codigo_usuario,
+        id_obra,
+        id_tarea,
+        num_horas,
+        observaciones
+      FROM horasobra
+      WHERE id_horasobra = ?`,
+      [result.insertId],
     );
     return rows[0] ?? null;
   }
