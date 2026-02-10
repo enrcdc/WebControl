@@ -1,0 +1,2 @@
+### GET de los subordinados de un responsable
+GET http://localhost:3002/api/responsables/subordinados/4

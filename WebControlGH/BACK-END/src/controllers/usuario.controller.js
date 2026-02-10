@@ -3,7 +3,8 @@ import { UsuarioService } from "../services/usuario.service.js";
 export class UsuarioController {
   static async getAll(req, res, next) {
     try {
-      const usuarios = await UsuarioService.getAll();
+      const filters = req.query;
+      const usuarios = await UsuarioService.getAll(filters);
       res.json({ success: true, data: usuarios });
     } catch (error) {
       next(error);

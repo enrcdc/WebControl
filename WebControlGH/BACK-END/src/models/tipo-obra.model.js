@@ -1,19 +1,12 @@
-import { pool } from "../config/database.js";
+import { db } from "../config/database.js";
 
-// TODO: Faltan dos modelos más. Los proveedores (Operacioes CRUD Completas)
+// TODO: Faltan dos modelos más. Los proveedores (Operaciones CRUD Completas)
 // y los tipos de gastos (Operaciones CRUD completas)
 
 export class TipoObraModel {
   static async getAll() {
-    const query = `
-    SELECT 
-        id_tipo,
-        descripcion,
-        orden
-    FROM tipoobra
-    ORDER BY id_tipo`;
-
-    const [result] = await pool.query(query);
-    return result;
+    return db("tipoobra")
+      .select("id_tipo", "descripcion", "orden")
+      .orderBy("id_tipo");
   }
 }

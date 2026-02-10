@@ -3,8 +3,8 @@ import { UsuarioModel } from "../models/usuario.model.js";
 import { InvalidDataError, UnauthorizedError } from "../errors/index.js";
 
 export class UsuarioService {
-  static async getAll() {
-    const usuarios = await UsuarioModel.getAll();
+  static async getAll(filters = {}) {
+    const usuarios = await UsuarioModel.getAll(filters);
     return usuarios;
   }
 

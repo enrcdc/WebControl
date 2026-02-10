@@ -91,7 +91,10 @@ Funciones reutilizables por cualquier servicio. Las funciones específicas de do
 
 ---
 
-## 5. Patrón `buscarConFiltros`
+## 5. Patrón `buscarConFiltros` (DEPRECATED — ver sección 11)
+
+> **NOTA:** Este patrón fue la primera iteración. La segunda iteración (sección 11) lo reemplaza
+> por filtrado dinámico en SQL con Knex.js, que es más eficiente.
 
 Cada servicio incluye un método genérico `buscarConFiltros(filtros)` que:
 - Recibe un objeto con los filtros a aplicar
@@ -122,7 +125,7 @@ router.delete("/:id", Controller.delete);
 
 ## 7. Progreso de servicios
 
-### Completados
+### Iteración 1: Capa de servicios — COMPLETADA ✅
 
 | Entidad | Service | Controller | Routes | Notas |
 |---------|---------|------------|--------|-------|
@@ -133,24 +136,21 @@ router.delete("/:id", Controller.delete);
 | gasto | ✅ | ✅ | ✅ | buscarConFiltros requiere campo `tipo` obligatorio: "por-validar", "por-pagar", "por-obras" |
 | factura-compra | ✅ | ✅ | ✅ | CRUD completo, soft delete, _getFacturaOrFail helper. Renombrada de "factura" |
 | hora | ✅ | ✅ | ✅ | Bug corregido: create ya inserta en `horasobra`. Filtros y TODOs actualizados por el desarrollador |
-| pedido-obra | ✅ | ✅ | ✅ | CRUD completo, soft delete, _getPedidoOrFail helper, buscarConFiltros por idsObras. PUT→PATCH |
-| factura-obra | ✅ | ✅ | ✅ | CRUD completo, soft delete, _getFacturaOrFail helper, buscarConFiltros por idsObras. JOIN con ecopedido en getByObras. PUT→PATCH |
-
-### Pendientes
-
-| almacen | ✅ | ✅ | ✅ | CRUD completo, soft delete, _getProductoOrFail, buscarConFiltros. Zod retirado del modelo (será middleware). Bug corregido: getById devolvía array. Bug corregido: ruta parametrizada antes de específica. PUT→PATCH |
-
-| movimiento-almacen | ✅ | ✅ | ✅ | CRUD completo, soft delete, _getMovimientoOrFail, buscarConFiltros por idObra. Update dinámico con camposPermitidos. Clase renombrada a singular. PUT→PATCH. Import corregido en routes |
-
-| Entidad | Notas |
-|---------|-------|
-| relacion-obra | ✅ | ✅ | ✅ | Tabla de relaciones padre-hijo entre obras. Sin CRUD estándar ni soft delete. Bug corregido: getObrasHijas pasaba 2 params con 1 placeholder. Model refactorizado: operaciones atómicas separadas (delete+insert). Servicio añade validación de auto-referencia |
-| rentabilidad | ✅ | ✅ | ✅ | Solo lectura (getByIdObra). Query con subqueries para gastos_almacen y gastos_compras. TODO existente: crear/actualizar debería estar ligado a obra |
-| responsable | ✅ | ✅ | ✅ | Solo lectura (getSubordinados). Clase renombrada a singular. Validación movida de controller a service. TODO existente: faltan operaciones CRUD |
+| pedido-obra | ✅ | ✅ | ✅ | CRUD completo, soft delete, _getPedidoOrFail helper. PUT→PATCH |
+| factura-obra | ✅ | ✅ | ✅ | CRUD completo, soft delete, _getFacturaOrFail helper. JOIN con ecopedido en getByObras. PUT→PATCH |
+| almacen | ✅ | ✅ | ✅ | CRUD completo, soft delete, _getProductoOrFail. Zod retirado del modelo. Bug corregido: getById devolvía array. Bug corregido: ruta parametrizada antes de específica. PUT→PATCH |
+| movimiento-almacen | ✅ | ✅ | ✅ | CRUD completo, soft delete, _getMovimientoOrFail. Clase renombrada a singular. PUT→PATCH |
+| relacion-obra | ✅ | ✅ | ✅ | Relaciones padre-hijo entre obras. Bug corregido: getObrasHijas params extra. Model: operaciones atómicas separadas. Validación de auto-referencia |
+| rentabilidad | ✅ | ✅ | ✅ | Solo lectura (getByIdObra). Subqueries para gastos_almacen y gastos_compras |
+| responsable | ✅ | ✅ | ✅ | Solo lectura (getSubordinados). Clase renombrada a singular |
 | estado-obra | ✅ | ✅ | ✅ | Solo lectura (getAll). Tabla catálogo |
 | tipo-facturable | ✅ | ✅ | ✅ | Solo lectura (getAll). Tabla catálogo |
-| tipo-obra | ✅ | ✅ | ✅ | Solo lectura (getAll). Tabla catálogo. TODO existente: faltan modelos para proveedores y tipos de gastos |
-| usuario | ✅ | ✅ | ✅ | getAll + login. Lógica de autenticación (hash MD5, comparación, stripping password) movida de model a service. console.log de debug eliminado. TODO existente: faltan operaciones CRUD |
+| tipo-obra | ✅ | ✅ | ✅ | Solo lectura (getAll). Tabla catálogo |
+| usuario | ✅ | ✅ | ✅ | getAll + login. Lógica de autenticación movida de model a service |
+
+### Iteración 2: Migración a Knex.js + filtrado dinámico en SQL — EN PROGRESO
+
+Ver sección 11.
 
 ---
 
@@ -178,3 +178,119 @@ router.delete("/:id", Controller.delete);
 - **Controladores thin**: Solo manejan HTTP. Sin lógica de negocio, sin conversiones de tipo, sin validaciones
 - **Los `console.log` de debug** se eliminan al refactorizar los controladores
 - **Método `_getEntityOrFail`**: Patrón privado reutilizado en servicios con CRUD para verificar existencia + soft delete
+
+---
+
+## 11. Iteración 2: Migración a Knex.js + filtrado dinámico en SQL
+
+### Problema detectado en la iteración 1
+
+El patrón `buscarConFiltros` de la primera iteración usaba `getAll()` + `Array.filter()` en JavaScript:
+
+```javascript
+// ❌ INEFICIENTE — Iteración 1
+static async buscarConFiltros(filtros) {
+  let datos = await Model.getAll();  // Trae TODOS los registros a Node.js
+  if (filtros.nombre) {
+    datos = datos.filter(d => d.nombre?.toLowerCase().includes(filtros.nombre.toLowerCase()));
+  }
+  return datos;
+}
+```
+
+**Problemas:**
+- Gran tráfico de red entre Node.js y la base de datos
+- Alto consumo de memoria en el servidor Node.js
+- Ineficiente: las BBDD están diseñadas específicamente para buscar y filtrar mediante índices
+
+### Solución: Filtrado dinámico en SQL con Knex.js
+
+Los filtros deben aplicarse **siempre en la base de datos**, no en JavaScript. Se usa un único método `getAll(filters = {})` que construye la query dinámicamente:
+
+```javascript
+// ✅ EFICIENTE — Iteración 2
+static async getAll(filters = {}) {
+  const query = knex("tabla").select("*");
+
+  if (filters.nombre) {
+    query.where("nombre", "like", `%${filters.nombre}%`);
+  }
+  if (filters.idObra) {
+    query.where("id_obra", filters.idObra);
+  }
+
+  return query;
+}
+```
+
+### Query builder elegido: Knex.js
+
+- Se integra nativamente con Node.js y MySQL
+- Construye queries SQL de forma segura (previene SQL injection)
+- Compatible con el patrón de filtrado dinámico
+- No es un ORM completo: permite seguir escribiendo SQL cuando sea necesario
+
+### Estrategia de endpoints para filtrado
+
+| Tipo de filtro | Método HTTP | Ejemplo |
+|---------------|-------------|---------|
+| Filtros simples (texto, números) | `GET /` con query params | `GET /usuarios?nombre=Juan` |
+| Filtros complejos (arrays de IDs) | `POST /filtrar` | `POST /gastos/filtrar` con `{ idsObra: [1,2,3] }` |
+
+- `GET /` sin query params → devuelve todos los registros
+- `GET /` con query params → devuelve filtrado
+- El controller extrae filtros de `req.query` y los pasa al servicio/modelo
+- `POST /filtrar` se mantiene solo para entidades con filtros complejos (arrays de IDs)
+
+### Métodos `getByX` existentes
+
+- Se mantienen temporalmente mientras el frontend los use
+- Marcados con `// TODO: Eliminar cuando el frontend use getAll(filters)`
+- Excepción: lookups internos como `getByUsername` (autenticación) se mantienen porque seleccionan campos diferentes (ej: password)
+
+### Cambios necesarios
+
+1. **Instalar Knex.js** y el driver MySQL correspondiente — ✅ Completado
+2. **Configuración**: `config/database.js` exporta `db` (Knex) y `pool` (legacy) — ✅ Completado
+3. **Modelos**: Migrar de `pool.query()` a `knex()` query builder con `getAll(filters = {})`
+4. **Servicios**: `getAll(filters)` pasa los filtros al modelo, se elimina lógica de filtrado en JS
+5. **Controllers**: `getAll` extrae filtros de `req.query`
+6. **Eliminar** métodos `getByX` específicos cuando se migre el frontend
+
+### Progreso de migración a Knex.js
+
+| Entidad | Knex | Filtrado SQL | Notas |
+|---------|------|-------------|-------|
+| estado-obra | ✅ | N/A | Tabla catálogo, solo getAll sin filtros |
+| tipo-facturable | ✅ | N/A | Tabla catálogo, solo getAll sin filtros |
+| tipo-obra | ✅ | N/A | Tabla catálogo, solo getAll sin filtros |
+| responsable | ✅ | N/A | Solo getSubordinadosByManager |
+| usuario | ✅ | ✅ | getAll(filters) con nombre, apellido, codigoFirma. getByUsername se mantiene (auth). Controller usa req.query |
+| rentabilidad | ✅ | N/A | Solo getByIdObra. Subqueries con db.raw() |
+| empresa | | | |
+| edificio | | | |
+| contacto | | | |
+| obra | | | |
+| gasto | | | |
+| factura-compra | | | |
+| hora | | | |
+| pedido-obra | | | |
+| factura-obra | | | |
+| almacen | | | |
+| movimiento-almacen | | | |
+| relacion-obra | | | |
+| responsable (subordinados) | | | |
+
+---
+
+## 12. Directriz para Claude Code: Decisiones de diseño
+
+**Cada vez que durante el proceso de refactorización surja una situación que requiera una decisión de diseño**, Claude Code deberá:
+
+1. **Identificar** que se trata de una decisión de diseño (no una simple implementación)
+2. **Ofrecer recomendaciones** sobre cuáles son las mejores opciones, siguiendo los **estándares de la industria** para el desarrollo full-stack con React, Express, Node y SQL
+3. **Explicar los trade-offs** de cada opción (rendimiento, mantenibilidad, escalabilidad, complejidad)
+4. **Recomendar una opción**, justificando por qué es la más adecuada para el contexto del proyecto
+5. **Esperar confirmación** del desarrollador antes de implementar
+
+Esto evita iteraciones innecesarias sobre refactorizaciones ya realizadas.
