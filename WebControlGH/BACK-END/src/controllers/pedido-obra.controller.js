@@ -1,11 +1,31 @@
 import { PedidoObraService } from "../services/pedido-obra.service.js";
 
 export class PedidoObraController {
-  static async getByObras(req, res, next) {
+  static async getAll(req, res, next) {
     try {
-      const { idsObras } = req.body;
-      const pedidos = await PedidoObraService.getByObras(idsObras);
-      res.json({ success: true, data: pedidos });
+      const filters = req.query;
+      const pedidos = await PedidoObraService.getAll(filters);
+      res.json({
+        success: true,
+        data: pedidos,
+        count: pedidos.length,
+        filters,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async filtrar(req, res, next) {
+    try {
+      const filters = req.body;
+      const pedidos = await PedidoObraService.getAll(filters);
+      res.json({
+        success: true,
+        data: pedidos,
+        count: pedidos.length,
+        filters,
+      });
     } catch (error) {
       next(error);
     }
@@ -15,7 +35,11 @@ export class PedidoObraController {
     try {
       const pedidoData = req.body;
       const nuevoPedido = await PedidoObraService.create(pedidoData);
-      res.status(201).json({ success: true, data: nuevoPedido });
+      res.status(201).json({
+        success: true,
+        message: "Pedido creado exitosamente",
+        data: nuevoPedido,
+      });
     } catch (error) {
       next(error);
     }
@@ -29,7 +53,11 @@ export class PedidoObraController {
         idPedido,
         updateData,
       );
-      res.json({ success: true, data: pedidoActualizado });
+      res.json({
+        success: true,
+        message: "Pedido actualizado exitosamente",
+        data: pedidoActualizado,
+      });
     } catch (error) {
       next(error);
     }
@@ -43,21 +71,10 @@ export class PedidoObraController {
         idPedido,
         codigoUsuarioBaja,
       );
-      res.json({ success: true, data: pedidoEliminado });
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  static async buscarConFiltros(req, res, next) {
-    try {
-      const filtros = req.body;
-      const pedidos = await PedidoObraService.buscarConFiltros(filtros);
-      res.status(200).json({
+      res.json({
         success: true,
-        data: pedidos,
-        count: pedidos.length,
-        filtros: filtros,
+        message: "Pedido eliminado exitosamente",
+        data: pedidoEliminado,
       });
     } catch (error) {
       next(error);

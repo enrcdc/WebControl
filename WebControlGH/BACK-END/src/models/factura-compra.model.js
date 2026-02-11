@@ -1,199 +1,170 @@
-import { pool } from "../config/database.js";
-import {
-  validateFactura,
-  validatePartialFactura,
-} from "../validations/facturasValidator.js";
-import { ValidationError } from "../validations/ValidationError.js";
+import { db } from "../config/database.js";
 
 export class FacturaCompraModel {
-  static async getAll() {
-    const [results] = await pool.query(
-      `SELECT 
-            f.id,
-            f.id_obra,
-            o.codigo_obra AS codigo_obra,
-            fc.Concepto AS concepto,
-            f.id_facturascompras,
-            fc.numero AS num_factura,
-            f.importe,
-            f.fecha_alta,
-            f.codigo_usuario_alta,
-            f.fecha_actualizacion,
-            f.fecha_baja,
-            f.codigo_usuario_baja,
-            f.observaciones,
-            f.version
-            FROM facturascompras_obra f
-            LEFT JOIN obras o ON f.id_obra = o.id_obra
-            LEFT JOIN facturascompras fc ON f.id_facturascompras = fc.id`
-    );
-    return results;
-  }
+  /**
+   * getAll recupera todas las facturas de compra según los filtros proporcionados.
+   * Si no se especifica un filtro, devuelve todos los registros.
+   * @param {Object} filters - El objeto de filtros.
+   * @param {number} [filters.idFactura] - filtrar por id
+   * @param {number} [filters.idObra] - filtrar por id de obra
+   * @param {string} [filters.codigoObra] - filtrar por código de obra
+   * @param {string} [filters.concepto] - filtrar por concepto
+   * @param {string} [filters.numFactura] - filtrar por número de factura
+   * @param {boolean} [filters.mostrarBaja] - true: solo dadas de baja, false: solo activas
+   * @returns {Promise<Array>} Array de resultados de filtrado
+   */
+  static async getAll(filters = {}) {
+    const query = db("facturascompras_obra as f")
+      .select(
+        "f.id",
+        "f.id_obra",
+        db.ref("o.codigo_obra").as("codigo_obra"),
+        db.ref("fc.Concepto").as("concepto"),
+        "f.id_facturascompras",
+        db.ref("fc.numero").as("num_factura"),
+        "f.importe",
+        "f.fecha_alta",
+        "f.codigo_usuario_alta",
+        "f.fecha_actualizacion",
+        "f.fecha_baja",
+        "f.codigo_usuario_baja",
+        "f.observaciones",
+        "f.version",
+      )
+      .leftJoin("obras as o", "f.id_obra", "o.id_obra")
+      .leftJoin("facturascompras as fc", "f.id_facturascompras", "fc.id");
 
-  static async getByObra({ idObra }) {
-    const query = `
-        SELECT
-        fo.*,
-        fc.Numero,
-        fc.Concepto,
-        u.codigo_firma
-        FROM facturascompras_obra AS fo
-        LEFT JOIN facturascompras fc ON fo.id_facturascompras = fc.id
-        LEFT JOIN usuarios AS u ON fo.codigo_usuario_alta = u.codigo_usuario
-        WHERE fo.id_obra = ? AND fo.fecha_baja IS NULL`;
+    if (filters.idFactura) {
+      query.where("f.id", filters.idFactura);
+    }
 
-    const [result] = await pool.query(query, [idObra]);
-    return result;
+    if (filters.idObra) {
+      query.where("f.id_obra", filters.idObra);
+    }
+
+    // TODO: Mirar si este filtro es necesario
+    if (filters.codigoObra) {
+      query.where("o.codigo_obra", "like", `%${filters.codigoObra}%`);
+    }
+
+    if (filters.concepto) {
+      query.where("fc.Concepto", "like", `%${filters.concepto}%`);
+    }
+
+    if (filters.numFactura) {
+      query.where("fc.numero", "like", `%${filters.numFactura}%`);
+    }
+
+    if (filters.mostrarBaja !== undefined) {
+      if (filters.mostrarBaja === "true" || filters.mostrarBaja === true) {
+        query.whereNotNull("f.fecha_baja");
+      } else {
+        query.whereNull("f.fecha_baja");
+      }
+    }
+
+    return query;
   }
 
   static async getById({ id }) {
-    const [result] = await pool.query(
-      `SELECT 
-                importe, fecha_alta, codigo_usuario_alta, fecha_actualizacion, fecha_baja, 
-                codigo_usuario_baja, observaciones, version 
-            FROM facturascompras_obra WHERE id = ?`,
-      [id]
-    );
-    return result[0] ?? null;
+    return db("facturascompras_obra")
+      .select(
+        "id",
+        "id_obra",
+        "id_facturascompras",
+        "importe",
+        "fecha_alta",
+        "codigo_usuario_alta",
+        "fecha_actualizacion",
+        "fecha_baja",
+        "codigo_usuario_baja",
+        "observaciones",
+        "version",
+      )
+      .where("id", id)
+      .first() ?? null;
   }
 
-  static async getByConcepto({ concepto }) {
-    const query = `
-		SELECT
-		id,
-		Numero,
-		Concepto
-		FROM
-		facturascompras
-		WHERE
-		Concepto LIKE CONCAT('%', ?, '%')`;
+  // TODO: Eliminar cuando el frontend use getAll(filters)
+  static async getByObra({ idObra }) {
+    return db("facturascompras_obra as fo")
+      .select(
+        "fo.*",
+        "fc.Numero",
+        "fc.Concepto",
+        "u.codigo_firma",
+      )
+      .leftJoin("facturascompras as fc", "fo.id_facturascompras", "fc.id")
+      .leftJoin("usuarios as u", "fo.codigo_usuario_alta", "u.codigo_usuario")
+      .where("fo.id_obra", idObra)
+      .whereNull("fo.fecha_baja");
+  }
 
-    const [result] = await pool.query(query, concepto);
-    return result;
+  // TODO: Eliminar cuando el frontend use getAll(filters)
+  static async getByConcepto({ concepto }) {
+    return db("facturascompras")
+      .select("id", "Numero", "Concepto")
+      .where("Concepto", "like", `%${concepto}%`);
   }
 
   static async create({ input }) {
-    const validatedData = validateFactura(input);
+    const [insertId] = await db("facturascompras_obra").insert({
+      id_obra: input.idObra,
+      id_facturascompras: input.idFacturasCompras,
+      importe: input.importe,
+      fecha_alta: input.fechaAlta,
+      codigo_usuario_alta: input.codigoUsuarioAlta,
+      fecha_actualizacion: input.fechaActualizacion,
+      fecha_baja: input.fechaBaja,
+      codigo_usuario_baja: input.codigoUsuarioBaja,
+      observaciones: input.observaciones,
+      version: input.version,
+    });
 
-    if (!validatedData.success) {
-      throw new ValidationError(
-        "Factura con formacto inválido",
-        validatedData.error.issues
-      );
-    }
-
-    const validData = validatedData.data;
-    const data = [
-      validData.idObra,
-      validData.idFacturasCompras,
-      validData.importe,
-      validData.fechaAlta,
-      validData.codigoUsuarioAlta,
-      validData.fechaActualizacion,
-      validData.fechaBaja,
-      validData.codigoUsuarioBaja,
-      validData.observaciones,
-      validData.version,
-    ];
-
-    const [result] = await pool.query(
-      `INSERT INTO facturascompras_obra (
-            id_obra, id_facturascompras, importe, fecha_alta, codigo_usuario_alta, 
-            fecha_actualizacion, fecha_baja, codigo_usuario_baja, observaciones, version
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      data
-    );
-
-    // Seleccionar el registro recién insertado
-    const [rows] = await pool.query(
-      `SELECT id, id_obra, id_facturascompras, importe, fecha_alta, codigo_usuario_alta, 
-                fecha_actualizacion, fecha_baja, codigo_usuario_baja, observaciones, version
-         FROM facturascompras_obra
-         WHERE id = ?`,
-      [result.insertId]
-    );
-    return rows[0] ?? null;
+    return db("facturascompras_obra").where("id", insertId).first() ?? null;
   }
 
   static async update({ id, input }) {
-    const parsed = validatePartialFactura(input);
-    if (!parsed.success) {
-      const error = new Error("Validation failed");
-      error.name = "ValidationError";
-      error.details = parsed.error.format();
-      throw error;
-    }
-
-    const valid = parsed.data;
-
-    if (Object.keys(valid).length === 0) {
-      const error = new Error("No fields provided for update");
+    if (Object.keys(input).length === 0) {
+      const error = new Error("No se proporcionaron campos para actualizar");
       error.name = "EmptyUpdateError";
       throw error;
     }
 
-    const fields = Object.keys(valid)
-      .map((key) => {
-        switch (key) {
-          case "idObra":
-            return "id_obra = ?";
-          case "idFacturasCompras":
-            return "id_facturascompras = ?";
-          case "fechaAlta":
-            return "fecha_alta = ?";
-          case "codigoUsuarioAlta":
-            return "codigo_usuario_alta = ?";
-          case "fechaActualizacion":
-            return "fecha_actualizacion = ?";
-          case "fechaBaja":
-            return "fecha_baja = ?";
-          case "codigoUsuarioBaja":
-            return "codigo_usuario_baja = ?";
-          default:
-            return `${key.toLowerCase()} = ?`;
-        }
-      })
-      .join(", ");
+    const updateData = {};
+    if (input.idObra !== undefined) updateData.id_obra = input.idObra;
+    if (input.idFacturasCompras !== undefined)
+      updateData.id_facturascompras = input.idFacturasCompras;
+    if (input.importe !== undefined) updateData.importe = input.importe;
+    if (input.fechaAlta !== undefined) updateData.fecha_alta = input.fechaAlta;
+    if (input.codigoUsuarioAlta !== undefined)
+      updateData.codigo_usuario_alta = input.codigoUsuarioAlta;
+    if (input.fechaActualizacion !== undefined)
+      updateData.fecha_actualizacion = input.fechaActualizacion;
+    if (input.fechaBaja !== undefined) updateData.fecha_baja = input.fechaBaja;
+    if (input.codigoUsuarioBaja !== undefined)
+      updateData.codigo_usuario_baja = input.codigoUsuarioBaja;
+    if (input.observaciones !== undefined)
+      updateData.observaciones = input.observaciones;
+    if (input.version !== undefined) updateData.version = input.version;
 
-    const values = Object.values(valid);
+    await db("facturascompras_obra").where("id", id).update(updateData);
 
-    await pool.query(
-      `UPDATE facturascompras_obra 
-             SET ${fields}
-             WHERE id = ?`,
-      [...values, id]
-    );
-
-    const [rows] = await pool.query(
-      `SELECT id, id_obra, id_facturascompras, importe, fecha_alta, codigo_usuario_alta,
-                    fecha_actualizacion, fecha_baja, codigo_usuario_baja, observaciones, version
-             FROM facturascompras_obra
-             WHERE id = ?`,
-      [id]
-    );
-
-    return rows[0] ?? null;
+    return db("facturascompras_obra").where("id", id).first() ?? null;
   }
 
   static async delete({ id, codigoUsuarioBaja = 67 } = {}) {
-    const [result] = await pool.query(
-      `UPDATE facturascompras_obra 
-         SET fecha_baja = NOW(), codigo_usuario_baja = ?
-         WHERE id = ?`,
-      [codigoUsuarioBaja, id]
-    );
+    const affectedRows = await db("facturascompras_obra")
+      .where("id", id)
+      .update({
+        fecha_baja: db.fn.now(),
+        codigo_usuario_baja: codigoUsuarioBaja,
+      });
 
-    if (result.affectedRows === 0) {
+    if (affectedRows === 0) {
       return null;
     }
 
-    const [rows] = await pool.query(
-      `SELECT id, id_obra, id_facturascompras, importe, fecha_alta, codigo_usuario_alta,
-                fecha_actualizacion, fecha_baja, codigo_usuario_baja, observaciones, version
-         FROM facturascompras_obra
-         WHERE id = ?`,
-      [id]
-    );
-    return rows[0] ?? null;
+    return db("facturascompras_obra").where("id", id).first() ?? null;
   }
 }

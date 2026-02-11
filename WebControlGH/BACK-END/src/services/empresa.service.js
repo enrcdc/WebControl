@@ -1,10 +1,10 @@
 import { EmpresaModel } from "../models/empresa.model.js";
 import { NotFoundError } from "../errors/index.js";
-import { validateAndSanitizeString } from "../utils/index.js";
+import { validateAndSanitizeString, validateNotEmpty } from "../utils/index.js";
 
 export class EmpresaService {
-  static async getAll() {
-    const empresas = await EmpresaModel.getAll();
+  static async getAll(filters = {}) {
+    const empresas = await EmpresaModel.getAll(filters);
 
     if (!empresas || empresas.length === 0) {
       throw new NotFoundError(
@@ -17,18 +17,7 @@ export class EmpresaService {
     return empresas;
   }
 
-  // TODO: De momento hay este, pero se pueden añadir más.
-  // (Retirar getByNombre cuando ya no se necesite)
-  static async buscarConFiltros(filtros) {
-    let empresas = await this.getAll();
-
-    if (filtros.nombre) {
-      empresas = empresas.filter((e) => e.nombre === filtros.nombre);
-    }
-
-    return empresas;
-  }
-
+  // TODO: Eliminar cuando el frontend use getAll(filters)
   static async getByNombre(nombre) {
     const sanitized = validateAndSanitizeString(nombre, "nombre de empresa", {
       minLength: 2,
@@ -45,5 +34,26 @@ export class EmpresaService {
     }
 
     return empresas;
+  }
+
+  static async create(empresaData) {
+    this._validateEmpresaData(empresaData);
+
+    const nuevaEmpresa = await EmpresaModel.create(empresaData);
+
+    if (!nuevaEmpresa) {
+      throw new Error("Error al crear la empresa");
+    }
+
+    return nuevaEmpresa;
+  }
+
+  // ============================================
+  // MÉTODOS PRIVADOS
+  // ============================================
+
+  // TODO: Más validaciones de lógica de negocio
+  static _validateEmpresaData(data) {
+    validateNotEmpty(data, "datos de la empresa");
   }
 }

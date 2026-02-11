@@ -1,40 +1,38 @@
-export function errorHandler(err, req, res, next) {
-  console.error(err);
+import { AppError } from "../errors/AppError.js";
 
-  if (err.name === "ValidationError") {
-    return res.status(400).json({
+export function errorHandler(err, req, res, next) {
+  // Errores operacionales (heredan de AppError)
+  if (err instanceof AppError) {
+    return res.status(err.statusCode).json({
       success: false,
-      errors: err.details ?? ["Error de validación desconocido"],
+      message: err.message,
+      details: err.details ?? null,
     });
   }
 
+  // ValidationError (Zod — no hereda de AppError)
+  if (err.name === "ValidationError") {
+    return res.status(400).json({
+      success: false,
+      message: err.message,
+      details: err.details ?? null,
+    });
+  }
+
+  // EmptyUpdateError (lanzado desde modelos)
   if (err.name === "EmptyUpdateError") {
     return res.status(400).json({
       success: false,
       message: err.message,
+      details: null,
     });
   }
 
-  if (err.name === "AlreadyDeletedError") {
-    return res.status(410).json({
-      success: false,
-      message: err.message,
-    });
-  }
-
-  if (err.name === "InvalidDataError") {
-    return res.status(400).json({
-      success: false,
-      message: err.message,
-    });
-  }
-
-  if (err.name === "NotFoundError") {
-    return res.status(404).json({
-      success: false,
-      message: err.message,
-    });
-  }
-
-  next(err);
+  // Error no controlado (500)
+  console.error(err);
+  res.status(500).json({
+    success: false,
+    message: "Error interno del servidor",
+    details: null,
+  });
 }

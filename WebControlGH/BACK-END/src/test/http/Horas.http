@@ -1,11 +1,12 @@
 ###### ENDPOINTS HORAS #############
 
 ### Obtener el listado de horas asociado a una obra
-POST http://localhost:3002/api/horas/buscar
+POST http://localhost:3002/api/horas/filtrar
 Content-Type: application/json
 
 {
-    "idsObra": [4037]
+    "idsObra": [4037],
+    "manager": 4
 }
 
 ### Crear una hora
@@ -20,17 +21,6 @@ Content-Type: application/json
     "horasAsignadas": 8,
     "observaciones": "Hora de prueba para probar POST"
 }
-
-### Búsqueda por filtros
-POST http://localhost:3002/api/horas/filtrar
-Content-Type: application/json
-
-{
-    "idsObras": [4039],
-    "tareas": [18]
-}
-
-
 
 
 ### Obtener el listado de todas las horas (Es muy lenta esta consulta)

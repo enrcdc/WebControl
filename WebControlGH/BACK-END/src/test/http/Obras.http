@@ -1,7 +1,7 @@
 ############################ OBRAS ############################
 
 ### GET Obras
-GET http://localhost:3002/api/obra
+GET http://localhost:3002/api/obra?relacionEntreObras=mostrarPadres
 
 ### GET Obra específica
 GET http://localhost:3002/api/obra/3708
@@ -31,7 +31,7 @@ Content-Type: application/json
   "empresa": 1,
   "estadoObra": 4,
   "facturable": 2,
-  "fechaAlta": "2022-06-16",
+  "fechaAlta": "2022-06-1634",
   "fechaFin": null,
   "fechaOferta": "2022-06-16",
   "fechaSeg": null,

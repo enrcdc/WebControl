@@ -23,14 +23,14 @@ Content-Type: application/json
 }
 
 
-### Obtener un gasto aplicando filtros 
+### Obtener un gasto aplicando filtros (Este es el que se queda). 
 POST http://localhost:3002/api/gastos/filtrar
 Content-Type: application/json
 
 {
-    "tipo": "por-obras",
-    "idsObra":[3708],
-    "usuarioAlta": "FJFM"
+    "tipo": "por-pagar",
+    "idsObra": [4039],
+    "tipoGasto": "Cena"
 
 }
 

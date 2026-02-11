@@ -3,8 +3,8 @@ import { NotFoundError, InvalidDataError } from "../errors/index.js";
 import { validateId, validateNotEmpty } from "../utils/index.js";
 
 export class ContactoService {
-  static async getAll() {
-    const contactos = await ContactoModel.getAll();
+  static async getAll(filters = {}) {
+    const contactos = await ContactoModel.getAll(filters);
 
     if (!contactos || contactos.length === 0) {
       throw new NotFoundError(
@@ -17,7 +17,7 @@ export class ContactoService {
     return contactos;
   }
 
-  // Este método debería desaparecer
+  // TODO: Eliminar cuando el frontend use getAll(filters)
   static async getByEmpresa(idEmpresa) {
     const validId = validateId(idEmpresa, "ID de empresa");
 
@@ -28,33 +28,6 @@ export class ContactoService {
         "Contactos",
         null,
         `No se encontraron contactos para la empresa con ID ${validId}`,
-      );
-    }
-
-    return contactos;
-  }
-
-  // TODO: De momento hay getByEmpresa, pero se pueden añadir más.
-  // (Retirar getByEmpresa cuando ya no se necesite)
-  static async buscarConFiltros(filtros) {
-    let contactos = await this.getAll();
-    console.log("filtros", filtros);
-
-    if (filtros.nombre) {
-      contactos = contactos.filter((c) =>
-        c.nombre.toLowerCase().includes(filtros.nombre.toLowerCase()),
-      );
-    }
-
-    if (filtros.apellido1) {
-      contactos = contactos.filter((c) =>
-        c.apellido1?.toLowerCase().includes(filtros.apellido1.toLowerCase()),
-      );
-    }
-
-    if (filtros.empresa) {
-      contactos = contactos.filter((c) =>
-        c.nombre_empresa?.toLowerCase().includes(filtros.empresa.toLowerCase()),
       );
     }
 

@@ -1,16 +1,29 @@
 ###### ENDPOINTS CONTACTO #############
 
 ### Obtener contacto por id de empresa
-GET http://localhost:3002/api/contacto/-1
+GET http://localhost:3002/api/contacto/10
 
-### Filtrar por nombre
-POST http://localhost:3002/api/contacto/filtrar
-Content-Type: application/json
-
-{
-    "nombre": "Ju",
-    "empresa": "Siem"
-}
+### Obtener contacto por filtros
+GET http://localhost:3002/api/contacto?idContacto=85
 
 ### Obtener todos los contactos
 GET http://localhost:3002/api/contacto
+
+### Añadir un contacto
+POST http://localhost:3002/api/contacto
+Content-Type: application/json
+
+{
+    "nombre": "Paco Pruebas",
+    "apellido1": "Probador",
+    "apellido2": "Probable",
+    "dni": "",
+    "telefono": "",
+    "telefono2": "",
+    "email": "",
+    "email2": "",
+    "direccion": "",
+    "observaciones": "Esta es una prueba para verificar el POST de Contactos",
+    "empresa": {"nombre": "Bimbo", "id": 32},
+    "complejos": [{"nombre": "TORRE DE CRISTAL", "id": 2}]
+}

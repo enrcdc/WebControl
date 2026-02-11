@@ -5,33 +5,20 @@ import { EmpresaService } from "../services/empresa.service.js";
 export class EmpresaController {
   static async getAll(req, res, next) {
     try {
-      const empresas = await EmpresaService.getAll();
+      const filters = req.query;
+      const empresas = await EmpresaService.getAll(filters);
       res.json({ success: true, data: empresas });
     } catch (error) {
       next(error);
     }
   }
 
+  // TODO: Eliminar cuando el frontend use getAll(filters)
   static async getByNombre(req, res, next) {
     try {
       const { nombre } = req.query;
       const empresas = await EmpresaService.getByNombre(nombre);
       res.json({ success: true, data: empresas });
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  static async buscarConFiltros(req, res, next) {
-    try {
-      const filtros = req.body;
-      const empresas = await EmpresaService.buscarConFiltros(filtros);
-      res.status(200).json({
-        success: true,
-        data: empresas,
-        count: empresas.length,
-        filtros: filtros,
-      });
     } catch (error) {
       next(error);
     }

@@ -1,19 +1,19 @@
 import { MovimientoAlmacenModel } from "../models/movimiento-almacen.model.js";
-import {
-  NotFoundError,
-  InvalidDataError,
-  AlreadyDeletedError,
-} from "../errors/index.js";
+import { NotFoundError, AlreadyDeletedError } from "../errors/index.js";
 import { validateId, validateNotEmpty } from "../utils/index.js";
 
 export class MovimientoAlmacenService {
-  // TODO: Buscar con filtros ya hace la función de este método.
-  static async getByObra(idObra) {
-    const validId = validateId(idObra, "ID de obra");
+  static async getAll(filters = {}) {
+    const movimientos = await MovimientoAlmacenModel.getAll(filters);
 
-    const movimientos = await MovimientoAlmacenModel.getByObra({
-      idObra: validId,
-    });
+    if (!movimientos || movimientos.length === 0) {
+      throw new NotFoundError(
+        "Movimientos",
+        null,
+        "No hay movimientos registrados en el sistema",
+      );
+    }
+
     return movimientos;
   }
 
@@ -68,44 +68,6 @@ export class MovimientoAlmacenService {
     }
 
     return movimientoEliminado;
-  }
-
-  static async buscarConFiltros(filtros) {
-    if (!filtros.idObra) {
-      throw new InvalidDataError(
-        "Se necesita especificar el ID de obra para filtrar movimientos",
-        { field: "idObra" },
-      );
-    }
-
-    const validId = validateId(filtros.idObra, "ID de obra");
-    let movimientos = await MovimientoAlmacenModel.getByObra({
-      idObra: validId,
-    });
-
-    if (filtros.referencia) {
-      movimientos = movimientos.filter(
-        (m) => m.id_referencia === filtros.referencia,
-      );
-    }
-
-    if (filtros.tipoMovimiento) {
-      movimientos = movimientos.filter((m) =>
-        m.tipo_movimiento
-          ?.toLowerCase()
-          .includes(filtros.tipoMovimiento.toLowerCase()),
-      );
-    }
-
-    if (filtros.conceptoMovimiento) {
-      movimientos = movimientos.filter((m) =>
-        m.concepto_movimiento
-          ?.toLowerCase()
-          .includes(filtros.conceptoMovimiento.toLowerCase()),
-      );
-    }
-
-    return movimientos;
   }
 
   // ============================================

@@ -3,8 +3,8 @@ import { NotFoundError } from "../errors/index.js";
 import { validateAndSanitizeString } from "../utils/index.js";
 
 export class EdificioService {
-  static async getAll() {
-    const edificios = await EdificioModel.getAll();
+  static async getAll(filters = {}) {
+    const edificios = await EdificioModel.getAll(filters);
 
     if (!edificios || edificios.length === 0) {
       throw new NotFoundError(
@@ -17,20 +17,7 @@ export class EdificioService {
     return edificios;
   }
 
-  // TODO: De momento hay este, pero se pueden añadir más.
-  // (Retirar getByNombre cuando ya no se necesite). Debe ser un includes no un ===
-  static async buscarConFiltros(filtros) {
-    let edificios = await this.getAll();
-
-    if (filtros.nombre) {
-      edificios = edificios.filter((e) =>
-        e.nombre.toLowerCase().includes(filtros.nombre.toLowerCase()),
-      );
-    }
-
-    return edificios;
-  }
-
+  // TODO: Eliminar cuando el frontend use getAll(filters)
   static async getByNombre(nombre) {
     const sanitized = validateAndSanitizeString(nombre, "nombre de edificio", {
       minLength: 2,

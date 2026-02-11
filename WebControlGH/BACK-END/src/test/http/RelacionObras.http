@@ -1,10 +1,10 @@
 ###### ENDPOINTS RELACION - OBRAS #############
 
 ### Obtener padre de una obra
-GET http://localhost:3002/api/relacion-obras/padre/4733
+GET http://localhost:3002/api/relacion-obras/padre/2
 
 ### Obtener hijas de una obra
-GET http://localhost:3002/api/relacion-obras/hijas/4039
+GET http://localhost:3002/api/relacion-obras/hijas/1
 
 ### Establecer un padre a una obra
 POST http://localhost:3002/api/relacion-obras/padre

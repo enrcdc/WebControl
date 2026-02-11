@@ -4,18 +4,10 @@
 GET http://localhost:3002/api/almacen
 
 ### Obtener un producto específico
-GET http://localhost:3002/api/almacen/1
-
-### Obtener un producto por la descripción (debería ser eliminado)
-GET http://localhost:3002/api/almacen/buscar/descripcion?descripcion=cable
+GET http://localhost:3002/api/almacen?idProducto=58
 
 ### Obtener un producto por la descripción
-POST http://localhost:3002/api/almacen/filtrar
-Content-Type: application/json
-
-{
-  "unidades": "uds."
-}
+GET http://localhost:3002/api/almacen?descripcion=manguera 3x1
 
 ### Crear un producto
 POST http://localhost:3002/api/almacen
@@ -62,7 +54,7 @@ Content-Type: application/json
 }
 
 ### Borrar un producto
-DELETE http://localhost:3002/api/almacen/244
+DELETE http://localhost:3002/api/almacen/239
 Content-Type: application/json
 
 {

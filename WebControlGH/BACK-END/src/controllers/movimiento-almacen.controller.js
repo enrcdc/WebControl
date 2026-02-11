@@ -1,11 +1,16 @@
 import { MovimientoAlmacenService } from "../services/movimiento-almacen.service.js";
 
 export class MovimientoAlmacenController {
-  static async getByObra(req, res, next) {
+  static async getAll(req, res, next) {
     try {
-      const { idObra } = req.params;
-      const movimientos = await MovimientoAlmacenService.getByObra(idObra);
-      res.json({ success: true, data: movimientos });
+      const filters = req.query;
+      const movimientos = await MovimientoAlmacenService.getAll(filters);
+      res.json({
+        success: true,
+        data: movimientos,
+        count: movimientos.length,
+        filters,
+      });
     } catch (error) {
       next(error);
     }
@@ -16,7 +21,11 @@ export class MovimientoAlmacenController {
       const movimientoData = req.body;
       const nuevoMovimiento =
         await MovimientoAlmacenService.create(movimientoData);
-      res.status(201).json({ success: true, data: nuevoMovimiento });
+      res.status(201).json({
+        success: true,
+        message: "Movimiento creado exitosamente",
+        data: nuevoMovimiento,
+      });
     } catch (error) {
       next(error);
     }
@@ -30,7 +39,11 @@ export class MovimientoAlmacenController {
         idMovimiento,
         updateData,
       );
-      res.json({ success: true, data: movimientoActualizado });
+      res.json({
+        success: true,
+        message: "Movimiento actualizado exitosamente",
+        data: movimientoActualizado,
+      });
     } catch (error) {
       next(error);
     }
@@ -44,22 +57,10 @@ export class MovimientoAlmacenController {
         idMovimiento,
         codigoUsuarioBaja,
       );
-      res.json({ success: true, data: movimientoEliminado });
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  static async buscarConFiltros(req, res, next) {
-    try {
-      const filtros = req.body;
-      const movimientos =
-        await MovimientoAlmacenService.buscarConFiltros(filtros);
-      res.status(200).json({
+      res.json({
         success: true,
-        data: movimientos,
-        count: movimientos.length,
-        filtros: filtros,
+        message: "Movimiento eliminado exitosamente",
+        data: movimientoEliminado,
       });
     } catch (error) {
       next(error);

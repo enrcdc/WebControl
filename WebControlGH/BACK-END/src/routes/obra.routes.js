@@ -1,20 +1,22 @@
 import { ObraController } from "../controllers/obra.controller.js";
 import { Router } from "express";
-import { errorHandler } from "../middlewares/ErrorHandler.js";
+import { validate } from "../middlewares/validate.js";
+import { createObraSchema, updateObraSchema } from "../validations/obrasValidator.js";
 
 export const obraRouter = Router();
 
 // CUIDADO. EL ORDEN DE LAS RUTAS AFECTA. SI PONES PRIMERO /:idObra,
-// NO SE PROCESARÁN LAS RUTAS DE FILTRADO
+// NO SE PROCESARÁN LAS RUTAS ESPECÍFICAS
 obraRouter.get("/", ObraController.getAll);
-// TODO: Quitar este endpoint porque /filtrar ya hace su trabajo
+obraRouter.get("/estadisticas", ObraController.getEstadisticas);
+// TODO: Eliminar cuando el frontend use getAll(filters)
 obraRouter.get("/buscar/descripcion", ObraController.getByDescripcion);
+// TODO: Eliminar cuando el frontend use getAll(filters)
 obraRouter.get("/:idObra", ObraController.getById);
-obraRouter.post("/", ObraController.create);
-obraRouter.post("/filtrar", ObraController.buscarConFiltros);
-obraRouter.put("/:idObra", ObraController.update);
+obraRouter.post("/filtrar", ObraController.filtrar);
+// FÍJATE EN COMO SE ESPECIFICA EL MIDDLEWARE DE VALIDACIÓN PARA LA RUTA DE POST
+obraRouter.post("/", validate(createObraSchema), ObraController.create);
+obraRouter.patch("/:idObra", validate(updateObraSchema), ObraController.update);
 obraRouter.delete("/:idObra", ObraController.delete);
-
-obraRouter.use(errorHandler);
 
 export default obraRouter;

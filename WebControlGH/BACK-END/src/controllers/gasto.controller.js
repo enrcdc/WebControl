@@ -1,24 +1,27 @@
 import { GastoService } from "../services/gasto.service.js";
 
 export class GastoController {
-  static async getAllGastosPorValidar(req, res, next) {
+  static async getAll(req, res, next) {
     try {
-      const gastosPorValidar = await GastoService.getAllGastosPorValidar();
-      res.json({ success: true, data: gastosPorValidar });
+      const filters = req.query;
+      const gastos = await GastoService.getAll(filters);
+      res.json({ success: true, data: gastos });
     } catch (error) {
       next(error);
     }
   }
 
-  static async getAllGastosPorPagar(req, res, next) {
+  static async filtrar(req, res, next) {
     try {
-      const gastosPorPagar = await GastoService.getAllGastosPorPagar();
-      res.json({ success: true, data: gastosPorPagar });
+      const filters = req.body;
+      const gastos = await GastoService.getAll(filters);
+      res.json({ success: true, data: gastos, count: gastos.length });
     } catch (error) {
       next(error);
     }
   }
 
+  // TODO: Eliminar cuando el frontend use getAll(filters)
   static async getGastosByObra(req, res, next) {
     try {
       const { idsObra } = req.body;
@@ -29,26 +32,12 @@ export class GastoController {
     }
   }
 
+  // TODO: Eliminar cuando el frontend use getAll(filters)
   static async getHorasExtraByObra(req, res, next) {
     try {
       const { idsObra } = req.body;
       const horasExtra = await GastoService.getHorasExtraByObra(idsObra);
       res.json({ success: true, data: horasExtra });
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  static async buscarConFiltros(req, res, next) {
-    try {
-      const filtros = req.body;
-      const gastos = await GastoService.buscarConFiltros(filtros);
-      res.status(200).json({
-        success: true,
-        data: gastos,
-        count: gastos.length,
-        filtros: filtros,
-      });
     } catch (error) {
       next(error);
     }

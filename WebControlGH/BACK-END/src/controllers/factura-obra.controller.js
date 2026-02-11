@@ -1,11 +1,31 @@
 import { FacturaObraService } from "../services/factura-obra.service.js";
 
 export class FacturaObraController {
-  static async getByObras(req, res, next) {
+  static async getAll(req, res, next) {
     try {
-      const { idsObras } = req.body;
-      const facturas = await FacturaObraService.getByObras(idsObras);
-      res.json({ success: true, data: facturas });
+      const filters = req.query;
+      const facturas = await FacturaObraService.getAll(filters);
+      res.json({
+        success: true,
+        data: facturas,
+        count: facturas.length,
+        filters,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async filtrar(req, res, next) {
+    try {
+      const filters = req.body;
+      const facturas = await FacturaObraService.getAll(filters);
+      res.json({
+        success: true,
+        data: facturas,
+        count: facturas.length,
+        filters,
+      });
     } catch (error) {
       next(error);
     }
@@ -15,7 +35,11 @@ export class FacturaObraController {
     try {
       const facturaData = req.body;
       const nuevaFactura = await FacturaObraService.create(facturaData);
-      res.status(201).json({ success: true, data: nuevaFactura });
+      res.status(201).json({
+        success: true,
+        message: "Factura creada exitosamente",
+        data: nuevaFactura,
+      });
     } catch (error) {
       next(error);
     }
@@ -29,7 +53,11 @@ export class FacturaObraController {
         idFactura,
         updateData,
       );
-      res.json({ success: true, data: facturaActualizada });
+      res.json({
+        success: true,
+        message: "Factura actualizada exitosamente",
+        data: facturaActualizada,
+      });
     } catch (error) {
       next(error);
     }
@@ -43,21 +71,10 @@ export class FacturaObraController {
         idFactura,
         codigoUsuarioBaja,
       );
-      res.json({ success: true, data: facturaEliminada });
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  static async buscarConFiltros(req, res, next) {
-    try {
-      const filtros = req.body;
-      const facturas = await FacturaObraService.buscarConFiltros(filtros);
-      res.status(200).json({
+      res.json({
         success: true,
-        data: facturas,
-        count: facturas.length,
-        filtros: filtros,
+        message: "Factura eliminada exitosamente",
+        data: facturaEliminada,
       });
     } catch (error) {
       next(error);

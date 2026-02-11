@@ -1,26 +1,16 @@
 ############################ facturaCompra ############################
 
 ### GET facturaCompra
-GET http://localhost:3002/api/facturaCompra
+GET http://localhost:3002/api/facturaCompra?concepto=MATERIAL VARIO FERRETERIA-HERRAMIENTA
 
-### GET FACTURA BY ID
+### GET FACTURA BY ID (Debería desaparecer)
 GET http://localhost:3002/api/facturaCompra/209
 
-### GET facturaCompra BY OBRAS
+### GET facturaCompra BY OBRAS (Debería desaparecer)
 GET http://localhost:3002/api/facturaCompra/obra/1503
 
-### GET BY CONCEPTO
+### GET BY CONCEPTO (Debería desaparecer)
 GET http://localhost:3002/api/facturaCompra/buscar/concepto?concepto=SAMSUNG
-
-### BUSCAR POR FILTROS
-POST http://localhost:3002/api/facturaCompra/filtrar
-Content-Type: application/json
-
-{
-    "codigoObra": "13",
-    "concepto": "MATERIAL ELECTRICO"
-}
-
 
 ### NUEVA FACTURA
 POST http://localhost:3002/api/facturaCompra/209
@@ -28,7 +18,7 @@ Content-Type: application/json
 
 {
     "codigoUsuarioAlta": 67,
-    "fechaAlta": "2025-10-09",
+    "fechaAlta": "2026-02-11",
     "idfacturaCompraCompras": 313,
     "idObra": 1503,
     "importe": "12",

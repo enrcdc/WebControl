@@ -1,196 +1,142 @@
-import { pool } from "../config/database.js";
+import { db } from "../config/database.js";
 
 // TODO: Faltan más operaciones CRUD
 
-// Funciona con varios ids de obras. Necesario para obtener las horas
-//  de las obras subordinadas
 export class HoraModel {
-  static async getByObra({ idsObra }) {
-    const placeholders = idsObra.map(() => "?").join(", ");
-    const query = `
-    SELECT
-        h.dia_trabajado,
-        u.codigo_firma AS usuario,
-        h.id_tarea,
-        h.fecha_validacion,
-        u2.codigo_firma AS usuario_validacion,
-        h.num_horas,
-        h.precio_hora,
-        o.id_obra,
-        o.estado_obra,
-        o.tipo_obra,
-        r.cod_usuario_manager,
-        t.etiqueta AS tarea,
-        t.descripcion AS descripcion_tarea
+  /**
+   * getAll recupera todas las horas según los filtros proporcionados.
+   * Si no se especifica un filtro, devuelve todos los registros.
+   * @param {Object} filters - El objeto de filtros.
+   * @param {number} [filters.idHora] - filtrar por id
+   * @param {Array<number>} [filters.idsObra] - filtrar por ids de obra [Array]
+   * @param {string} [filters.usuario] - filtrar por nickname (like)
+   * @param {number} [filters.manager] - filtrar por código de usuario manager
+   * @param {Array<number>} [filters.estadosObra] - filtrar por estados de obra [Array]
+   * @param {Array<number>} [filters.tiposObra] - filtrar por tipos de obra [Array]
+   * @param {Array<number>} [filters.tareas] - filtrar por ids de tarea [Array]
+   * @param {boolean} [filters.validadas] - true: solo validadas, false: solo sin validar
+   * @param {string} [filters.fechaDesde] - filtrar desde fecha (inclusive)
+   * @param {string} [filters.fechaHasta] - filtrar hasta fecha (inclusive)
+   * @returns {Promise<Array>} Array de resultados de filtrado
+   * @note Especificar al menos un filtro. Obtener todos los registros es costoso.
+   */
+  static async getAll(filters = {}) {
+    const query = db("horasobra as h")
+      .select(
+        "h.id_horasobra",
+        "u.codigo_usuario",
+        "u.nombre",
+        "u.apellido1",
+        "u.apellido2",
+        db.ref("u.usuario_bonita").as("nombre_usuario"),
+        "r.cod_usuario_manager",
+        "o.id_obra",
+        "o.codigo_obra",
+        "o.descripcion_obra",
+        "o.observaciones",
+        "o.estado_obra",
+        "o.tipo_obra",
+        db.ref("eo.descripcion_estado").as("estado_obra_descripcion"),
+        db.ref("tip.descripcion").as("tipo_obra_descripcion"),
+        "h.dia_trabajado",
+        "h.fecha_validacion",
+        "h.fecha_planificacion",
+        "h.codigo_usuario_validacion",
+        db.ref("u_validador.nombre").as("nombre_validador"),
+        db.ref("u_validador.apellido1").as("apellido1_validador"),
+        db.ref("u_validador.apellido2").as("apellido2_validador"),
+        db.ref("u_validador.usuario_bonita").as("nombre_usuario_validador"),
+        db.ref("t.etiqueta").as("tarea"),
+        db.ref("t.descripcion").as("descripcion_tarea"),
+        "h.num_horas",
+      )
+      .join("usuarios as u", "h.codigo_usuario", "u.codigo_usuario")
+      .join("responsables as r", "u.codigo_usuario", "r.cod_usuario")
+      .leftJoin(
+        "usuarios as u_validador",
+        "h.codigo_usuario_validacion",
+        "u_validador.codigo_usuario",
+      )
+      .join("obras as o", "h.id_obra", "o.id_obra")
+      .leftJoin("tipoestadosobras as eo", "o.estado_obra", "eo.codigo_estado")
+      .leftJoin("tipoobra as tip", "o.tipo_obra", "tip.id_tipo")
+      .leftJoin("tareas as t", "h.id_tarea", "t.id")
+      .whereNull("h.fecha_baja")
+      .orderBy([
+        { column: "h.dia_trabajado", order: "desc" },
+        { column: "u.codigo_usuario" },
+        { column: "o.codigo_obra" },
+      ]);
 
-    FROM
-        horasobra AS h
-    LEFT JOIN
-        usuarios AS u ON h.codigo_usuario = u.codigo_usuario
-    LEFT JOIN
-        responsables r ON u.codigo_usuario = r.cod_usuario
-    LEFT JOIN
-        usuarios AS u2 ON h.codigo_usuario_validacion = u2.codigo_usuario
-    LEFT JOIN 
-        tareas t ON h.id_tarea = t.id
-    LEFT JOIN
-        obras o ON h.id_obra = o.id_obra
-    WHERE
-        h.id_obra IN (${placeholders})
-    `;
+    if (filters.idHora) {
+      query.where("h.id_horasobra", filters.idHora);
+    }
 
-    const [result] = await pool.query(query, idsObra);
-    return result;
+    if (filters.idsObra) {
+      query.whereIn("h.id_obra", filters.idsObra);
+    }
+
+    if (filters.usuario) {
+      query.where("u.usuario_bonita", "like", `%${filters.usuario}%`);
+    }
+
+    if (filters.manager) {
+      query.where("r.cod_usuario_manager", filters.manager);
+    }
+
+    if (filters.estadosObra) {
+      query.whereIn("o.estado_obra", filters.estadosObra);
+    }
+
+    if (filters.tiposObra) {
+      query.whereIn("o.tipo_obra", filters.tiposObra);
+    }
+
+    if (filters.tareas) {
+      query.whereIn("h.id_tarea", filters.tareas);
+    }
+
+    if (filters.validadas !== undefined) {
+      if (filters.validadas === true || filters.validadas === "true") {
+        query.whereNotNull("h.fecha_validacion");
+      } else {
+        query.whereNull("h.fecha_validacion");
+      }
+    }
+
+    if (filters.fechaDesde) {
+      query.where("h.dia_trabajado", ">=", filters.fechaDesde);
+    }
+
+    if (filters.fechaHasta) {
+      query.where("h.dia_trabajado", "<=", filters.fechaHasta);
+    }
+
+    return query;
   }
 
-  // Obtener TODAS las horas (validadas y sin validar) para aplicar filtros
-  static async getAllHoras() {
-    const query = `
-  SELECT
-    u.codigo_usuario,
-    u.nombre,
-    u.apellido1,
-    u.apellido2,
-    u.usuario_bonita AS nombre_usuario,
-    r.cod_usuario_manager,
-    o.id_obra,
-    o.codigo_obra,
-    o.descripcion_obra,
-    o.observaciones,
-    o.estado_obra,
-    o.tipo_obra,
-    eo.descripcion_estado AS estado_obra_descripcion,
-    tip.descripcion AS tipo_obra_descripcion,
-    h.dia_trabajado,
-    h.fecha_validacion,
-    h.fecha_planificacion,
-    h.codigo_usuario_validacion,
-    u_validador.nombre AS nombre_validador,
-    u_validador.apellido1 AS apellido1_validador,
-    u_validador.apellido2 AS apellido2_validador,
-    u_validador.usuario_bonita AS nombre_usuario_validador,
-    t.etiqueta AS tarea,
-    t.descripcion AS descripcion_tarea,
-    h.num_horas
-  FROM
-    horasobra h
-  JOIN
-    usuarios u ON h.codigo_usuario = u.codigo_usuario
-  JOIN
-    responsables r ON u.codigo_usuario = r.cod_usuario
-  LEFT JOIN
-    usuarios u_validador ON h.codigo_usuario_validacion = u_validador.codigo_usuario
-  JOIN
-    obras o ON h.id_obra = o.id_obra
-  LEFT JOIN
-    tipoestadosobras eo ON o.estado_obra = eo.codigo_estado
-  LEFT JOIN
-    tipoobra tip ON o.tipo_obra = tip.id_tipo
-  LEFT JOIN 
-    tareas t ON h.id_tarea = t.id
-  WHERE
-    h.fecha_baja IS NULL
-  ORDER BY
-    h.dia_trabajado DESC, u.codigo_usuario, o.codigo_obra;
-  `;
-    const [result] = await pool.query(query);
-    return result;
-  }
-
-  // Obtener horas solo de los subordinados de un manager específico
-  static async getHorasBySubordinados(managerCodigo) {
-    const query = `
-  SELECT
-    u.codigo_usuario,
-    u.nombre,
-    u.apellido1,
-    u.apellido2,
-    u.usuario_bonita AS nombre_usuario,
-    o.codigo_obra,
-    o.descripcion_obra,
-    o.observaciones,
-    o.estado_obra,
-    o.tipo_obra,
-    eo.descripcion_estado AS estado_obra_descripcion,
-    tip.descripcion AS tipo_obra_descripcion,
-    h.dia_trabajado,
-    h.fecha_validacion,
-    h.fecha_planificacion,
-    h.codigo_usuario_validacion,
-    u_validador.nombre AS nombre_validador,
-    u_validador.apellido1 AS apellido1_validador,
-    u_validador.apellido2 AS apellido2_validador,
-    u_validador.usuario_bonita AS nombre_usuario_validador,
-    t.etiqueta AS tarea,
-    t.descripcion AS descripcion_tarea,
-    h.num_horas
-  FROM
-    horasobra h
-  JOIN
-    usuarios u ON h.codigo_usuario = u.codigo_usuario
-  JOIN
-    responsables r ON u.codigo_usuario = r.cod_usuario
-  LEFT JOIN
-    usuarios u_validador ON h.codigo_usuario_validacion = u_validador.codigo_usuario
-  JOIN
-    obras o ON h.id_obra = o.id_obra
-  LEFT JOIN
-    tipoestadosobras eo ON o.estado_obra = eo.codigo_estado
-  LEFT JOIN
-    tipoobra tip ON o.tipo_obra = tip.id_tipo
-  LEFT JOIN 
-    tareas t ON h.id_tarea = t.id
-  WHERE
-    h.fecha_baja IS NULL
-    AND r.cod_usuario_manager = ?
-  ORDER BY
-    h.dia_trabajado DESC, u.codigo_usuario, o.codigo_obra;
-  `;
-    const [result] = await pool.query(query, [managerCodigo]);
-    return result;
-  }
-
-  // funcion para agregar una nueva hora a la base de datos
   static async create({ input }) {
-    // Valores
-    const values = [
-      input.diaTrabajado,
-      input.usuarioAsignado,
-      input.obraAsignada,
-      input.tareaAsignada,
-      input.horasAsignadas,
-      input.observaciones,
-    ];
+    const [insertId] = await db("horasobra").insert({
+      dia_trabajado: input.diaTrabajado,
+      codigo_usuario: input.usuarioAsignado,
+      id_obra: input.obraAsignada,
+      id_tarea: input.tareaAsignada,
+      num_horas: input.horasAsignadas,
+      observaciones: input.observaciones,
+    });
 
-    const placeholders = values.map((v) => "?").join(", ");
-    // Query
-    const query = `
-      INSERT INTO horasobra (
-          dia_trabajado,
-          codigo_usuario,
-          id_obra,
-          id_tarea,
-          num_horas,
-          observaciones
-      ) VALUES (${placeholders})`;
-
-    const [result] = await pool.query(query, values);
-
-    // Seleccionamos el registro recién insertado y que vamos a devolver
-    // como resultado de la operación de creación
-    const [rows] = await pool.query(
-      `
-      SELECT
-        dia_trabajado,
-        codigo_usuario,
-        id_obra,
-        id_tarea,
-        num_horas,
-        observaciones
-      FROM horasobra
-      WHERE id_horasobra = ?`,
-      [result.insertId],
+    return (
+      db("horasobra")
+        .select(
+          "dia_trabajado",
+          "codigo_usuario",
+          "id_obra",
+          "id_tarea",
+          "num_horas",
+          "observaciones",
+        )
+        .where("id_horasobra", insertId)
+        .first() ?? null
     );
-    return rows[0] ?? null;
   }
 }

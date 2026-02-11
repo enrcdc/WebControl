@@ -1,65 +1,51 @@
-/**
- * Controlador de Obras - VERSIÓN REFACTORIZADA
- *
- * El controlador SOLO maneja:
- * - Extracción de datos del request (params, query, body)
- * - Llamadas al servicio
- * - Formateo de respuestas HTTP
- * - Delegación de errores al middleware
- *
- * NO contiene lógica de negocio.
- */
-
 import { ObraService } from "../services/obra.service.js";
 
 export class ObraController {
-  /**
-   * GET /api/obra
-   * Obtener todas las obras
-   */
   static async getAll(req, res, next) {
     try {
-      const obras = await ObraService.getAll();
-
+      const filters = req.query;
+      const obras = await ObraService.getAll(filters);
       res.json({
         success: true,
         data: obras,
         count: obras.length,
+        filters,
       });
     } catch (error) {
       next(error);
     }
   }
 
-  /**
-   * GET /api/obra/:idObra
-   * Obtener obra por ID
-   */
+  static async filtrar(req, res, next) {
+    try {
+      const filters = req.body;
+      const obras = await ObraService.getAll(filters);
+      res.json({
+        success: true,
+        data: obras,
+        count: obras.length,
+        filters,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   static async getById(req, res, next) {
     try {
       const { idObra } = req.params;
-
       const obra = await ObraService.getById(idObra);
-
-      res.json({
-        success: true,
-        data: obra,
-      });
+      res.json({ success: true, data: obra });
     } catch (error) {
       next(error);
     }
   }
 
-  /**
-   * GET /api/obra/search?descripcion=xxx
-   * Buscar obras por descripción
-   */
+  // TODO: Eliminar cuando el frontend use getAll(filters)
   static async getByDescripcion(req, res, next) {
     try {
       const { descripcionObra } = req.query;
-
       const obras = await ObraService.getByDescripcion(descripcionObra);
-
       res.json({
         success: true,
         data: obras,
@@ -70,16 +56,10 @@ export class ObraController {
     }
   }
 
-  /**
-   * POST /api/obra
-   * Crear nueva obra
-   */
   static async create(req, res, next) {
     try {
       const obraData = req.body;
-
       const nuevaObra = await ObraService.create(obraData);
-
       res.status(201).json({
         success: true,
         message: "Obra creada exitosamente",
@@ -90,17 +70,11 @@ export class ObraController {
     }
   }
 
-  /**
-   * PUT /api/obra/:idObra
-   * Actualizar obra existente
-   */
   static async update(req, res, next) {
     try {
       const { idObra } = req.params;
       const updateData = req.body;
-
       const obraActualizada = await ObraService.update(idObra, updateData);
-
       res.json({
         success: true,
         message: "Obra actualizada exitosamente",
@@ -111,17 +85,11 @@ export class ObraController {
     }
   }
 
-  /**
-   * DELETE /api/obra/:idObra
-   * Eliminar obra (soft delete)
-   */
   static async delete(req, res, next) {
     try {
       const { idObra } = req.params;
       const { codigoUsuarioBaja } = req.body;
-
       const obraEliminada = await ObraService.delete(idObra, codigoUsuarioBaja);
-
       res.json({
         success: true,
         message: "Obra eliminada exitosamente",
@@ -132,39 +100,10 @@ export class ObraController {
     }
   }
 
-  /**
-   * GET /api/obra/estadisticas
-   * Obtener estadísticas de obras
-   */
   static async getEstadisticas(req, res, next) {
     try {
       const stats = await ObraService.getEstadisticas();
-
-      res.json({
-        success: true,
-        data: stats,
-      });
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  /**
-   * GET /api/obra/filtrar?empresa=1&estado=2
-   * Buscar obras con filtros avanzados
-   */
-  static async buscarConFiltros(req, res, next) {
-    try {
-      const filtros = req.body;
-
-      const obras = await ObraService.buscarConFiltros(filtros);
-
-      res.status(200).json({
-        success: true,
-        data: obras,
-        count: obras.length,
-        filtros: filtros,
-      });
+      res.json({ success: true, data: stats });
     } catch (error) {
       next(error);
     }

@@ -1,11 +1,11 @@
 ###### ENDPOINTS FACTURAS 2 #############
 
 ### Obtener facturas asociadas a una obra
-POST http://localhost:3002/api/facturaObra/buscar
+POST http://localhost:3002/api/facturaObra/filtrar
 Content-Type: application/json
 
 {
-    "idsObras": [4037]
+    "mostrarBaja": true
 }
 
 ### Crear una factura asociada a una obra
@@ -22,14 +22,6 @@ Content-Type: application/json
     "conceptoLinea": "Factura de prueba",
     "observaciones": "Esta es una factura de prueba",
     "idObra": 4037
-}
-
-### Buscar con filtros 
-POST http://localhost:3002/api/facturaObra/filtrar
-Content-Type: application/json
-
-{
-    "idsObras": [4037]
 }
 
 ### Actualizar una factura asociada a una obra

@@ -80,10 +80,5 @@ const facturaObraSchema = zod.object({
     .optional(),
 });
 
-export function validateFactura(object) {
-  return facturaObraSchema.safeParse(object);
-}
-
-export function validatePartialFactura(object) {
-  return facturaObraSchema.partial().safeParse(object);
-}
+export const createFacturaSchema = facturaObraSchema;
+export const updateFacturaSchema = facturaObraSchema.partial();

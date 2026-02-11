@@ -1,124 +1,144 @@
-import { pool } from "../config/database.js";
+import { db } from "../config/database.js";
 
 export class FacturaObraModel {
-  static async getById({ id }) {
-    const [rows] = await pool.query(
-      "SELECT * FROM ecofactura WHERE id_factura = ?",
-      [id],
-    );
-    return rows[0] ?? null;
+  /**
+   * getAll recupera todas las facturas de obra según los filtros proporcionados.
+   * Si no se especifica un filtro, devuelve todos los registros.
+   * @param {Object} filters - El objeto de filtros.
+   * @param {number} [filters.idFactura] - filtrar por id
+   * @param {Array<number>} [filters.idsObra] - filtrar por ids de obra [Array]
+   * @param {string} [filters.codigoFactura] - filtrar por código de factura (like)
+   * @param {string} [filters.conceptoLinea] - filtrar por concepto de línea (like)
+   * @param {string} [filters.conceptoFactura] - filtrar por concepto de factura (like)
+   * @param {string} [filters.codigoPedido] - filtrar por código de pedido (like)
+   * @param {boolean} [filters.mostrarBaja] - true: solo dadas de baja, false: solo activas
+   * @returns {Promise<Array>} Array de resultados de filtrado
+   */
+  static async getAll(filters = {}) {
+    const query = db("ecofactura as f")
+      .select(
+        "f.id_factura",
+        "f.id_pedido",
+        "f.id_obra",
+        "f.fecha",
+        "f.codigo_factura",
+        "f.posicion",
+        "f.importe",
+        "f.concepto_linea",
+        "f.concepto_factura",
+        "f.observaciones",
+        "f.fecha_cobro",
+        "f.fecha_baja",
+        "f.codigo_usuario_baja",
+        db.ref("p.codigo_pedido").as("codigo_pedido"),
+        db.ref("p.posicion").as("posicion_pedido"),
+      )
+      .leftJoin("ecopedido as p", "f.id_pedido", "p.id_pedido");
+
+    if (filters.idFactura) {
+      query.where("f.id_factura", filters.idFactura);
+    }
+
+    if (filters.idsObra) {
+      query.whereIn("f.id_obra", filters.idsObra);
+    }
+
+    if (filters.codigoFactura) {
+      query.where(
+        "f.codigo_factura",
+        "like",
+        `%${filters.codigoFactura}%`,
+      );
+    }
+
+    if (filters.conceptoLinea) {
+      query.where("f.concepto_linea", "like", `%${filters.conceptoLinea}%`);
+    }
+
+    if (filters.conceptoFactura) {
+      query.where(
+        "f.concepto_factura",
+        "like",
+        `%${filters.conceptoFactura}%`,
+      );
+    }
+
+    if (filters.codigoPedido) {
+      query.where("p.codigo_pedido", "like", `%${filters.codigoPedido}%`);
+    }
+
+    if (filters.mostrarBaja !== undefined) {
+      if (filters.mostrarBaja === "true" || filters.mostrarBaja === true) {
+        query.whereNotNull("f.fecha_baja");
+      } else {
+        query.whereNull("f.fecha_baja");
+      }
+    }
+
+    return query;
   }
 
-  static async getByObras({ idsObras }) {
-    const placeholders = idsObras.map(() => "?").join(", ");
-    const query = `
-      SELECT
-        f.*,
-        p.codigo_pedido,
-        p.posicion AS posicion_pedido
-      FROM ecofactura AS f
-      LEFT JOIN ecopedido AS p ON f.id_pedido = p.id_pedido
-      WHERE f.id_obra IN (${placeholders}) AND f.fecha_baja IS NULL`;
-
-    const [result] = await pool.query(query, idsObras);
-    return result;
+  static async getById({ id }) {
+    return (
+      db("ecofactura")
+        .select("*")
+        .where("id_factura", id)
+        .first() ?? null
+    );
   }
 
   static async create({ input }) {
-    const insertQuery = `
-      INSERT INTO ecofactura (
-        id_pedido,
-        fecha,
-        codigo_factura,
-        posicion,
-        importe,
-        concepto_linea,
-        concepto_factura,
-        observaciones,
-        id_obra,
-        fecha_cobro
-      )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    const [insertId] = await db("ecofactura").insert({
+      id_pedido: input.idPedido,
+      fecha: input.fechaFactura.split("T")[0],
+      codigo_factura: input.codigo,
+      posicion: input.posicion,
+      importe: input.importe,
+      concepto_linea: input.conceptoLinea,
+      concepto_factura: input.conceptoFactura,
+      observaciones: input.observaciones,
+      id_obra: input.idObra,
+      fecha_cobro: input.cobrado ? input.fechaCobro.split("T")[0] : null,
+    });
 
-    const values = [
-      input.idPedido,
-      input.fechaFactura.split("T")[0],
-      input.codigo,
-      input.posicion,
-      input.importe,
-      input.conceptoLinea,
-      input.conceptoFactura,
-      input.observaciones,
-      input.idObra,
-      input.cobrado ? input.fechaCobro.split("T")[0] : null,
-    ];
-
-    const [result] = await pool.query(insertQuery, values);
-
-    const [rows] = await pool.query(
-      "SELECT * FROM ecofactura WHERE id_factura = ?",
-      [result.insertId],
-    );
-
-    return rows[0] ?? null;
+    return db("ecofactura").where("id_factura", insertId).first() ?? null;
   }
 
   static async update({ idFactura, input }) {
-    const values = [
-      input.idPedido,
-      input.fechaFactura.split("T")[0],
-      input.codigo,
-      input.posicion,
-      input.importe,
-      input.conceptoLinea,
-      input.conceptoFactura,
-      input.observaciones,
-      input.cobrado ? input.fechaCobro.split("T")[0] : null,
-    ];
+    await db("ecofactura").where("id_factura", idFactura).update({
+      id_pedido: input.idPedido,
+      fecha: input.fechaFactura.split("T")[0],
+      codigo_factura: input.codigo,
+      posicion: input.posicion,
+      importe: input.importe,
+      concepto_linea: input.conceptoLinea,
+      concepto_factura: input.conceptoFactura,
+      observaciones: input.observaciones,
+      fecha_cobro: input.cobrado ? input.fechaCobro.split("T")[0] : null,
+    });
 
-    const query = `
-      UPDATE ecofactura
-      SET
-        id_pedido = ?,
-        fecha = ?,
-        codigo_factura = ?,
-        posicion = ?,
-        importe = ?,
-        concepto_linea = ?,
-        concepto_factura = ?,
-        observaciones = ?,
-        fecha_cobro = ?
-      WHERE id_factura = ?`;
-
-    await pool.query(query, [...values, idFactura]);
-
-    const [rows] = await pool.query(
-      "SELECT * FROM ecofactura WHERE id_factura = ?",
-      [idFactura],
-    );
-
-    return rows[0] ?? null;
+    return db("ecofactura").where("id_factura", idFactura).first() ?? null;
   }
 
   // TODO: De momento el codigo de usuario que da de baja esta hardcodeado
   // Habría que extraer el usuario logeado y asignarle como el que lo da de baja
   static async delete({ idFactura, codigoUsuarioBaja = 67 }) {
-    const query = `
-      UPDATE ecofactura
-      SET
-        fecha_baja = NOW(),
-        codigo_usuario_baja = ?
-      WHERE id_factura = ?`;
+    const affectedRows = await db("ecofactura")
+      .where("id_factura", idFactura)
+      .update({
+        fecha_baja: db.fn.now(),
+        codigo_usuario_baja: codigoUsuarioBaja,
+      });
 
-    await pool.query(query, [codigoUsuarioBaja, idFactura]);
+    if (affectedRows === 0) {
+      return null;
+    }
 
-    const [rows] = await pool.query(
-      `SELECT id_factura, codigo_factura, fecha_baja, codigo_usuario_baja
-       FROM ecofactura
-       WHERE id_factura = ?`,
-      [idFactura],
+    return (
+      db("ecofactura")
+        .select("id_factura", "codigo_factura", "fecha_baja", "codigo_usuario_baja")
+        .where("id_factura", idFactura)
+        .first() ?? null
     );
-
-    return rows[0] ?? null;
   }
 }

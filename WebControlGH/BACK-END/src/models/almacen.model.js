@@ -1,194 +1,196 @@
-import { pool } from "../config/database.js";
+import { db } from "../config/database.js";
 
 export class AlmacenModel {
-  static async getAll() {
-    const query = `
-      SELECT
-        a.id,
-        a.codigo,
-        a.descripcion,
-        a.etiqueta,
-        p.NombreProveedor,
-        a.fecha_alta,
-        f.etiqueta AS etiqueta_familia,
-        m.etiqueta AS etiqueta_marca,
-        a.stock,
-        a.stock_min,
-        a.stock_max,
-        a.codigo_usuario_alta,
-        tu.etiqueta AS etiqueta_unidad,
-        a.precio_minimo,
-        a.precio_maximo,
-        a.precio_total
-      FROM almacen AS a
-      LEFT JOIN proveedores AS p ON a.id_proveedor = p.id
-      LEFT JOIN familias AS f ON a.id_familia = f.id
-      LEFT JOIN marcas AS m ON a.id_marca = m.id
-      LEFT JOIN tipounidad AS tu ON a.id_tipounidad = tu.id
-      ORDER BY a.descripcion`;
+  /**
+   * getAll recupera todos los productos de almacén según los filtros proporcionados.
+   * Si no se especifica un filtro, devuelve todos los registros.
+   * @param {Object} filters - El objeto de filtros.
+   * @param {number} [filters.idProducto] - filtrar por id
+   * @param {string} [filters.descripcion] - filtrar por descripción (like)
+   * @param {string} [filters.codigo] - filtrar por código (like)
+   * @param {string} [filters.proveedor] - filtrar por nombre de proveedor (like)
+   * @param {string} [filters.familia] - filtrar por familia (like)
+   * @param {string} [filters.unidades] - filtrar por tipo de unidad (like)
+   * @param {string} [filters.marca] - filtrar por marca (like)
+   * @param {boolean} [filters.porDebajoMinimo] - true: stock < stock_min, false: stock >= stock_min
+   * @param {boolean} [filters.porEncimaMaximo] - true: stock > stock_max, false: stock <= stock_max
+   * @param {boolean} [filters.mostrarBaja] - true: solo dados de baja, false: solo activos
+   * @returns {Promise<Array>} Array de resultados de filtrado
+   */
+  static async getAll(filters = {}) {
+    const query = db("almacen as a")
+      .select(
+        "a.id",
+        "a.codigo",
+        "a.descripcion",
+        "a.etiqueta",
+        db.ref("p.NombreProveedor").as("NombreProveedor"),
+        "a.fecha_alta",
+        db.ref("f.etiqueta").as("etiqueta_familia"),
+        db.ref("m.etiqueta").as("etiqueta_marca"),
+        "a.stock",
+        "a.stock_min",
+        "a.stock_max",
+        "a.codigo_usuario_alta",
+        db.ref("tu.etiqueta").as("etiqueta_unidad"),
+        "a.precio_minimo",
+        "a.precio_maximo",
+        "a.precio_total",
+      )
+      .leftJoin("proveedores as p", "a.id_proveedor", "p.id")
+      .leftJoin("familias as f", "a.id_familia", "f.id")
+      .leftJoin("marcas as m", "a.id_marca", "m.id")
+      .leftJoin("tipounidad as tu", "a.id_tipounidad", "tu.id")
+      .orderBy("a.descripcion");
 
-    const [result] = await pool.query(query);
-    return result;
+    if (filters.idProducto) {
+      query.where("a.id", filters.idProducto);
+    }
+
+    if (filters.descripcion) {
+      query.where("a.descripcion", "like", `%${filters.descripcion}%`);
+    }
+
+    if (filters.codigo) {
+      query.where("a.codigo", "like", `%${filters.codigo}%`);
+    }
+
+    if (filters.proveedor) {
+      query.where("p.NombreProveedor", "like", `%${filters.proveedor}%`);
+    }
+
+    if (filters.familia) {
+      query.where("f.etiqueta", "like", `%${filters.familia}%`);
+    }
+
+    if (filters.unidades) {
+      query.where("tu.etiqueta", "like", `%${filters.unidades}%`);
+    }
+
+    if (filters.marca) {
+      query.where("m.etiqueta", "like", `%${filters.marca}%`);
+    }
+
+    if (filters.porDebajoMinimo !== undefined) {
+      if (filters.porDebajoMinimo === "true" || filters.porDebajoMinimo === true) {
+        query.whereRaw("a.stock < a.stock_min");
+      } else {
+        query.whereRaw("a.stock >= a.stock_min");
+      }
+    }
+
+    if (filters.porEncimaMaximo !== undefined) {
+      if (filters.porEncimaMaximo === "true" || filters.porEncimaMaximo === true) {
+        query.whereRaw("a.stock > a.stock_max");
+      } else {
+        query.whereRaw("a.stock <= a.stock_max");
+      }
+    }
+
+    if (filters.mostrarBaja !== undefined) {
+      if (filters.mostrarBaja === "true" || filters.mostrarBaja === true) {
+        query.whereNotNull("a.fecha_baja");
+      } else {
+        query.whereNull("a.fecha_baja");
+      }
+    }
+
+    return query;
   }
 
   static async getById({ id }) {
-    const query = `
-      SELECT
-        a.id,
-        a.codigo,
-        a.descripcion,
-        a.etiqueta,
-        p.NombreProveedor,
-        a.fecha_alta,
-        f.etiqueta AS etiqueta_familia,
-        m.etiqueta AS etiqueta_marca,
-        a.stock,
-        a.stock_min,
-        a.stock_max,
-        a.codigo_usuario_alta,
-        tu.etiqueta AS etiqueta_unidad,
-        a.precio_minimo,
-        a.precio_maximo,
-        a.precio_total,
-        a.observaciones,
-        a.fecha_baja
-      FROM almacen AS a
-      LEFT JOIN proveedores AS p ON a.id_proveedor = p.id
-      LEFT JOIN familias AS f ON a.id_familia = f.id
-      LEFT JOIN marcas AS m ON a.id_marca = m.id
-      LEFT JOIN tipounidad AS tu ON a.id_tipounidad = tu.id
-      WHERE a.id = ?`;
-
-    const [rows] = await pool.query(query, [id]);
-    return rows[0] ?? null;
-  }
-
-  static async getByDescripcion({ descripcion }) {
-    const query = `
-      SELECT id, descripcion
-      FROM almacen
-      WHERE descripcion LIKE CONCAT('%', ?, '%')`;
-
-    const [result] = await pool.query(query, [descripcion]);
-    return result;
+    return (
+      db("almacen as a")
+        .select(
+          "a.id",
+          "a.codigo",
+          "a.descripcion",
+          "a.etiqueta",
+          db.ref("p.NombreProveedor").as("NombreProveedor"),
+          "a.fecha_alta",
+          db.ref("f.etiqueta").as("etiqueta_familia"),
+          db.ref("m.etiqueta").as("etiqueta_marca"),
+          "a.stock",
+          "a.stock_min",
+          "a.stock_max",
+          "a.codigo_usuario_alta",
+          db.ref("tu.etiqueta").as("etiqueta_unidad"),
+          "a.precio_minimo",
+          "a.precio_maximo",
+          "a.precio_total",
+          "a.observaciones",
+          "a.fecha_baja",
+        )
+        .leftJoin("proveedores as p", "a.id_proveedor", "p.id")
+        .leftJoin("familias as f", "a.id_familia", "f.id")
+        .leftJoin("marcas as m", "a.id_marca", "m.id")
+        .leftJoin("tipounidad as tu", "a.id_tipounidad", "tu.id")
+        .where("a.id", id)
+        .first() ?? null
+    );
   }
 
   static async create({ input }) {
-    const insertQuery = `
-      INSERT INTO almacen (
-        codigo,
-        descripcion,
-        etiqueta,
-        id_proveedor,
-        id_familia,
-        id_tipounidad,
-        fecha_alta,
-        codigo_usuario_alta,
-        stock,
-        stock_min,
-        stock_max,
-        id_marca,
-        precio_unitario,
-        precio_total,
-        observaciones
-      )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    const [insertId] = await db("almacen").insert({
+      codigo: input.cod,
+      descripcion: input.descripcion,
+      etiqueta: input.etiqueta,
+      id_proveedor: input.proveedor,
+      id_familia: input.familia,
+      id_tipounidad: input.tipoUnidad,
+      fecha_alta: input.fechaAlta,
+      codigo_usuario_alta: input.usuarioAlta,
+      stock: input.stock,
+      stock_min: input.stockMin,
+      stock_max: input.stockMax,
+      id_marca: input.marca,
+      precio_unitario: input.precioUnitario,
+      precio_total: input.precioTotal,
+      observaciones: input.observaciones,
+    });
 
-    const values = [
-      input.cod,
-      input.descripcion,
-      input.etiqueta,
-      input.proveedor,
-      input.familia,
-      input.tipoUnidad,
-      input.fechaAlta,
-      input.usuarioAlta,
-      input.stock,
-      input.stockMin,
-      input.stockMax,
-      input.marca,
-      input.precioUnitario,
-      input.precioTotal,
-      input.observaciones,
-    ];
-
-    const [result] = await pool.query(insertQuery, values);
-
-    const [rows] = await pool.query(
-      "SELECT * FROM almacen WHERE id = ?",
-      [result.insertId],
-    );
-
-    return rows[0] ?? null;
+    return db("almacen").where("id", insertId).first() ?? null;
   }
 
   static async update({ id, input }) {
-    const query = `
-      UPDATE almacen SET
-        codigo = ?,
-        descripcion = ?,
-        etiqueta = ?,
-        id_proveedor = ?,
-        id_familia = ?,
-        id_tipounidad = ?,
-        fecha_alta = ?,
-        codigo_usuario_alta = ?,
-        stock = ?,
-        stock_min = ?,
-        stock_max = ?,
-        id_marca = ?,
-        precio_unitario = ?,
-        precio_total = ?,
-        observaciones = ?
-      WHERE id = ?`;
+    await db("almacen").where("id", id).update({
+      codigo: input.cod,
+      descripcion: input.descripcion,
+      etiqueta: input.etiqueta,
+      id_proveedor: input.proveedor,
+      id_familia: input.familia,
+      id_tipounidad: input.tipoUnidad,
+      fecha_alta: input.fechaAlta,
+      codigo_usuario_alta: input.usuarioAlta,
+      stock: input.stock,
+      stock_min: input.stockMin,
+      stock_max: input.stockMax,
+      id_marca: input.marca,
+      precio_unitario: input.precioUnitario,
+      precio_total: input.precioTotal,
+      observaciones: input.observaciones,
+    });
 
-    const values = [
-      input.cod,
-      input.descripcion,
-      input.etiqueta,
-      input.proveedor,
-      input.familia,
-      input.tipoUnidad,
-      input.fechaAlta,
-      input.usuarioAlta,
-      input.stock,
-      input.stockMin,
-      input.stockMax,
-      input.marca,
-      input.precioUnitario,
-      input.precioTotal,
-      input.observaciones,
-    ];
-
-    await pool.query(query, [...values, id]);
-
-    const [rows] = await pool.query(
-      "SELECT * FROM almacen WHERE id = ?",
-      [id],
-    );
-
-    return rows[0] ?? null;
+    return db("almacen").where("id", id).first() ?? null;
   }
 
   // TODO: De momento el codigo de usuario que da de baja esta hardcodeado
   // Habría que extraer el usuario logeado y asignarle como el que lo da de baja
   static async delete({ id, codigoUsuarioBaja = 67 }) {
-    const query = `
-      UPDATE almacen
-      SET
-        fecha_baja = NOW(),
-        codigo_usuario_baja = ?
-      WHERE id = ?`;
+    const affectedRows = await db("almacen").where("id", id).update({
+      fecha_baja: db.fn.now(),
+      codigo_usuario_baja: codigoUsuarioBaja,
+    });
 
-    await pool.query(query, [codigoUsuarioBaja, id]);
+    if (affectedRows === 0) {
+      return null;
+    }
 
-    const [rows] = await pool.query(
-      `SELECT id, codigo, descripcion, fecha_baja, codigo_usuario_baja
-       FROM almacen
-       WHERE id = ?`,
-      [id],
+    return (
+      db("almacen")
+        .select("id", "codigo", "descripcion", "fecha_baja", "codigo_usuario_baja")
+        .where("id", id)
+        .first() ?? null
     );
-
-    return rows[0] ?? null;
   }
 }

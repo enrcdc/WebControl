@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import { config } from "./config/env.js";
+import { errorHandler } from "./middlewares/ErrorHandler.js";
 
 // ============================================
 // BARREL EXPORT - Solo 1 import de rutas
@@ -32,6 +33,11 @@ app.get("/", (req, res) => {
     },
   });
 });
+
+// ============================================
+// Middleware de errores centralizado
+// ============================================
+app.use(errorHandler);
 
 // ============================================
 // Iniciar servidor

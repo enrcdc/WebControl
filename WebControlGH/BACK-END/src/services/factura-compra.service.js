@@ -7,8 +7,8 @@ import {
 import { validateId, validateNotEmpty } from "../utils/index.js";
 
 export class FacturaCompraService {
-  static async getAll() {
-    const facturas = await FacturaCompraModel.getAll();
+  static async getAll(filters = {}) {
+    const facturas = await FacturaCompraModel.getAll(filters);
 
     if (!facturas || facturas.length === 0) {
       throw new NotFoundError(
@@ -37,17 +37,13 @@ export class FacturaCompraService {
     return factura;
   }
 
-  // TODO: Este debería ser sustituido por el de búsqueda por filtros 
-  // Ademas sería mejor hacerlo por búsqueda de código de obra en lugar de id
+  // TODO: Eliminar cuando el frontend use getAll(filters)
   static async getByObra(idObra) {
     const validId = validateId(idObra, "ID de obra");
-
-    const facturas = await FacturaCompraModel.getByObra({ idObra: validId });
-
-    return facturas;
+    return FacturaCompraModel.getByObra({ idObra: validId });
   }
 
-  // TODO: Este debería ser sustituido por el de búsqueda por filtros
+  // TODO: Eliminar cuando el frontend use getAll(filters)
   static async getByConcepto(concepto) {
     if (!concepto || concepto.trim().length === 0) {
       throw new InvalidDataError("El concepto de búsqueda es obligatorio", {
@@ -126,37 +122,6 @@ export class FacturaCompraService {
     }
 
     return facturaEliminada;
-  }
-
-  // TODO: De momento hay los métodos específicos, pero se pueden unificar.
-  static async buscarConFiltros(filtros) {
-    let facturas = await FacturaCompraModel.getAll();
-
-    if (filtros.codigoObra) {
-      facturas = facturas.filter((f) =>
-        f.codigo_obra?.toLowerCase().includes(filtros.codigoObra.toLowerCase()),
-      );
-    }
-
-    if (filtros.concepto) {
-      facturas = facturas.filter((f) =>
-        f.concepto?.toLowerCase().includes(filtros.concepto.toLowerCase()),
-      );
-    }
-
-    if (filtros.numFactura) {
-      facturas = facturas.filter((f) =>
-        f.num_factura?.toLowerCase().includes(filtros.numFactura.toLowerCase()),
-      );
-    }
-
-    if (filtros.mostrarBaja !== undefined) {
-      facturas = filtros.mostrarBaja
-        ? facturas.filter((f) => f.fecha_baja !== null)
-        : facturas.filter((f) => f.fecha_baja === null);
-    }
-
-    return facturas;
   }
 
   // ============================================

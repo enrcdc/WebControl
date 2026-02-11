@@ -141,10 +141,6 @@ const obraSchema = zod.object({
     .optional(),
 });
 
-export function validateObra(object) {
-  return obraSchema.safeParse(object);
-}
-
-export function validatePartialObra(objetc) {
-  return obraSchema.partial().safeParse(objetc);
-}
+// Los esquemas necesarios para realizar la validación
+export const createObraSchema = obraSchema;
+export const updateObraSchema = obraSchema.partial();

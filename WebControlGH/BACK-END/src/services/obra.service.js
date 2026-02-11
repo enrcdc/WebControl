@@ -27,10 +27,15 @@ export class ObraService {
   // ============================================
 
   /**
-   * Obtener todas las obras
+   * Obtener obras con filtros dinámicos
+   * @note El filtro "conAlertas" se aplica en JS porque depende del enrichment
    */
-  static async getAll() {
-    const obras = await ObraModel.getAll();
+  static async getAll(filters = {}) {
+    const conAlertas = filters.conAlertas;
+    const filtersForModel = { ...filters };
+    delete filtersForModel.conAlertas;
+
+    let obras = await ObraModel.getAll(filtersForModel);
 
     if (!obras || obras.length === 0) {
       throw new NotFoundError(
@@ -41,7 +46,16 @@ export class ObraService {
     }
 
     // Enriquecer datos
-    return obras.map((obra) => this._enrichObraData(obra));
+    obras = obras.map((obra) => this._enrichObraData(obra));
+
+    // Filtro conAlertas (requiere enrichment, no se puede hacer en SQL)
+    if (conAlertas !== undefined) {
+      if (conAlertas === "true" || conAlertas === true) {
+        obras = obras.filter((o) => o.alertas && o.alertas.length > 0);
+      }
+    }
+
+    return obras;
   }
 
   /**
@@ -50,8 +64,7 @@ export class ObraService {
   static async getById(id) {
     const validId = validateId(id, "ID de obra");
 
-    const result = await ObraModel.getById({ idObra: validId });
-    const obra = Array.isArray(result) ? result[0] : result;
+    const obra = await ObraModel.getById({ idObra: validId });
 
     if (!obra) {
       throw new NotFoundError("Obra", id);
@@ -64,6 +77,7 @@ export class ObraService {
     return this._enrichObraData(obra);
   }
 
+  // TODO: Eliminar cuando el frontend use getAll(filters)
   /**
    * Buscar obras por descripción
    */
@@ -181,122 +195,6 @@ export class ObraService {
     };
   }
 
-  /**
-   * Buscar obras con filtros
-   */
-  static async buscarConFiltros(filtros) {
-    let obras = await ObraModel.getAll();
-
-    if (filtros.empresa) {
-      obras = obras.filter((o) => o.nombre_empresa === filtros.empresa);
-    }
-
-    if (filtros.complejo) {
-      obras = obras.filter((o) => o.nombre_edificio === filtros.complejo);
-    }
-
-    if (filtros.estados && filtros.estados.length > 0) {
-      obras = obras.filter((o) => filtros.estados.includes(o.desc_estado_obra));
-    }
-
-    if (filtros.tipos && filtros.tipos.length > 0) {
-      obras = obras.filter((o) => filtros.tipos.includes(o.desc_tipo_obra));
-    }
-
-    if (filtros.enSeguimiento !== undefined) {
-      obras = filtros.enSeguimiento
-        ? obras.filter((o) => o.fecha_seg !== null)
-        : obras.filter((o) => o.fecha_seg === null);
-    }
-
-    if (filtros.ofertada !== undefined) {
-      obras = filtros.ofertada
-        ? obras.filter((o) => o.fecha_oferta !== null)
-        : obras.filter((o) => o.fecha_oferta === null);
-    }
-
-    if (filtros.fechaDesde) {
-      const desde = new Date(filtros.fechaDesde);
-      obras = obras.filter((o) => new Date(o.fecha_alta) >= desde);
-    }
-
-    if (filtros.fechaHasta) {
-      const hasta = new Date(filtros.fechaHasta);
-      obras = obras.filter((o) => new Date(o.fecha_alta) <= hasta);
-    }
-
-    if (filtros.conPedidos !== undefined) {
-      obras = filtros.conPedidos
-        ? obras.filter((o) => o.total_pedidos !== 0)
-        : obras.filter((o) => o.total_pedidos === 0);
-    }
-
-    if (filtros.conFacturas !== undefined) {
-      obras = filtros.conFacturas
-        ? obras.filter((o) => o.total_facturas !== 0)
-        : obras.filter((o) => o.total_facturas === 0);
-    }
-
-    if (filtros.conHoras !== undefined) {
-      obras = filtros.conHoras
-        ? obras.filter((o) => o.total_horas !== 0)
-        : obras.filter((o) => o.total_horas === 0);
-    }
-
-    if (filtros.conGastos !== undefined) {
-      obras = filtros.conGastos
-        ? obras.filter((o) => o.total_gastos !== 0)
-        : obras.filter((o) => o.total_gastos === 0);
-    }
-
-    if (filtros.mostrarBaja !== undefined) {
-      obras = filtros.mostrarBaja
-        ? obras.filter((o) => o.fecha_baja !== null)
-        : obras.filter((o) => o.fecha_baja === null);
-    }
-
-    if (filtros.relacionEntreObras) {
-      switch (filtros.relacionEntreObras) {
-        case "mostrarHijas":
-          obras = obras.filter((obra) => obra.obra_padre !== null);
-          break;
-
-        case "mostrarPadres":
-          obras = obras.filter((obra) => obra.num_hijas !== 0);
-          break;
-
-        case "mostrarPadresHijas":
-          obras = obras.filter(
-            (obra) => obra.obra_padre !== null || obra.num_hijas !== 0,
-          );
-          break;
-
-        case "ocultarHijas":
-          obras = obras.filter((obra) => obra.obra_padre === null);
-          break;
-
-        case "ocultarPadres":
-          obras = obras.filter((obra) => obra.num_hijas === 0);
-          break;
-
-        case "ocultarPadresHijas":
-          obras = obras.filter(
-            (obra) => obra.obra_padre === null && obra.num_hijas === 0,
-          );
-          break;
-      }
-    }
-
-    // TODO: HAY QUE DARLE UNA VUELTA A ESTE FILTRO
-    if (filtros.conAlertas) {
-      obras = obras
-        .map((o) => this._enrichObraData(o))
-        .filter((o) => o.alertas && o.alertas.length > 0);
-    }
-
-    return obras;
-  }
-
   // ============================================
   // MÉTODOS PRIVADOS (ESPECÍFICOS DE OBRAS)
   // ============================================
@@ -324,11 +222,6 @@ export class ObraService {
     if (obraData.horasPrevistas) {
       validateNumberRange(obraData.horasPrevistas, "horas previstas", 0, 10000);
     }
-
-    // Aquí puedes agregar validaciones que requieran BD:
-    // - Verificar que empresa existe (No hace falta porque lo controlo con un desplegable)
-    // - Verificar que contacto pertenece a empresa
-    // - etc.
   }
 
   /**
@@ -358,13 +251,6 @@ export class ObraService {
    * Validar si se puede eliminar (regla específica de obras)
    */
   static _validateCanDelete(obra) {
-    // Ejemplo: No permitir eliminar si tiene facturas
-    // if (obra.total_facturas && Number(obra.total_facturas) > 0) {
-    //   throw new InvalidDataError(
-    //     'No se puede eliminar una obra que tiene facturas asociadas'
-    //   );
-    // }
-
     // Por ahora, permitir siempre (es soft delete)
     return true;
   }
@@ -504,8 +390,7 @@ export class ObraService {
    * Helper: obtener obra o lanzar error
    */
   static async _getObraOrFail(id, checkDeleted = true) {
-    const result = await ObraModel.getById({ idObra: id });
-    const obra = Array.isArray(result) ? result[0] : result;
+    const obra = await ObraModel.getById({ idObra: id });
 
     if (!obra) {
       throw new NotFoundError("Obra", id);

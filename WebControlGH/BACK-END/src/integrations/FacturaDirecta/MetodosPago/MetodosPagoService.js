@@ -29,7 +29,7 @@ export const metodosPagoService = {
   updateMetodo: (id, data) =>
     axios.put(`${getBaseURL()}/${id}`, data, { headers: getHeaders() }),
 
-  // Eliminar contacto
+  // Eliminar método de pago
   deleteMetodo: (id) =>
     axios.delete(`${getBaseURL()}/${id}`, { headers: getHeaders() }),
 };

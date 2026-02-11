@@ -1,7 +1,7 @@
 /**
  * Barrel Export para Rutas
  *
- * Este archivo centraliza todas las rutas de la aplicaciOn.
+ * Este archivo centraliza todas las rutas de la aplicación.
  */
 
 import express from "express";

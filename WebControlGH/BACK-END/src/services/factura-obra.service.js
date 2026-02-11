@@ -1,17 +1,22 @@
 import { FacturaObraModel } from "../models/factura-obra.model.js";
 import {
   NotFoundError,
-  InvalidDataError,
   AlreadyDeletedError,
 } from "../errors/index.js";
 import { validateId, validateNotEmpty } from "../utils/index.js";
 
 export class FacturaObraService {
-  // TODO: Este debería ser sustituido por el de búsqueda por filtros
-  static async getByObras(idsObras) {
-    this._validateIdsObras(idsObras);
+  static async getAll(filters = {}) {
+    const facturas = await FacturaObraModel.getAll(filters);
 
-    const facturas = await FacturaObraModel.getByObras({ idsObras });
+    if (!facturas || facturas.length === 0) {
+      throw new NotFoundError(
+        "Facturas de obra",
+        null,
+        "No hay facturas de obra registradas en el sistema",
+      );
+    }
+
     return facturas;
   }
 
@@ -66,56 +71,6 @@ export class FacturaObraService {
     return facturaEliminada;
   }
 
-  static async buscarConFiltros(filtros) {
-    let facturas = [];
-
-    if (filtros.idsObras) {
-      this._validateIdsObras(filtros.idsObras);
-      facturas = await FacturaObraModel.getByObras({
-        idsObras: filtros.idsObras,
-      });
-    } else {
-      throw new InvalidDataError(
-        "Se necesita especificar los IDs de obra para filtrar facturas",
-        { field: "idsObras" },
-      );
-    }
-
-    if (filtros.codigoFactura) {
-      facturas = facturas.filter((f) =>
-        f.codigo_factura
-          ?.toLowerCase()
-          .includes(filtros.codigoFactura.toLowerCase()),
-      );
-    }
-
-    if (filtros.conceptoLinea) {
-      facturas = facturas.filter((f) =>
-        f.concepto_linea
-          ?.toLowerCase()
-          .includes(filtros.conceptoLinea.toLowerCase()),
-      );
-    }
-
-    if (filtros.conceptoFactura) {
-      facturas = facturas.filter((f) =>
-        f.concepto_factura
-          ?.toLowerCase()
-          .includes(filtros.conceptoFactura.toLowerCase()),
-      );
-    }
-
-    if (filtros.codigoPedido) {
-      facturas = facturas.filter((f) =>
-        f.codigo_pedido
-          ?.toLowerCase()
-          .includes(filtros.codigoPedido.toLowerCase()),
-      );
-    }
-
-    return facturas;
-  }
-
   // ============================================
   // MÉTODOS PRIVADOS
   // ============================================
@@ -132,13 +87,5 @@ export class FacturaObraService {
     }
 
     return factura;
-  }
-
-  static _validateIdsObras(idsObras) {
-    if (!Array.isArray(idsObras) || idsObras.length === 0) {
-      throw new InvalidDataError("Se requiere al menos un ID de obra", {
-        field: "idsObras",
-      });
-    }
   }
 }

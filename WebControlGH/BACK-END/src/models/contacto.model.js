@@ -1,128 +1,113 @@
-import { pool } from "../config/database.js";
-
-// MODELO DE NEGOCIO PARA LOS CONTACTOS
+import { db } from "../config/database.js";
 
 // TODO: Faltan más operaciones CRUD
 
 export class ContactoModel {
-  static async getAll() {
-    const query = `
-    SELECT
-      c.id_contacto AS id,
-      c.nombre_contacto AS nombre,
-      c.apellido1,
-      c.apellido2,
-      e.nombre AS nombre_empresa
-    FROM contactos AS c
-    LEFT JOIN empresas_contactos AS ec 
-      ON c.id_contacto = ec.id_contacto
-    LEFT JOIN empresas AS e 
-      ON ec.id_empresa = e.id_empresa
-    ORDER BY c.nombre_contacto ASC;`;
+  /**
+   *
+   * getAll recupera todos los registros según los filtros proporcionados.
+   * Si no se especifica un filtro, devuelve todos los registros.
+   * @param {Object} filters - El objeto de filtros.
+   * @param {string} [filters.idContacto] - filtrar por id
+   * @param {string} [filters.nombre] - filtrar por nombre
+   * @param {string} [filters.apellido] - filtrar por apellido
+   * @param {string} [filters.empresa] - filtrar por nombre de empresa
+   * @param {string} [filters.idEmpresa] - filtrar por id de empresa
+   * @returns {Promise<Array>} Array de resultados de filtrado
+   */
+  static async getAll(filters = {}) {
+    const query = db("contactos as c")
+      .select(
+        db.ref("c.id_contacto").as("id"),
+        db.ref("c.nombre_contacto").as("nombre"),
+        "c.apellido1",
+        "c.apellido2",
+        db.ref("e.nombre").as("nombre_empresa"),
+      )
+      .leftJoin("empresas_contactos as ec", "c.id_contacto", "ec.id_contacto")
+      .leftJoin("empresas as e", "ec.id_empresa", "e.id_empresa")
+      .orderBy("c.nombre_contacto");
 
-    const [result] = await pool.query(query);
-    return result;
+    if (filters.idContacto) {
+      query.where("c.id_contacto", filters.idContacto);
+    }
+
+    if (filters.nombre) {
+      query.where("c.nombre_contacto", "like", `%${filters.nombre}%`);
+    }
+
+    if (filters.apellido) {
+      query.where("c.apellido1", "like", `%${filters.apellido}%`);
+    }
+
+    // TODO: Comprobar si este filtro se va a necesitar
+    if (filters.empresa) {
+      query.where("e.nombre", "like", `%${filters.empresa}%`);
+    }
+
+    if (filters.idEmpresa) {
+      query.where("ec.id_empresa", filters.idEmpresa);
+    }
+
+    return query;
   }
 
+  // TODO: Eliminar cuando el frontend use getAll(filters)
   static async getByEmpresa({ idEmpresa }) {
-    const query = `
-    SELECT
-        c.id_contacto AS id,
-        c.nombre_contacto AS nombre,
-        c.apellido1,
-        c.apellido2
-    FROM contactos AS c
-    LEFT JOIN 
-        empresas_contactos AS e_c ON c.id_contacto = e_c.id_contacto
-    WHERE
-        e_c.id_empresa = ? OR c.id_contacto = 1
-    ORDER BY c.nombre_contacto
-  `;
-
-    const [result] = await pool.query(query, [idEmpresa]);
-    return result;
+    return db("contactos as c")
+      .select(
+        db.ref("c.id_contacto").as("id"),
+        db.ref("c.nombre_contacto").as("nombre"),
+        "c.apellido1",
+        "c.apellido2",
+      )
+      .leftJoin("empresas_contactos as ec", "c.id_contacto", "ec.id_contacto")
+      .where("ec.id_empresa", idEmpresa)
+      .orWhere("c.id_contacto", 1)
+      .orderBy("c.nombre_contacto");
   }
 
   static async create(input) {
-    console.log(input);
-    const values = [
-      input.nombre,
-      input.apellido1,
-      input.apellido2,
-      input.dni,
-      input.telefono,
-      input.telefono2,
-      input.email,
-      input.email2,
-      input.direccion,
-      input.observaciones,
-    ];
+    const [idContacto] = await db("contactos").insert({
+      nombre_contacto: input.nombre,
+      apellido1: input.apellido1,
+      apellido2: input.apellido2,
+      num_identificativo: input.dni,
+      telefono: input.telefono,
+      telefono2: input.telefono2,
+      email: input.email,
+      email2: input.email2,
+      direccion: input.direccion,
+      observaciones: input.observaciones,
+    });
 
-    const valuesString = values.map(() => "?").join(", ");
+    await db("empresas_contactos").insert({
+      id_contacto: idContacto,
+      id_empresa: input.empresa.id,
+    });
 
-    const query = `
-    INSERT INTO contactos (
-    nombre_contacto,
-    apellido1,
-    apellido2,
-    num_identificativo,
-    telefono,
-    telefono2,
-    email,
-    email2,
-    direccion,
-    observaciones
-    )
-    VALUES (${valuesString})`;
+    await this.asignarComplejos(idContacto, input.complejos);
 
-    // inserción en la tabla de contactos
-    const [result] = await pool.query(query, values);
+    const contacto = await db("contactos")
+      .select("*")
+      .where("id_contacto", idContacto)
+      .first();
 
-    // inserción en la tabla de empresas-contactos
-    await pool.query(
-      `
-      INSERT INTO empresas_contactos (
-      id_contacto,
-      id_empresa
-      )
-      VALUES (?, ?)`,
-      [result.insertId, input.empresa.id],
-    );
-
-    // actualizar la tabla edificios_contactos (si aplica)
-    await this.asignarComplejos(result.insertId, input.complejos);
-
-    const [rows] = await pool.query(
-      `
-      SELECT * FROM contactos WHERE id_contacto = ?`,
-      [result.insertId],
-    );
-
-    return rows[0] ?? null;
+    return contacto ?? null;
   }
 
   static async asignarComplejos(idContacto, complejos) {
-    // Eliminar entradas previas
-    const deleteQuery = `DELETE FROM edificios_contactos WHERE id_contacto = ?`;
-    await pool.query(deleteQuery, [idContacto]);
+    await db("edificios_contactos").where("id_contacto", idContacto).del();
 
     if (!Array.isArray(complejos) || complejos.length === 0) return;
 
-    const insertQuery = `
-    INSERT INTO edificios_contactos (id_contacto, id_edificio) VALUES ?`;
-    const values = complejos.map((c) => [idContacto, c.id]);
-    await pool.query(insertQuery, [values]);
+    const rows = complejos.map((c) => ({
+      id_contacto: idContacto,
+      id_edificio: c.id,
+    }));
 
-    // Devolvemos la inserción
-    const [rows] = await pool.query(
-      `
-      SELECT *
-      FROM edificios_contactos
-      WHERE id_contacto = ?
-      `,
-      [idContacto],
-    );
+    await db("edificios_contactos").insert(rows);
 
-    return rows;
+    return db("edificios_contactos").where("id_contacto", idContacto);
   }
 }

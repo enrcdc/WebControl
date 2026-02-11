@@ -1,11 +1,11 @@
 ###### ENDPOINTS PEDIDOS #############
 
 ### Obtener pedidos asociados a una obra
-POST http://localhost:3002/api/pedidoObra/buscar
+POST http://localhost:3002/api/pedidoObra/filtrar
 Content-Type: application/json
 
 {
-    "idsObras": [4037]
+    "mostrarBaja": true
 }
 
 ### Borrar un pedido asociado a una obra

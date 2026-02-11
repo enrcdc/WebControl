@@ -1,75 +1,64 @@
-import { pool } from "../config/database.js";
+import { db } from "../config/database.js";
 
 export class RelacionObraModel {
   static async getObraPadre({ idObra }) {
-    const query = `
-      SELECT
-        r.id_obraPadre,
-        o.codigo_obra,
-        o.descripcion_obra
-      FROM relacionobras AS r
-      LEFT JOIN obras AS o ON r.id_obraPadre = o.id_obra
-      WHERE r.id_obraHija = ?`;
-
-    const [result] = await pool.query(query, [idObra]);
-    return result[0] ?? null;
+    return (
+      db("relacionobras as r")
+        .select(
+          "r.id_obraPadre",
+          "o.codigo_obra",
+          "o.descripcion_obra",
+        )
+        .leftJoin("obras as o", "r.id_obraPadre", "o.id_obra")
+        .where("r.id_obraHija", idObra)
+        .first() ?? null
+    );
   }
 
   static async getObrasHijas({ idObra }) {
-    const query = `
-      SELECT
-        r.id_obraHija,
-        o.codigo_obra,
-        o.descripcion_obra,
-        o.horas_previstas,
-        o.gasto_previsto,
-        o.importe
-      FROM relacionobras AS r
-      LEFT JOIN obras AS o ON r.id_obraHija = o.id_obra
-      WHERE r.id_obraPadre = ?`;
-
-    const [result] = await pool.query(query, [idObra]);
-    return result;
+    return db("relacionobras as r")
+      .select(
+        "r.id_obraHija",
+        "o.codigo_obra",
+        "o.descripcion_obra",
+        "o.horas_previstas",
+        "o.gasto_previsto",
+        "o.importe",
+      )
+      .leftJoin("obras as o", "r.id_obraHija", "o.id_obra")
+      .where("r.id_obraPadre", idObra);
   }
 
   static async deleteRelacionesPadre({ idObraHija }) {
-    const query = "DELETE FROM relacionobras WHERE id_obraHija = ?";
-    await pool.query(query, [idObraHija]);
+    await db("relacionobras").where("id_obraHija", idObraHija).del();
   }
 
   static async insertRelacionPadre({ idObraPadre, idObraHija }) {
-    const insertQuery = `
-      INSERT INTO relacionobras (id_obraPadre, id_obraHija)
-      VALUES (?, ?)`;
+    await db("relacionobras").insert({
+      id_obraPadre: idObraPadre,
+      id_obraHija: idObraHija,
+    });
 
-    await pool.query(insertQuery, [idObraPadre, idObraHija]);
-
-    const [rows] = await pool.query(
-      "SELECT * FROM relacionobras WHERE id_obraPadre = ? AND id_obraHija = ?",
-      [idObraPadre, idObraHija],
+    return (
+      db("relacionobras")
+        .where("id_obraPadre", idObraPadre)
+        .andWhere("id_obraHija", idObraHija)
+        .first() ?? null
     );
-
-    return rows[0] ?? null;
   }
 
   static async deleteRelacionesHijas({ idObraPadre }) {
-    const query = "DELETE FROM relacionobras WHERE id_obraPadre = ?";
-    await pool.query(query, [idObraPadre]);
+    await db("relacionobras").where("id_obraPadre", idObraPadre).del();
   }
 
   static async insertRelacionesHijas({ idObraPadre, idsObrasHijas }) {
-    const insertQuery = `
-      INSERT INTO relacionobras (id_obraPadre, id_obraHija)
-      VALUES ?`;
+    const rows = idsObrasHijas.map((idHija) => ({
+      id_obraPadre: idObraPadre,
+      id_obraHija: idHija,
+    }));
 
-    const values = idsObrasHijas.map((idHija) => [idObraPadre, idHija]);
-    await pool.query(insertQuery, [values]);
+    await db("relacionobras").insert(rows);
 
-    const [rows] = await pool.query(
-      "SELECT * FROM relacionobras WHERE id_obraPadre = ?",
-      [idObraPadre],
-    );
-
-    return rows;
+    return db("relacionobras").where("id_obraPadre", idObraPadre);
   }
 }

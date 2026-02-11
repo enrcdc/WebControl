@@ -1,17 +1,19 @@
 import { PedidoObraModel } from "../models/pedido-obra.model.js";
-import {
-  NotFoundError,
-  InvalidDataError,
-  AlreadyDeletedError,
-} from "../errors/index.js";
+import { NotFoundError, AlreadyDeletedError } from "../errors/index.js";
 import { validateId, validateNotEmpty } from "../utils/index.js";
 
 export class PedidoObraService {
-  // TODO: Este debería ser sustituido por el de búsqueda por filtros
-  static async getByObras(idsObras) {
-    this._validateIdsObras(idsObras);
+  static async getAll(filters = {}) {
+    const pedidos = await PedidoObraModel.getAll(filters);
 
-    const pedidos = await PedidoObraModel.getByObras({ idsObras });
+    if (!pedidos || pedidos.length === 0) {
+      throw new NotFoundError(
+        "Pedidos",
+        null,
+        "No hay pedidos registrados en el sistema",
+      );
+    }
+
     return pedidos;
   }
 
@@ -66,50 +68,12 @@ export class PedidoObraService {
     return pedidoEliminado;
   }
 
-  static async buscarConFiltros(filtros) {
-    let pedidos = [];
-
-    if (filtros.idsObras) {
-      this._validateIdsObras(filtros.idsObras);
-      pedidos = await PedidoObraModel.getByObras({ idsObras: filtros.idsObras });
-    } else {
-      throw new InvalidDataError(
-        "Se necesita especificar los IDs de obra para filtrar pedidos",
-        { field: "idsObras" },
-      );
-    }
-
-    if (filtros.codigoPedido) {
-      pedidos = pedidos.filter((p) =>
-        p.codigo_pedido
-          ?.toLowerCase()
-          .includes(filtros.codigoPedido.toLowerCase()),
-      );
-    }
-
-    if (filtros.posicion) {
-      pedidos = pedidos.filter((p) =>
-        p.posicion?.toLowerCase().includes(filtros.posicion.toLowerCase()),
-      );
-    }
-
-    if (filtros.observaciones) {
-      pedidos = pedidos.filter((p) =>
-        p.observaciones
-          ?.toLowerCase()
-          .includes(filtros.observaciones.toLowerCase()),
-      );
-    }
-
-    return pedidos;
-  }
-
   // ============================================
   // MÉTODOS PRIVADOS
   // ============================================
 
   static async _getPedidoOrFail(id, checkDeleted = true) {
-    const pedido = await PedidoObraModel.getById({ id });
+    const pedido = await PedidoObraModel.getAll({ idPedido: id });
 
     if (!pedido) {
       throw new NotFoundError("Pedido", id);
@@ -120,13 +84,5 @@ export class PedidoObraService {
     }
 
     return pedido;
-  }
-
-  static _validateIdsObras(idsObras) {
-    if (!Array.isArray(idsObras) || idsObras.length === 0) {
-      throw new InvalidDataError("Se requiere al menos un ID de obra", {
-        field: "idsObras",
-      });
-    }
   }
 }
