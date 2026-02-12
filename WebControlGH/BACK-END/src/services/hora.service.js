@@ -4,9 +4,9 @@ import { validateNotEmpty } from "../utils/index.js";
 
 export class HoraService {
   static async getAll(filters = {}) {
-    const horas = await HoraModel.getAll(filters);
+    const { data, pagination } = await HoraModel.getAll(filters);
 
-    if (!horas || horas.length === 0) {
+    if (!data || data.length === 0) {
       throw new NotFoundError(
         "Horas",
         null,
@@ -14,7 +14,7 @@ export class HoraService {
       );
     }
 
-    return horas;
+    return { data, pagination };
   }
 
   static async create(horaData) {

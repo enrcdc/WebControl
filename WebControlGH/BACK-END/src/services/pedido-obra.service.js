@@ -4,9 +4,9 @@ import { validateId, validateNotEmpty } from "../utils/index.js";
 
 export class PedidoObraService {
   static async getAll(filters = {}) {
-    const pedidos = await PedidoObraModel.getAll(filters);
+    const { data, pagination } = await PedidoObraModel.getAll(filters);
 
-    if (!pedidos || pedidos.length === 0) {
+    if (!data || data.length === 0) {
       throw new NotFoundError(
         "Pedidos",
         null,
@@ -14,7 +14,7 @@ export class PedidoObraService {
       );
     }
 
-    return pedidos;
+    return { data, pagination };
   }
 
   static async create(pedidoData) {
@@ -73,7 +73,7 @@ export class PedidoObraService {
   // ============================================
 
   static async _getPedidoOrFail(id, checkDeleted = true) {
-    const pedido = await PedidoObraModel.getAll({ idPedido: id });
+    const pedido = await PedidoObraModel.getById({ idPedido: id });
 
     if (!pedido) {
       throw new NotFoundError("Pedido", id);

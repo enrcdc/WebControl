@@ -7,9 +7,9 @@ import { validateId, validateNotEmpty } from "../utils/index.js";
 
 export class FacturaObraService {
   static async getAll(filters = {}) {
-    const facturas = await FacturaObraModel.getAll(filters);
+    const { data, pagination } = await FacturaObraModel.getAll(filters);
 
-    if (!facturas || facturas.length === 0) {
+    if (!data || data.length === 0) {
       throw new NotFoundError(
         "Facturas de obra",
         null,
@@ -17,7 +17,7 @@ export class FacturaObraService {
       );
     }
 
-    return facturas;
+    return { data, pagination };
   }
 
   static async create(facturaData) {

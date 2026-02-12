@@ -3,9 +3,9 @@ import { NotFoundError, InvalidDataError } from "../errors/index.js";
 
 export class GastoService {
   static async getAll(filters = {}) {
-    const gastos = await GastoModel.getAll(filters);
+    const { data, pagination } = await GastoModel.getAll(filters);
 
-    if (!gastos || gastos.length === 0) {
+    if (!data || data.length === 0) {
       throw new NotFoundError(
         "Gastos",
         null,
@@ -13,7 +13,7 @@ export class GastoService {
       );
     }
 
-    return gastos;
+    return { data, pagination };
   }
 
   // TODO: Eliminar cuando el frontend use getAll(filters)

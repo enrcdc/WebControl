@@ -1,4 +1,5 @@
 import { db } from "../config/database.js";
+import { applyPagination } from "../utils/index.js";
 
 // TODO: Faltan más operaciones CRUD
 
@@ -75,7 +76,7 @@ export class GastoModel {
       query.where("u.codigo_firma", filters.usuarioAlta);
     }
 
-    return query;
+    return applyPagination(query, filters);
   }
 
   // TODO: Eliminar cuando el frontend use getAll(filters)

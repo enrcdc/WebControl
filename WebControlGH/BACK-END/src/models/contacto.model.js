@@ -1,4 +1,5 @@
 import { db } from "../config/database.js";
+import { applyPagination } from "../utils/index.js";
 
 // TODO: Faltan más operaciones CRUD
 
@@ -49,7 +50,14 @@ export class ContactoModel {
       query.where("ec.id_empresa", filters.idEmpresa);
     }
 
-    return query;
+    return applyPagination(query, filters);
+  }
+
+  static async getById({ idContacto }) {
+    return (
+      db("contactos").select("*").where("id_contacto", idContacto).first() ??
+      null
+    );
   }
 
   // TODO: Eliminar cuando el frontend use getAll(filters)
@@ -86,7 +94,8 @@ export class ContactoModel {
       id_empresa: input.empresa.id,
     });
 
-    await this.asignarComplejos(idContacto, input.complejos);
+    if (input.complejos)
+      await this._asignarComplejos(idContacto, input.complejos);
 
     const contacto = await db("contactos")
       .select("*")
@@ -96,10 +105,54 @@ export class ContactoModel {
     return contacto ?? null;
   }
 
-  static async asignarComplejos(idContacto, complejos) {
-    await db("edificios_contactos").where("id_contacto", idContacto).del();
+  static async update({ idContacto, input }) {
+    await db("contactos").where("id_contacto", idContacto).update({
+      nombre_contacto: input.nombre,
+      apellido1: input.apellido1,
+      apellido2: input.apellido2,
+      num_identificativo: input.dni,
+      telefono: input.telefono,
+      telefono2: input.telefono2,
+      email: input.email,
+      email2: input.email2,
+      direccion: input.direccion,
+      observaciones: input.observaciones,
+    });
 
-    if (!Array.isArray(complejos) || complejos.length === 0) return;
+    if (input.complejos)
+      await this._asignarComplejos(idContacto, input.complejos);
+
+    return db("contactos").where("id_contacto", idContacto).first() ?? null;
+  }
+
+  static async delete({ idContactos }) {
+    const affectedRows = await db("contactos")
+      .whereIn("id_contacto", idContactos)
+      .update({
+        fecha_baja: db.fn.now(),
+      });
+
+    if (affectedRows === 0) {
+      return null;
+    }
+
+    return db("contactos")
+      .select(
+        "id_contacto",
+        "nombre_contacto",
+        "apellido1",
+        "apellido2",
+        "fecha_baja",
+      )
+      .whereIn("id_contacto", idContactos);
+  }
+
+  // ============================================
+  // MÉTODOS PRIVADOS
+  // ============================================
+
+  static async _asignarComplejos(idContacto, complejos) {
+    await db("edificios_contactos").where("id_contacto", idContacto).del();
 
     const rows = complejos.map((c) => ({
       id_contacto: idContacto,

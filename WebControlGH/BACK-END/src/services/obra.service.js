@@ -35,9 +35,9 @@ export class ObraService {
     const filtersForModel = { ...filters };
     delete filtersForModel.conAlertas;
 
-    let obras = await ObraModel.getAll(filtersForModel);
+    const { data, pagination } = await ObraModel.getAll(filtersForModel);
 
-    if (!obras || obras.length === 0) {
+    if (!data || data.length === 0) {
       throw new NotFoundError(
         "Obras",
         null,
@@ -46,7 +46,7 @@ export class ObraService {
     }
 
     // Enriquecer datos
-    obras = obras.map((obra) => this._enrichObraData(obra));
+    let obras = data.map((obra) => this._enrichObraData(obra));
 
     // Filtro conAlertas (requiere enrichment, no se puede hacer en SQL)
     if (conAlertas !== undefined) {
@@ -55,7 +55,7 @@ export class ObraService {
       }
     }
 
-    return obras;
+    return { data: obras, pagination };
   }
 
   /**
@@ -183,7 +183,7 @@ export class ObraService {
    * Obtener estadísticas de obras
    */
   static async getEstadisticas() {
-    const obras = await ObraModel.getAll();
+    const { data: obras } = await ObraModel.getAll({ limit: 0 });
 
     return {
       total: obras.length,

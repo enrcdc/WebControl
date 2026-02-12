@@ -4,13 +4,8 @@ export class PedidoObraController {
   static async getAll(req, res, next) {
     try {
       const filters = req.query;
-      const pedidos = await PedidoObraService.getAll(filters);
-      res.json({
-        success: true,
-        data: pedidos,
-        count: pedidos.length,
-        filters,
-      });
+      const result = await PedidoObraService.getAll(filters);
+      res.json({ success: true, ...result });
     } catch (error) {
       next(error);
     }
@@ -19,13 +14,8 @@ export class PedidoObraController {
   static async filtrar(req, res, next) {
     try {
       const filters = req.body;
-      const pedidos = await PedidoObraService.getAll(filters);
-      res.json({
-        success: true,
-        data: pedidos,
-        count: pedidos.length,
-        filters,
-      });
+      const result = await PedidoObraService.getAll(filters);
+      res.json({ success: true, ...result });
     } catch (error) {
       next(error);
     }

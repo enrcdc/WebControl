@@ -27,3 +27,27 @@ Content-Type: application/json
     "empresa": {"nombre": "Bimbo", "id": 32},
     "complejos": [{"nombre": "TORRE DE CRISTAL", "id": 2}]
 }
+
+### Actualizar un contacto
+PATCH http://localhost:3002/api/contacto/85
+Content-Type: application/json
+
+{
+    "nombre": "Paco Pruebas",
+    "apellido1": "Probador",
+    "apellido2": "Probable",
+    "dni": "",
+    "telefono": "",
+    "telefono2": "",
+    "direccion": "",
+    "observaciones": "Esta es una actualización de las observaciones para probar PATCH",
+    "empresa": {"nombre": "Bimbo", "id": 32}
+}
+
+### Dar de baja un contacto
+DELETE http://localhost:3002/api/contacto
+Content-Type: application/json
+
+{
+    "idContactos": [83, 84]
+}

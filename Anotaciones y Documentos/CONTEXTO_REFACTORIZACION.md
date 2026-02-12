@@ -3,7 +3,7 @@
 Documento complementario al `PLAN_REORGANIZACION.md`.
 Recoge todas las decisiones y especificaciones tomadas durante el progreso de refactorización.
 
-**Última actualización:** 11/02/2026
+**Última actualización:** 12/02/2026
 **Rama de trabajo:** `refactor/project-structure`
 
 ---
@@ -88,6 +88,7 @@ Funciones reutilizables por cualquier servicio. Las funciones específicas de do
 **Archivos actuales:**
 - `validation.utils.js` — validateId, validateNotEmpty, validateAndSanitizeString, validateDateNotFuture, validateDateRange, validateNumberRange
 - `data-enrichment.utils.js` — calculateDaysBetween, calculatePercentage, calculateDeviation, countBy, sumBy
+- `pagination.utils.js` — applyPagination (DEFAULT_LIMIT=200, clona query para COUNT, aplica limit/offset)
 
 ---
 
@@ -177,7 +178,10 @@ Ver sección 11.
 - **Soft delete**: Las entidades que lo soportan usan `fecha_baja` en lugar de eliminación física
 - **Controladores thin**: Solo manejan HTTP. Sin lógica de negocio, sin conversiones de tipo, sin validaciones
 - **Los `console.log` de debug** se eliminan al refactorizar los controladores
-- **Método `_getEntityOrFail`**: Patrón privado reutilizado en servicios con CRUD para verificar existencia + soft delete
+- **Método `_getEntityOrFail`**: Patrón privado reutilizado en servicios con CRUD para verificar existencia + soft delete. Siempre usa `Model.getById()`, nunca `Model.getAll({id})`
+- **`getAll` siempre devuelve array**: El método `getAll(filters)` debe devolver siempre un array, nunca un objeto suelto. No usar `.first()` dentro de `getAll`, ni siquiera como optimización de early return por ID. Para obtener un registro único, usar `getById`
+- **`getById` en modelos**: Método estándar que devuelve un único objeto (o null). Usado por `_getEntityOrFail`. Todas las entidades con CRUD deben tenerlo
+- **Delete en batch (Opción C)**: Las operaciones de borrado que reciben un array de IDs usan el patrón de éxito parcial con reporte. Clasifican cada ID en `{ eliminados, yaEliminados, noEncontrados }`, ejecutan el delete solo sobre los activos, y devuelven el objeto completo para que el frontend informe al usuario
 
 ---
 
@@ -369,17 +373,38 @@ Se auditaron todas las carpetas del proyecto backend. Las capas `models/`, `serv
 - ✅ Retirado Zod de `obra.model.js`: eliminados imports de validator y ValidationError, create/update reciben datos ya validados
 - ✅ Retirado Zod de `factura-compra.model.js`: misma limpieza
 - ✅ Eliminado `validations/ValidationError.js` (ya no se importa en ningún sitio)
-- ⏭️ `comprasValidator.js` y `productoValidator.js` se conservan para uso futuro
-- ⏭️ Queda pendiente crear schemas Zod para el resto de entidades con CRUD (empresa, edificio, contacto, gasto, hora, pedido-obra, factura-obra, almacen, movimiento-almacen) — se hará antes de los pasos 5 y 6
+- ⏭️ `comprasValidator.js` se conserva para uso futuro (no se importa en ningún sitio actualmente)
+- ✅ `productoValidator.js` adaptado al nuevo patrón: exporta `createProductoSchema`/`updateProductoSchema`
+- ✅ Creados schemas Zod para el resto de entidades con CRUD:
+  - `empresaValidator.js` → `createEmpresaSchema` (solo POST, no tiene PATCH)
+  - `contactoValidator.js` → `createContactoSchema` (solo POST, no tiene PATCH)
+  - `horaValidator.js` → `createHoraSchema` (solo POST, no tiene PATCH)
+  - `pedidoObraValidator.js` → `createPedidoObraSchema` + `updatePedidoObraSchema` (update omite `idObra`)
+  - `facturaObraValidator.js` → `createFacturaObraSchema` + `updateFacturaObraSchema` (update omite `idObra`)
+  - `movimientoAlmacenValidator.js` → `createMovimientoAlmacenSchema` + `updateMovimientoAlmacenSchema` (update tiene `fechaMovimiento` en vez de `fechaAlta`)
+- ✅ Aplicado `validate()` en todas las rutas POST/PATCH correspondientes
+- ✅ Añadido método `create` al controller de empresa (faltaba)
+- ⏭️ edificio y gasto no necesitan schema (no tienen operaciones POST/PATCH)
 
-#### Paso 4: Paginación
+#### Paso 4: Paginación — COMPLETADO ✅
 
-**Cuándo:** Antes del frontend
-**Qué incluye:**
-- Añadir soporte de `limit` y `offset` opcionales en los métodos `getAll(filters)` de los modelos
-- Si no se proporcionan, el comportamiento actual se mantiene (sin límite)
-- Los controladores extraen `limit` y `offset` de `req.query` y los pasan como parte de los filtros
-- La respuesta incluirá metadatos de paginación: `{ data, count, limit, offset }`
+**Qué se hizo:**
+- ✅ Creado `utils/pagination.utils.js` con función `applyPagination(query, filters)`:
+  - `DEFAULT_LIMIT = 200` — se aplica cuando no se especifica `limit`
+  - `limit=0` → sin paginación (devuelve todos los registros, `pagination: null`)
+  - Clona la query para COUNT (`.clearSelect().clearOrder().count()`) y aplica `.limit().offset()` a la original
+  - Devuelve `{ data, pagination: { total, limit, offset } }` o `{ data, pagination: null }`
+- ✅ Exportado desde `utils/index.js` (barrel export)
+- ✅ Aplicado en los 11 modelos con CRUD: empresa, edificio, contacto, gasto, hora, obra, pedido-obra, factura-obra, factura-compra, almacen, movimiento-almacen
+  - Cambio: `return query` → `return applyPagination(query, filters)`
+- ✅ Actualizados los 11 servicios para desestructurar `{ data, pagination }` del modelo y propagarlo
+  - Caso especial `obra.service.js`: aplica enrichment sobre `data` antes de devolver
+  - Caso especial `obra.service.js → getEstadisticas()`: usa `{ limit: 0 }` para obtener todos los registros
+- ✅ Actualizados los 11 controladores: `const result = await Service.getAll(filters); res.json({ success: true, ...result })`
+- ⏭️ Entidades auxiliares (estado-obra, tipo-facturable, tipo-obra, usuario, responsable, rentabilidad, relacion-obra) NO tienen paginación — son catálogos o consultas puntuales con pocos registros
+- **Formato de respuesta API:**
+  - Con paginación: `{ success: true, data: [...], pagination: { total, limit, offset } }`
+  - Sin paginación (`limit=0`): `{ success: true, data: [...], pagination: null }`
 
 #### Paso 5: Infraestructura de autenticación JWT
 
@@ -424,18 +449,18 @@ Los pasos 1-4 completan el backend para empezar con el frontend. El paso 5 es un
 
 ## TODO: Punto de continuación para el próximo chat
 
-**Última sesión:** 11/02/2026
-**Estado:** Iteración 3 en progreso — Pasos 1, 2 y 3 completados.
+**Última sesión:** 12/02/2026
+**Estado:** Iteración 3 en progreso — Pasos 1, 2, 3 y 4 completados.
 
 ### Próximas tareas (en orden):
 
-1. **Crear schemas Zod para el resto de entidades con CRUD** — El desarrollador quiere completar todos los validators antes de los pasos 5 y 6. Las entidades pendientes son: empresa, edificio, contacto, gasto, hora, pedido-obra, factura-obra, almacen, movimiento-almacen. Para cada una: crear schema en `validations/`, exportar `createXSchema`/`updateXSchema`, aplicar `validate()` en las rutas POST/PATCH, y retirar Zod del modelo si aplica. Usar como referencia `obrasValidator.js` y `obra.routes.js`.
-2. **Paso 4: Paginación** — Añadir `limit`/`offset` opcionales en `getAll(filters)` de los modelos.
-3. **Paso 5: Infraestructura JWT** — Puente backend ↔ frontend.
-4. **Paso 6: Seguridad y hardening** — Pre-producción.
+1. **Paso 5: Infraestructura JWT** — Puente backend ↔ frontend.
+2. **Paso 6: Seguridad y hardening** — Pre-producción.
 
 ### Contexto importante:
 - El middleware `validate(schema)` ya existe en `middlewares/validate.js`
-- Los validators `comprasValidator.js` y `productoValidator.js` ya existen y se conservan para reutilizar
+- Todos los validators están creados y aplicados en las rutas
+- `comprasValidator.js` se conserva para uso futuro (no se importa actualmente)
+- Paginación implementada con `applyPagination` en `utils/pagination.utils.js` (DEFAULT_LIMIT=200, limit=0 para sin límite)
 - Seguir la **directriz 13** (sección 13): presentar decisiones de diseño antes de implementar
 - Seguir el patrón establecido: leer archivos → presentar decisiones → esperar confirmación → implementar → actualizar documento

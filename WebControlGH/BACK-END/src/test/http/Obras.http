@@ -1,7 +1,7 @@
 ############################ OBRAS ############################
 
 ### GET Obras
-GET http://localhost:3002/api/obra?relacionEntreObras=mostrarPadres
+GET http://localhost:3002/api/obra?limit=5&offset=0
 
 ### GET Obra específica
 GET http://localhost:3002/api/obra/3708

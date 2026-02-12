@@ -1,4 +1,5 @@
 import { db } from "../config/database.js";
+import { applyPagination } from "../utils/index.js";
 
 export class FacturaCompraModel {
   /**
@@ -63,7 +64,7 @@ export class FacturaCompraModel {
       }
     }
 
-    return query;
+    return applyPagination(query, filters);
   }
 
   static async getById({ id }) {

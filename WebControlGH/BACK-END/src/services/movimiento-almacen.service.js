@@ -4,9 +4,9 @@ import { validateId, validateNotEmpty } from "../utils/index.js";
 
 export class MovimientoAlmacenService {
   static async getAll(filters = {}) {
-    const movimientos = await MovimientoAlmacenModel.getAll(filters);
+    const { data, pagination } = await MovimientoAlmacenModel.getAll(filters);
 
-    if (!movimientos || movimientos.length === 0) {
+    if (!data || data.length === 0) {
       throw new NotFoundError(
         "Movimientos",
         null,
@@ -14,7 +14,7 @@ export class MovimientoAlmacenService {
       );
     }
 
-    return movimientos;
+    return { data, pagination };
   }
 
   static async create(movimientoData) {

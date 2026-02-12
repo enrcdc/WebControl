@@ -6,8 +6,8 @@ export class EmpresaController {
   static async getAll(req, res, next) {
     try {
       const filters = req.query;
-      const empresas = await EmpresaService.getAll(filters);
-      res.json({ success: true, data: empresas });
+      const result = await EmpresaService.getAll(filters);
+      res.json({ success: true, ...result });
     } catch (error) {
       next(error);
     }
@@ -19,6 +19,47 @@ export class EmpresaController {
       const { nombre } = req.query;
       const empresas = await EmpresaService.getByNombre(nombre);
       res.json({ success: true, data: empresas });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async create(req, res, next) {
+    try {
+      const empresa = await EmpresaService.create(req.body);
+      res.status(201).json({ success: true, data: empresa });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async update(req, res, next) {
+    try {
+      const { idEmpresa } = req.params;
+      const updateData = req.body;
+      const empresaActualizada = await EmpresaService.update(
+        idEmpresa,
+        updateData,
+      );
+      res.json({
+        success: true,
+        message: "Empresa actualizada exitosamente",
+        data: empresaActualizada,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async delete(req, res, next) {
+    try {
+      const { idEmpresas } = req.body;
+      const empresasEliminadas = await EmpresaService.delete(idEmpresas);
+      res.json({
+        success: true,
+        message: "Empresa(s) eliminada(s) exitosamente",
+        data: empresasEliminadas,
+      });
     } catch (error) {
       next(error);
     }

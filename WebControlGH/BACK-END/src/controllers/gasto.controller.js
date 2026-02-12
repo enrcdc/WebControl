@@ -4,8 +4,8 @@ export class GastoController {
   static async getAll(req, res, next) {
     try {
       const filters = req.query;
-      const gastos = await GastoService.getAll(filters);
-      res.json({ success: true, data: gastos });
+      const result = await GastoService.getAll(filters);
+      res.json({ success: true, ...result });
     } catch (error) {
       next(error);
     }
@@ -14,8 +14,8 @@ export class GastoController {
   static async filtrar(req, res, next) {
     try {
       const filters = req.body;
-      const gastos = await GastoService.getAll(filters);
-      res.json({ success: true, data: gastos, count: gastos.length });
+      const result = await GastoService.getAll(filters);
+      res.json({ success: true, ...result });
     } catch (error) {
       next(error);
     }

@@ -4,13 +4,8 @@ export class MovimientoAlmacenController {
   static async getAll(req, res, next) {
     try {
       const filters = req.query;
-      const movimientos = await MovimientoAlmacenService.getAll(filters);
-      res.json({
-        success: true,
-        data: movimientos,
-        count: movimientos.length,
-        filters,
-      });
+      const result = await MovimientoAlmacenService.getAll(filters);
+      res.json({ success: true, ...result });
     } catch (error) {
       next(error);
     }

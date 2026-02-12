@@ -23,5 +23,5 @@ Content-Type: application/json
 }
 
 
-### Obtener el listado de todas las horas (Es muy lenta esta consulta)
-GET http://localhost:3002/api/horas
+### Obtener el listado de todas las horas (Es muy lenta esta consulta si no se aplica limit)
+GET http://localhost:3002/api/horas?limit=10

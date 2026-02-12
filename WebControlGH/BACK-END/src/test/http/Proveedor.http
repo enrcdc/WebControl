@@ -1,7 +1,7 @@
 ###### ENDPOINTS EMPRESA #############
 
-### Obtener empresas
-GET http://localhost:3002/api/empresa
+### Obtener proveedores
+GET http://localhost:3002/api/proveedor
 
 ### Obtener empresas por id (soporta por nombre y por id de momento)
 GET http://localhost:3002/api/empresa?idEmpresa=61

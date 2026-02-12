@@ -21,6 +21,7 @@ import obraRouter from "./obra.routes.js";
 import rentabilidadRouter from "./rentabilidad.routes.js";
 import facturaCompraRouter from "./factura-compra.routes.js";
 import pedidoObraRouter from "./pedido-obra.routes.js";
+import proveedorRouter from "./proveedor.routes.js";
 import gastoRouter from "./gasto.routes.js";
 import horasRouter from "./hora.routes.js";
 import movimientosAlmacenRouter from "./movimiento-almacen.routes.js";
@@ -70,6 +71,7 @@ router.use("/responsables", responsablesRouter);
 router.use("/empresa", empresaRouter);
 router.use("/edificio", edificioRouter);
 router.use("/contacto", contactoRouter);
+router.use("/proveedor", proveedorRouter);
 
 // ============================================
 // SECCION: Relaciones

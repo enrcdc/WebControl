@@ -4,9 +4,9 @@ import { validateId, validateNotEmpty } from "../utils/index.js";
 
 export class AlmacenService {
   static async getAll(filters = {}) {
-    const productos = await AlmacenModel.getAll(filters);
+    const { data, pagination } = await AlmacenModel.getAll(filters);
 
-    if (!productos || productos.length === 0) {
+    if (!data || data.length === 0) {
       throw new NotFoundError(
         "Productos",
         null,
@@ -14,7 +14,7 @@ export class AlmacenService {
       );
     }
 
-    return productos;
+    return { data, pagination };
   }
 
   static async create(productoData) {

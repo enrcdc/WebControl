@@ -1,12 +1,16 @@
 import { EmpresaModel } from "../models/empresa.model.js";
-import { NotFoundError } from "../errors/index.js";
-import { validateAndSanitizeString, validateNotEmpty } from "../utils/index.js";
+import { AlreadyDeletedError, NotFoundError } from "../errors/index.js";
+import {
+  validateAndSanitizeString,
+  validateNotEmpty,
+  validateId,
+} from "../utils/index.js";
 
 export class EmpresaService {
   static async getAll(filters = {}) {
-    const empresas = await EmpresaModel.getAll(filters);
+    const { data, pagination } = await EmpresaModel.getAll(filters);
 
-    if (!empresas || empresas.length === 0) {
+    if (!data || data.length === 0) {
       throw new NotFoundError(
         "Empresas",
         null,
@@ -14,7 +18,7 @@ export class EmpresaService {
       );
     }
 
-    return empresas;
+    return { data, pagination };
   }
 
   // TODO: Eliminar cuando el frontend use getAll(filters)
@@ -48,6 +52,44 @@ export class EmpresaService {
     return nuevaEmpresa;
   }
 
+  static async update(idEmpresa, updateData) {
+    const validID = validateId(idEmpresa, "ID de empresa");
+    validateNotEmpty(updateData, "datos de actualización");
+
+    await this._getEmpresaOrFail(validID);
+
+    const empresaActualizada = await EmpresaModel.update({
+      idEmpresa: validID,
+      input: updateData,
+    });
+
+    return empresaActualizada;
+  }
+
+  static async delete(idEmpresas) {
+    const validIDs = idEmpresas.map((id) => validateId(id));
+
+    const resultado = { eliminados: [], yaEliminados: [], noEncontrados: [] };
+
+    for (const id of validIDs) {
+      const empresa = await EmpresaModel.getById({ idEmpresa: id });
+
+      if (!empresa) {
+        resultado.noEncontrados.push(id);
+      } else if (empresa.fecha_baja) {
+        resultado.yaEliminados.push(id);
+      } else {
+        resultado.eliminados.push(id);
+      }
+    }
+
+    if (resultado.eliminados.length > 0) {
+      await EmpresaModel.delete({ idEmpresas: resultado.eliminados });
+    }
+
+    return resultado;
+  }
+
   // ============================================
   // MÉTODOS PRIVADOS
   // ============================================
@@ -55,5 +97,19 @@ export class EmpresaService {
   // TODO: Más validaciones de lógica de negocio
   static _validateEmpresaData(data) {
     validateNotEmpty(data, "datos de la empresa");
+  }
+
+  static async _getEmpresaOrFail(id, checkDeleted = true) {
+    const empresa = await EmpresaModel.getById({ idEmpresa: id });
+
+    if (!empresa) {
+      throw new NotFoundError("Empresa", id);
+    }
+
+    if (checkDeleted && empresa.fecha_baja) {
+      throw new AlreadyDeletedError("Empresa", id);
+    }
+
+    return empresa;
   }
 }

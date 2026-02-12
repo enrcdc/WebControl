@@ -4,13 +4,8 @@ export class FacturaObraController {
   static async getAll(req, res, next) {
     try {
       const filters = req.query;
-      const facturas = await FacturaObraService.getAll(filters);
-      res.json({
-        success: true,
-        data: facturas,
-        count: facturas.length,
-        filters,
-      });
+      const result = await FacturaObraService.getAll(filters);
+      res.json({ success: true, ...result });
     } catch (error) {
       next(error);
     }
@@ -19,13 +14,8 @@ export class FacturaObraController {
   static async filtrar(req, res, next) {
     try {
       const filters = req.body;
-      const facturas = await FacturaObraService.getAll(filters);
-      res.json({
-        success: true,
-        data: facturas,
-        count: facturas.length,
-        filters,
-      });
+      const result = await FacturaObraService.getAll(filters);
+      res.json({ success: true, ...result });
     } catch (error) {
       next(error);
     }

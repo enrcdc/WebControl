@@ -99,10 +99,5 @@ const productoSchema = zod.object({
   observaciones: zod.string().optional(),
 });
 
-export function validateProducto(object) {
-  return productoSchema.safeParse(object);
-}
-
-export function validatePartialProducto(object) {
-  return productoSchema.partial().safeParse(object);
-}
+export const createProductoSchema = productoSchema;
+export const updateProductoSchema = productoSchema.partial();

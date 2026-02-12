@@ -7,3 +7,42 @@ GET http://localhost:3002/api/edificio?nombre=torre
 GET http://localhost:3002/api/edificio/buscar/nombre?nombre=torre
 
 
+### Crear edificio
+POST http://localhost:3002/api/edificio
+Content-Type: application/json
+
+{
+    "nombre": "Complejo de prueba",
+    "direccion": "Dirección Inventada",
+    "telefono1": "888-888-888",
+    "telefono2": "888-888-888",
+    "email": "micomplejodeprueba@gmail.com",
+    "porDefecto": 0,
+    "observaciones": "Este es un complejo de prueba para probar el POST",
+    "contactos": [82]
+}
+
+### Actualizar edificio
+PATCH http://localhost:3002/api/edificio/364
+Content-Type: application/json
+
+{  
+    "nombre": "Complejo de prueba",
+    "direccion": "Dirección Inventada",
+    "telefono1": "888-888-888",
+    "telefono2": "888-888-888",
+    "email": "micomplejodeprueba@gmail.com",
+    "porDefecto": 0,
+    "observaciones": "Esta es una actualización de las observaciones para probar el PATCH",
+    "contactos": [82]
+}
+
+### Eliminar (dar de baja) edificios
+DELETE http://localhost:3002/api/edificio
+Content-Type: application/json
+
+{
+    "idEdificios": [364, 365]
+}
+
+    

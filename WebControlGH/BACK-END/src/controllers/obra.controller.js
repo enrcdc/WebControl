@@ -4,13 +4,8 @@ export class ObraController {
   static async getAll(req, res, next) {
     try {
       const filters = req.query;
-      const obras = await ObraService.getAll(filters);
-      res.json({
-        success: true,
-        data: obras,
-        count: obras.length,
-        filters,
-      });
+      const result = await ObraService.getAll(filters);
+      res.json({ success: true, ...result });
     } catch (error) {
       next(error);
     }
@@ -19,13 +14,8 @@ export class ObraController {
   static async filtrar(req, res, next) {
     try {
       const filters = req.body;
-      const obras = await ObraService.getAll(filters);
-      res.json({
-        success: true,
-        data: obras,
-        count: obras.length,
-        filters,
-      });
+      const result = await ObraService.getAll(filters);
+      res.json({ success: true, ...result });
     } catch (error) {
       next(error);
     }

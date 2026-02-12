@@ -3,8 +3,8 @@
 ### Obtener todos los productos
 GET http://localhost:3002/api/almacen
 
-### Obtener un producto específico
-GET http://localhost:3002/api/almacen?idProducto=58
+### Obtener un movimiento por id 
+GET http://localhost:3002/api/almacen?id=58
 
 ### Obtener un producto por la descripción
 GET http://localhost:3002/api/almacen?descripcion=manguera 3x1

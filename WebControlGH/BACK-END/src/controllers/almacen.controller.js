@@ -4,13 +4,8 @@ export class AlmacenController {
   static async getAll(req, res, next) {
     try {
       const filters = req.query;
-      const productos = await AlmacenService.getAll(filters);
-      res.json({
-        success: true,
-        data: productos,
-        count: productos.length,
-        filters,
-      });
+      const result = await AlmacenService.getAll(filters);
+      res.json({ success: true, ...result });
     } catch (error) {
       next(error);
     }

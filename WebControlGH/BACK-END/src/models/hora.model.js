@@ -1,4 +1,5 @@
 import { db } from "../config/database.js";
+import { applyPagination } from "../utils/index.js";
 
 // TODO: Faltan más operaciones CRUD
 
@@ -112,7 +113,7 @@ export class HoraModel {
       query.where("h.dia_trabajado", "<=", filters.fechaHasta);
     }
 
-    return query;
+    return applyPagination(query, filters);
   }
 
   static async create({ input }) {

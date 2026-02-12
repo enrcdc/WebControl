@@ -1,11 +1,12 @@
 import { db } from "../config/database.js";
+import { applyPagination } from "../utils/index.js";
 
 export class AlmacenModel {
   /**
    * getAll recupera todos los productos de almacén según los filtros proporcionados.
    * Si no se especifica un filtro, devuelve todos los registros.
    * @param {Object} filters - El objeto de filtros.
-   * @param {number} [filters.idProducto] - filtrar por id
+   * @param {number} [filters.id] - filtrar por id
    * @param {string} [filters.descripcion] - filtrar por descripción (like)
    * @param {string} [filters.codigo] - filtrar por código (like)
    * @param {string} [filters.proveedor] - filtrar por nombre de proveedor (like)
@@ -43,8 +44,8 @@ export class AlmacenModel {
       .leftJoin("tipounidad as tu", "a.id_tipounidad", "tu.id")
       .orderBy("a.descripcion");
 
-    if (filters.idProducto) {
-      query.where("a.id", filters.idProducto);
+    if (filters.id) {
+      query.where("a.id", filters.id);
     }
 
     if (filters.descripcion) {
@@ -95,7 +96,7 @@ export class AlmacenModel {
       }
     }
 
-    return query;
+    return applyPagination(query, filters);
   }
 
   static async getById({ id }) {

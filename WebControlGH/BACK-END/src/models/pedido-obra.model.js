@@ -1,4 +1,5 @@
 import { db } from "../config/database.js";
+import { applyPagination } from "../utils/index.js";
 
 export class PedidoObraModel {
   /**
@@ -44,7 +45,16 @@ export class PedidoObraModel {
       }
     }
 
-    return query;
+    return applyPagination(query, filters);
+  }
+
+  static async getById({ idPedido }) {
+    return (
+      db("ecopedido")
+        .select("*")
+        .where("id_pedido", idPedido)
+        .first() ?? null
+    );
   }
 
   static async create({ input }) {

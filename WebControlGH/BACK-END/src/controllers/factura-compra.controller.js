@@ -4,13 +4,8 @@ export class FacturaCompraController {
   static async getAll(req, res, next) {
     try {
       const filters = req.query;
-      const facturas = await FacturaCompraService.getAll(filters);
-      res.json({
-        success: true,
-        data: facturas,
-        count: facturas.length,
-        filters,
-      });
+      const result = await FacturaCompraService.getAll(filters);
+      res.json({ success: true, ...result });
     } catch (error) {
       next(error);
     }

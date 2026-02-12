@@ -5,13 +5,8 @@ export class HoraController {
   static async getAll(req, res, next) {
     try {
       const filters = req.query;
-      const horas = await HoraService.getAll(filters);
-      res.json({
-        success: true,
-        data: horas,
-        count: horas.length,
-        filters,
-      });
+      const result = await HoraService.getAll(filters);
+      res.json({ success: true, ...result });
     } catch (error) {
       next(error);
     }
@@ -20,13 +15,8 @@ export class HoraController {
   static async filtrar(req, res, next) {
     try {
       const filters = req.body;
-      const horas = await HoraService.getAll(filters);
-      res.json({
-        success: true,
-        data: horas,
-        count: horas.length,
-        filters,
-      });
+      const result = await HoraService.getAll(filters);
+      res.json({ success: true, ...result });
     } catch (error) {
       next(error);
     }
