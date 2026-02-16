@@ -323,6 +323,19 @@ Esto evita iteraciones innecesarias sobre refactorizaciones ya realizadas.
 
 ## 8. Estructura estándar de features (confirmada)
 
+### Contexto histórico (por qué existe discrepancia entre features)
+
+Actualmente hay una discrepancia estructural entre la feature `obras` y el resto de features:
+
+- **Resto de features** (facturas, pedidos, compras, etc.): tienen los archivos `.js` directamente dentro de `components/` (estructura plana, monolítica). Cada archivo corresponde a un módulo de la entidad: Gestion (listado + filtros + paginación), Detalle, Crear, Imprimir.
+- **Feature obras**: tiene subcarpetas dentro de `components/` (GestionObras/, DetalleObra/, CrearObra/, ImprimirObra/), cada una con un `index.js` orchestrator, componentes presentacionales `.jsx`, y en algunos casos una subcarpeta `Modals/`. Además tiene carpetas `hooks/` (24 hooks especializados en 3 niveles: atómicos → compuestos → dominio) y `utils/` (funciones de dominio).
+
+**Razón de la discrepancia:** La feature obras se desarrolló primero con la estructura plana (un archivo por módulo), pero los archivos crecieron hasta ~3000 líneas (DetalleObra). Se refactorizó aplicando el patrón orchestrator + presentacionales + hooks, resultando en la estructura actual. El resto de features se migraron después sin esa refactorización interna porque aún no han crecido lo suficiente.
+
+**Decisión tomada:** Todas las features deben converger hacia una estructura común. La estructura de obras es la referencia, pero aplanada un nivel (ver estructura objetivo abajo). La homogeneización se hará incrementalmente al tocar cada feature, no como refactorización masiva. No todas las entidades necesitarán los mismos módulos ni la misma cantidad — el split orchestrator/presentacional solo se aplica cuando se supera el umbral de líneas.
+
+### Estructura objetivo
+
 **Decisión:** Aplanar un nivel la estructura interna de cada feature. Eliminar la subcarpeta `Components/` intermedia, modales al mismo nivel, nombres simplificados.
 
 **Estructura objetivo por feature:**
