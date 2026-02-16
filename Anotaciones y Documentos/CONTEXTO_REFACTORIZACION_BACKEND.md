@@ -3,7 +3,7 @@
 Documento complementario al `PLAN_REORGANIZACION.md`.
 Recoge todas las decisiones y especificaciones tomadas durante el progreso de refactorización.
 
-**Última actualización:** 12/02/2026
+**Última actualización:** 13/02/2026
 **Rama de trabajo:** `refactor/project-structure`
 
 ---
@@ -321,7 +321,67 @@ Esto evita iteraciones innecesarias sobre refactorizaciones ya realizadas.
 
 ---
 
-## 14. Iteración 3: Consolidación y hardening del backend
+## 14. TODO: Migración de contraseñas MD5 a bcrypt
+
+### Contexto
+
+Las contraseñas de la tabla `usuarios` están almacenadas como hashes MD5. MD5 es inseguro para contraseñas: es extremadamente rápido (facilita fuerza bruta), no usa salt (contraseñas iguales producen el mismo hash) y está criptográficamente roto.
+
+bcrypt es el estándar actual: es deliberadamente lento (configurable), genera un salt aleatorio por cada contraseña, y dos usuarios con la misma contraseña producen hashes distintos.
+
+### Estrategia elegida: Migración progresiva en login
+
+No se pueden "convertir" hashes MD5 a bcrypt (los hashes son funciones de un solo sentido). La migración progresiva rehashea cada contraseña cuando el usuario hace login, sin necesidad de resetear contraseñas ni conocerlas de antemano.
+
+**Cambios necesarios en la BD:**
+- Añadir columna `password_migrated` (BOOLEAN, default FALSE) a la tabla `usuarios`
+
+**Lógica en `usuario.service.js`:**
+
+```javascript
+static async login(username, password) {
+  const usuario = await UsuarioModel.getByUsername({ username });
+  if (!usuario) throw new UnauthorizedError("Credenciales inválidas");
+
+  if (!usuario.password_migrated) {
+    // Usuario aún con MD5 — verificar con MD5
+    const md5Hash = crypto.createHash("md5").update(password).digest("hex");
+    if (md5Hash !== usuario.password) {
+      throw new UnauthorizedError("Credenciales inválidas");
+    }
+
+    // Credenciales correctas — migrar a bcrypt
+    const bcryptHash = await bcrypt.hash(password, 12);
+    await UsuarioModel.updatePassword(usuario.codigo_usuario, bcryptHash);
+    // A partir de aquí, este usuario se verifica con bcrypt
+  } else {
+    // Usuario ya migrado — verificar con bcrypt
+    const match = await bcrypt.compare(password, usuario.password);
+    if (!match) throw new UnauthorizedError("Credenciales inválidas");
+  }
+
+  const { password: _, password_migrated: __, ...usuarioSinPassword } = usuario;
+  return usuarioSinPassword;
+}
+```
+
+**Modelo — nuevo método:**
+
+```javascript
+static async updatePassword(codigoUsuario, bcryptHash) {
+  await db("usuarios")
+    .where("codigo_usuario", codigoUsuario)
+    .update({ password: bcryptHash, password_migrated: true });
+}
+```
+
+### Cuándo implementar
+
+Esta migración se abordará cuando se trabaje en la autenticación del frontend. No bloquea ninguna funcionalidad actual — el JWT ya funciona con la verificación MD5 existente. La dependencia `bcrypt` ya está instalada en `package.json`.
+
+---
+
+## 15. Iteración 3: Consolidación y hardening del backend
 
 ### Objetivo
 
@@ -406,18 +466,22 @@ Se auditaron todas las carpetas del proyecto backend. Las capas `models/`, `serv
   - Con paginación: `{ success: true, data: [...], pagination: { total, limit, offset } }`
   - Sin paginación (`limit=0`): `{ success: true, data: [...], pagination: null }`
 
-#### Paso 5: Infraestructura de autenticación JWT
+#### Paso 5: Infraestructura de autenticación JWT — COMPLETADO ✅
 
-**Cuándo:** Puente backend ↔ frontend
-**Qué incluye:**
-- Crear middleware `middlewares/auth.js` que verifique tokens JWT
-- Endpoint `POST /auth/login` que devuelva un token
-- Proteger rutas que requieran autenticación
-- Se conecta directamente con el frontend cuando se implemente el login
+**Qué se hizo:**
+- ✅ Instalado `jsonwebtoken` como dependencia
+- ✅ Actualizado `config/env.js`: añadido `jwt.expiresIn` (default `"8h"` — jornada laboral ERP)
+- ✅ Creado `middlewares/auth.js`: verifica `Authorization: Bearer <token>`, decodifica JWT, inyecta `req.user`, lanza `UnauthorizedError` si falla
+- ✅ Creado `loginWithToken()` en `usuario.service.js`: reutiliza `login()` existente, genera JWT con payload `{ codigoUsuario, nombreUsuario, codigoFirma }`
+- ✅ Creado `controllers/auth.controller.js` y `routes/auth.routes.js` → `POST /api/auth/login`
+- ✅ Registrado `authRouter` en `routes/index.js`
+- ✅ Endpoint antiguo `POST /api/usuario/login` mantenido con TODO (el frontend aún lo usa)
+- ⏭️ El middleware `auth` no se aplica a ninguna ruta todavía — se activará progresivamente cuando el frontend implemente JWT
+- ⏭️ TODO: Migrar contraseñas de MD5 a bcrypt (requiere rehashear en BD)
 
-#### Paso 6: Seguridad y hardening
+#### Paso 6: Seguridad y hardening — TODO (pre-producción)
 
-**Cuándo:** Pre-producción
+**Cuándo:** Cuando la aplicación esté lista para despliegue
 **Qué incluye:**
 - `helmet` para headers de seguridad HTTP
 - `express-rate-limit` para protección contra abuso
@@ -447,20 +511,17 @@ Los pasos 1-4 completan el backend para empezar con el frontend. El paso 5 es un
 
 ---
 
-## TODO: Punto de continuación para el próximo chat
+## Estado final de la refactorización del backend
 
-**Última sesión:** 12/02/2026
-**Estado:** Iteración 3 en progreso — Pasos 1, 2, 3 y 4 completados.
+**Fecha:** 13/02/2026
+**Estado:** Iteración 3 completada (pasos 1-5). Paso 6 pendiente para pre-producción.
 
-### Próximas tareas (en orden):
+### Tareas pendientes (no bloqueantes):
+- **Paso 6: Seguridad y hardening** — Implementar cuando la aplicación esté lista para despliegue (helmet, rate limiting, CORS, env modes)
+- **Migración MD5 → bcrypt** — Implementar cuando se trabaje la autenticación del frontend (ver sección 14)
+- **Eliminar métodos `getByX` legacy** — Cuando el frontend migre a `getAll(filters)`
+- **Eliminar endpoint `POST /api/usuario/login`** — Cuando el frontend migre a `POST /api/auth/login`
+- **Activar middleware `auth`** — Aplicar progresivamente a rutas cuando el frontend implemente JWT
 
-1. **Paso 5: Infraestructura JWT** — Puente backend ↔ frontend.
-2. **Paso 6: Seguridad y hardening** — Pre-producción.
-
-### Contexto importante:
-- El middleware `validate(schema)` ya existe en `middlewares/validate.js`
-- Todos los validators están creados y aplicados en las rutas
-- `comprasValidator.js` se conserva para uso futuro (no se importa actualmente)
-- Paginación implementada con `applyPagination` en `utils/pagination.utils.js` (DEFAULT_LIMIT=200, limit=0 para sin límite)
-- Seguir la **directriz 13** (sección 13): presentar decisiones de diseño antes de implementar
-- Seguir el patrón establecido: leer archivos → presentar decisiones → esperar confirmación → implementar → actualizar documento
+### Nota:
+La refactorización del frontend se documenta en un archivo separado: `CONTEXTO_REFACTORIZACION_FRONTEND.md`

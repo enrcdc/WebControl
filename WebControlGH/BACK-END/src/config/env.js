@@ -35,8 +35,8 @@ export const config = {
         ? process.env.DEV_DB_NAME
         : process.env.PROD_DB_NAME,
   },
-  // Secreto para la decodificación del token
   jwt: {
     secret: process.env.JWT_SECRET,
+    expiresIn: process.env.JWT_EXPIRES_IN || "8h",
   },
 };

@@ -26,6 +26,7 @@ import gastoRouter from "./gasto.routes.js";
 import horasRouter from "./hora.routes.js";
 import movimientosAlmacenRouter from "./movimiento-almacen.routes.js";
 import responsablesRouter from "./responsable.routes.js";
+import authRouter from "./auth.routes.js";
 
 /**
  * Crear un router principal que agrupa todas las rutas
@@ -89,6 +90,7 @@ router.use("/rentabilidad", rentabilidadRouter);
 // SECCION: Usuarios y Autenticacion
 // ============================================
 
+router.use("/auth", authRouter);
 router.use("/usuario", usuarioRouter);
 
 /**

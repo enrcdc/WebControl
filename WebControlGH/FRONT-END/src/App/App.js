@@ -4,46 +4,33 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import "../css/App.css";
 
 // -- LOGIN -- \\
-import Login from "../Login/Login";
+import { Login } from "../features/auth";
 // -- NAVBAR -- \\
 import Navbar from "../Navbar/Navbar";
 
-// -- TABLA RENTABILIDAD -- \\
-import ProfitabilityTable from "../Rentabilidad/ProfitabilityTable";
+// -- RENTABILIDAD -- \\
+import { ProfitabilityTable } from "../features/rentabilidad";
 
 // -- ALMACEN -- \\
-import GestionAlmacen from "../Almacen/GestionAlmacen";
+import { GestionAlmacen } from "../features/almacen";
 
 // -- OBRA -- \\
-import ListaObras from "../Obra/GestionObras/index.js";
-import DetalleObra from "../Obra/DetalleObra/index.js";
-import CrearObra from "../Obra/CrearObra/index.js";
-import ImprimirObras from "../Obra/ImprimirObra/ImprimirObra.js";
+import { GestionObras as ListaObras, DetalleObra, CrearObra, ImprimirObras } from "../features/obras";
 
 // -- FACTURA -- \\
-import GestionFacturas from "../Factura/GestionFacturas";
-import DetalleFactura from "../Factura/DetalleFactura";
-import NuevaFactura from "../Factura/NuevaFactura";
-import ImprimirFacturas from "../Factura/ImprimirFacturas";
+import { GestionFacturas, DetalleFactura, NuevaFactura, ImprimirFacturas } from "../features/facturas";
 
 // -- PEDIDO -- \\
-import GestionPedidos from "../Pedido/GestionPedidos";
-import DetallePedido from "../Pedido/DetallePedido";
-import NuevoPedido from "../Pedido/NuevoPedido";
-import ImprimirPedidos from "../Pedido/ImprimirPedido";
+import { GestionPedidos, DetallePedido, NuevoPedido, ImprimirPedido } from "../features/pedidos";
 
 // -- COMPRA -- \\
-import GestionCompras from "../Compra/GestionCompras";
-import DetalleCompra from "../Compra/DetalleCompra";
-import NuevaCompra from "../Compra/NuevaCompra";
+import { GestionCompras, DetalleCompra, NuevaCompra } from "../features/compras";
 
 // -- HORAS -- \\
-import HorasList from "../Horas/HorasList";
-import DetalleHora from "../Horas/DetalleHora";
-import NuevaHora from "../Horas/NuevaHora";
+import { HorasList, DetalleHora, NuevaHora } from "../features/horas";
 
 // -- GASTOS -- \\
-import GastosList from "../Gastos/GastosList.js";
+import { GastosList } from "../features/gastos";
 
 
 // Componente principal de la aplicación
@@ -93,14 +80,7 @@ function MainLayout() {
           />
           <Route path="imprimir-factura" element={<ImprimirFacturas />} />{" "}
           {/* Nueva ruta para imprimir facturas */}
-          <Route path="imprimir-pedido" element={<ImprimirPedidos />} />
-          <Route path="gestion-almacen" element={<GestionAlmacen />} />
-          <Route path="gestion-pedidos" element={<GestionPedidos />} />
-          <Route path="gestion-compras" element={<GestionCompras />} />
-          <Route
-            path="gestion-obras/detalle/:idObra"
-            element={<DetalleObra />}
-          />
+          <Route path="imprimir-pedido" element={<ImprimirPedido />} />
           <Route path="gestion-almacen" element={<GestionAlmacen />} />
           <Route path="gestion-pedidos" element={<GestionPedidos />} />
           <Route path="gestion-compras" element={<GestionCompras />} />

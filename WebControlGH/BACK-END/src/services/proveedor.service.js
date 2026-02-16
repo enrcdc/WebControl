@@ -1,7 +1,6 @@
 import { ProveedorModel } from "../models/proveedor.model.js";
 import { AlreadyDeletedError, NotFoundError } from "../errors/index.js";
 import {
-  validateAndSanitizeString,
   validateNotEmpty,
   validateId,
 } from "../utils/index.js";
@@ -39,7 +38,7 @@ export class ProveedorService {
 
     await this._getProveedorOrFail(validID);
 
-    const proveedorActualizado = await EmpresaModel.update({
+    const proveedorActualizado = await ProveedorModel.update({
       idProveedor: validID,
       input: updateData,
     });

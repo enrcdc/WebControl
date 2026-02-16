@@ -75,6 +75,7 @@ export class ProveedorModel {
 
   static async create(input) {
     const [idProveedor] = await db("proveedores").insert({
+      CodEmp: "00004", // --> Código de empresa de CC
       Codigo: input.codigo,
       NombreProveedor: input.nombre,
       CIF: input.cif,

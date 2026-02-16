@@ -1,6 +1,9 @@
 import { db } from "../config/database.js";
 import { applyPagination } from "../utils/index.js";
 
+// TODO: Para todas aquellas entidades con operaciones CRUD, se debe añadir el 
+// mecanismo de autenticación por token.
+
 export class ObraModel {
   /**
    * getAll recupera todas las obras según los filtros proporcionados.

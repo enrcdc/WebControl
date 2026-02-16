@@ -15,7 +15,7 @@ proveedorRouter.post(
   ProveedorController.create,
 );
 proveedorRouter.patch(
-  "/:idEmpresa",
+  "/:idProveedor",
   validate(updateProveedorSchema),
   ProveedorController.update,
 );
