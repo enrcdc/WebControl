@@ -1,6 +1,6 @@
 import React from "react"; // Importa React
 import ReactDOM from "react-dom/client"; // Importa ReactDOM para renderizar la aplicación
-import "./css/index.css"; // Importa los estilos globales
+import "styles/index.css"; // Importa los estilos globales
 import App from "./App/App"; // Importa el componente App
 import reportWebVitals from "./reportWebVitals"; // Importa la función para reportar métricas de rendimiento
 

@@ -1,14 +1,8 @@
 import React, { useEffect, useState } from "react";
-import {
-  Collapse,
-  Form,
-  Button,
-  Table,
-  Container,
-  Row,
-} from "react-bootstrap";
+import { Collapse, Form, Button, Table, Container, Row } from "react-bootstrap";
 
-import { PaginationControl } from "../../../Components/ui/index.js";
+import { PaginationControl } from "Components/ui";
+import { usePaginacion } from "hooks/usePaginacion.js";
 
 import { useNavigate } from "react-router-dom";
 import "../../../styles/FacturaDetalle.css";
@@ -32,11 +26,20 @@ function GestionFacturas() {
   });
 
   const [filteredFacturas, setFilteredFacturas] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const facturasPorPagina = 5;
   const [selectedFacturas, setSelectedFacturas] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
   const navigate = useNavigate();
+
+  const {
+    currentPage,
+    setCurrentPage,
+    itemsActuales: facturasActuales,
+    totalPaginas,
+    startPage,
+    endPage,
+    paginasVisibles,
+    handlePageChange,
+  } = usePaginacion(filteredFacturas);
 
   useEffect(() => {
     fetchFacturas();
@@ -166,30 +169,6 @@ function GestionFacturas() {
     } else {
       setSelectedFacturas([]);
     }
-  };
-
-  const indexOfLastFactura = currentPage * facturasPorPagina;
-  const indexOfFirstFactura = indexOfLastFactura - facturasPorPagina;
-  const facturasActuales = filteredFacturas.slice(
-    indexOfFirstFactura,
-    indexOfLastFactura,
-  );
-  const totalPaginas = Math.ceil(filteredFacturas.length / facturasPorPagina);
-
-  // Calcular el rango de páginas a mostrar
-  const maxPaginasVisibles = 10;
-  const startPage =
-    Math.floor((currentPage - 1) / maxPaginasVisibles) * maxPaginasVisibles + 1;
-  const endPage = Math.min(startPage + maxPaginasVisibles - 1, totalPaginas);
-
-  // Generar array de páginas visibles
-  const paginasVisibles = [];
-  for (let i = startPage; i <= endPage; i++) {
-    paginasVisibles.push(i);
-  }
-
-  const handlePageChange = (pageNumber) => {
-    setCurrentPage(pageNumber);
   };
 
   return (

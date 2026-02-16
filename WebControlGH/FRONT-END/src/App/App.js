@@ -1,7 +1,7 @@
 import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import "../css/App.css";
+import "styles/App.css";
 
 // -- LOGIN -- \\
 import { Login } from "../features/auth";

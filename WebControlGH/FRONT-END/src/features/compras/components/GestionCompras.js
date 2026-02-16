@@ -13,6 +13,7 @@ import { useNavigate } from "react-router-dom";
 import { compraService } from "../services/compra.service";
 
 import { PaginationControl } from "../../../Components/ui";
+import { usePaginacion } from "hooks/usePaginacion";
 
 let allFacturas = null;
 
@@ -27,12 +28,22 @@ function GestionCompras() {
     origenFactura: "",
   });
 
-  const [filteredFacturas, setFilteredFacturas] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const facturasPorPagina = 5;
+  const [filteredCompras, setFilteredCompras] = useState([]);
   const [selectedFacturas, setSelectedFacturas] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
   const navigate = useNavigate();
+
+  // Hook de paginación
+  const {
+    currentPage,
+    setCurrentPage,
+    itemsActuales: comprasActuales,
+    totalPaginas,
+    startPage,
+    endPage,
+    paginasVisibles,
+    handlePageChange,
+  } = usePaginacion(filteredCompras);
 
   useEffect(() => {
     fetchFacturas();
@@ -43,7 +54,7 @@ function GestionCompras() {
       const res = await compraService.getAll();
       const data = res.data?.data || res.data || [];
       allFacturas = data;
-      setFilteredFacturas(data);
+      setFilteredCompras(data);
     } catch (err) {
       console.error("Error al obtener facturas", err);
     }
@@ -155,28 +166,16 @@ function GestionCompras() {
       );
     }
 
-    setFilteredFacturas(filtered);
+    setFilteredCompras(filtered);
   };
 
   const handleSelectAll = () => {
     setSelectAll(!selectAll);
     if (!selectAll) {
-      setSelectedFacturas(filteredFacturas.map((factura) => factura.id));
+      setSelectedFacturas(filteredCompras.map((factura) => factura.id));
     } else {
       setSelectedFacturas([]);
     }
-  };
-
-  const indexOfLastFactura = currentPage * facturasPorPagina;
-  const indexOfFirstFactura = indexOfLastFactura - facturasPorPagina;
-  const facturasActuales = filteredFacturas.slice(
-    indexOfFirstFactura,
-    indexOfLastFactura,
-  );
-  const totalPaginas = Math.ceil(filteredFacturas.length / facturasPorPagina);
-
-  const handlePageChange = (pageNumber) => {
-    setCurrentPage(pageNumber);
   };
 
   return (
@@ -356,8 +355,8 @@ function GestionCompras() {
           </tr>
         </thead>
         <tbody>
-          {facturasActuales.length > 0 ? (
-            facturasActuales.map((factura, index) => (
+          {comprasActuales.length > 0 ? (
+            comprasActuales.map((factura, index) => (
               <tr key={index}>
                 <td>
                   <Form.Check
@@ -401,8 +400,10 @@ function GestionCompras() {
       <PaginationControl
         currentPage={currentPage}
         totalPaginas={totalPaginas}
+        paginasVisibles={paginasVisibles}
+        startPage={startPage}
+        endPage={endPage}
         onPageChange={handlePageChange}
-        simple
       />
     </div>
   );

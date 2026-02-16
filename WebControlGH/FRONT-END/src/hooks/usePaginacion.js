@@ -2,27 +2,27 @@
 import { useMemo } from "react";
 import { useSessionStorage } from "./useSessionStorage.js";
 
-export const usePaginacion = (filteredObras, itemsPorPagina = 10) => {
+export const usePaginacion = (filteredItems, itemsPorPag = 10) => {
   // Estado de la pagina actual (persistido en sessionStorage)
   const [currentPage, setCurrentPage] = useSessionStorage("currentPage", 1);
 
   // Constantes de paginacion
-  const obrasPorPagina = itemsPorPagina;
+  const itemsPorPagina = itemsPorPag;
   const maxPaginasVisibles = 10;
 
   const paginacionData = useMemo(() => {
-    // Indices de inicio y fin de las obras a mostrar en la pagina actual
-    const indexOfLastObra = currentPage * obrasPorPagina;
-    const indexOfFirstObra = indexOfLastObra - obrasPorPagina;
+    // Indices de inicio y fin de los items a mostrar en la pagina actual
+    const indexOfLastItem = currentPage * itemsPorPagina;
+    const indexOfFirstItem = indexOfLastItem - itemsPorPagina;
 
-    // Obras a mostrar en la pagina actual
-    const obrasActuales = filteredObras.slice(
-      indexOfFirstObra,
-      indexOfLastObra
+    // Items a mostrar en la pagina actual
+    const itemsActuales = filteredItems.slice(
+      indexOfFirstItem,
+      indexOfLastItem,
     );
 
     // Numero total de paginas
-    const totalPaginas = Math.ceil(filteredObras.length / obrasPorPagina);
+    const totalPaginas = Math.ceil(filteredItems.length / itemsPorPagina);
 
     // Calcular el rango de paginas a mostrar (1-10, 11-20, 21-30, ...)
     const startPage =
@@ -37,15 +37,15 @@ export const usePaginacion = (filteredObras, itemsPorPagina = 10) => {
     }
 
     return {
-      obrasActuales,
+      itemsActuales,
       totalPaginas,
       startPage,
       endPage,
       paginasVisibles,
-      indexOfFirstObra,
-      indexOfLastObra,
+      indexOfFirstItem,
+      indexOfLastItem,
     };
-  }, [filteredObras, currentPage, obrasPorPagina, maxPaginasVisibles]);
+  }, [filteredItems, currentPage, itemsPorPagina, maxPaginasVisibles]);
 
   // Funcion para manejar el cambio de pagina
   const handlePageChange = (pageNumber) => {
@@ -63,7 +63,7 @@ export const usePaginacion = (filteredObras, itemsPorPagina = 10) => {
     setCurrentPage,
 
     // Datos calculados
-    obrasActuales: paginacionData.obrasActuales,
+    itemsActuales: paginacionData.itemsActuales,
     totalPaginas: paginacionData.totalPaginas,
     startPage: paginacionData.startPage,
     endPage: paginacionData.endPage,

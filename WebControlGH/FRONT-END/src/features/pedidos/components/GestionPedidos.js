@@ -12,7 +12,9 @@ import { useNavigate } from "react-router-dom";
 import "../../../styles/FacturaDetalle.css";
 import { pedidoService } from "../services/pedido.service";
 
-import { PaginationControl } from "../../../Components/ui/index";
+import { usePaginacion } from "hooks/usePaginacion";
+import { PaginationControl } from "Components/ui/index";
+
 
 let allPedidos = null;
 
@@ -26,11 +28,21 @@ function GestionPedidos() {
     referencia: "",
   });
   const [filteredPedidos, setFilteredPedidos] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const pedidosPorPagina = 5;
   const [selectedPedidos, setSelectedPedidos] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
   const navigate = useNavigate();
+
+  // Hook de paginación
+  const {
+    currentPage,
+    setCurrentPage,
+    itemsActuales: pedidosActuales,
+    totalPaginas,
+    startPage,
+    endPage,
+    paginasVisibles,
+    handlePageChange,
+  } = usePaginacion(filteredPedidos);
 
   // Funcion para recuperar los pedidos del endpoint
   const fetchPedidos = async () => {
@@ -145,18 +157,6 @@ function GestionPedidos() {
     navigate("/home/imprimir-pedido", {
       state: { selectedPedidos: selectedPedidos },
     });
-  };
-
-  const indexOfLastPedido = currentPage * pedidosPorPagina;
-  const indexOfFirstPedido = indexOfLastPedido - pedidosPorPagina;
-  const pedidosActuales = filteredPedidos.slice(
-    indexOfFirstPedido,
-    indexOfLastPedido,
-  );
-  const totalPaginas = Math.ceil(filteredPedidos.length / pedidosPorPagina);
-
-  const handlePageChange = (pageNumber) => {
-    setCurrentPage(pageNumber);
   };
 
   return (
@@ -338,12 +338,14 @@ function GestionPedidos() {
           )}
         </tbody>
       </Table>
-      {/* Migrar a la paginación compleja con los botones Prev, Next, etc */}
+
       <PaginationControl
         currentPage={currentPage}
         totalPaginas={totalPaginas}
+        paginasVisibles={paginasVisibles}
+        startPage={startPage}
+        endPage={endPage}
         onPageChange={handlePageChange}
-        simple
       />
     </div>
   );

@@ -321,15 +321,62 @@ Esto evita iteraciones innecesarias sobre refactorizaciones ya realizadas.
 
 ---
 
+## 8. Estructura estándar de features (confirmada)
+
+**Decisión:** Aplanar un nivel la estructura interna de cada feature. Eliminar la subcarpeta `Components/` intermedia, modales al mismo nivel, nombres simplificados.
+
+**Estructura objetivo por feature:**
+```
+features/[nombre]/
+├── components/
+│   ├── Gestion.jsx           # (antes GestionObras/ o GestionPedidos/)
+│   ├── Detalle.jsx           # (antes DetalleObra/ o DetallePedido/)
+│   ├── Crear.jsx             # (si aplica)
+│   ├── Imprimir.jsx          # (si aplica)
+│   ├── TablaObras.jsx        # Sub-componentes presentacionales al mismo nivel
+│   ├── ModalGasto.jsx        # Modales al mismo nivel (sin subcarpeta Modals/)
+│   └── ...
+├── hooks/
+├── services/
+├── utils/                    # (solo si tiene utils específicos de dominio)
+└── index.js                  # Barrel export
+```
+
+**Reglas del patrón orchestrator:**
+- **< 150 líneas** → archivo único (no split)
+- **150-300 líneas** → evaluar si el split aporta claridad
+- **> 300 líneas** → split obligatorio en orchestrator (`index.js`) + componentes presentacionales
+
+**Nota:** Esta estructura se aplicará incrementalmente al tocar cada feature (no como refactorización masiva separada).
+
+---
+
 ## TODO: Punto de continuación para el próximo chat
 
 **Última sesión:** 16/02/2026
 **Estado:** Iteraciones 1, 2 y 3 completadas. La estructura del frontend está definida y lista para escalar.
 
-### Próxima tarea:
+### Próximos pasos (por orden de prioridad):
 
-1. **Propagación pendiente** — Aplicar progresivamente los componentes UI compartidos y los imports absolutos a medida que se toquen los ficheros (ver instrucciones de propagación arriba).
-2. **Nuevas features / funcionalidades** — El proyecto está listo para desarrollar nuevas funcionalidades siguiendo la arquitectura feature-based establecida.
+#### Prioridad 1: Route guards (autenticación frontend)
+- El backend ya tiene JWT implementado (`POST /api/auth/login` → `{ token, usuario }`)
+- El frontend ya tiene `authService` y `apiClient` con interceptor JWT
+- **Falta**: Proteger las rutas de `App.js` para que redirijan a `/login` si no hay token válido
+- Opciones a evaluar: `<PrivateRoute>` wrapper vs middleware en el router vs contexto de autenticación
+- Esto es prerequisito para que el flujo login → app funcione correctamente
+
+#### Prioridad 2: Consumir backend + homogenizar features (incremental)
+- Conectar cada feature al backend refactorizado (paginación server-side, filtros SQL, formato `{ success, data, pagination }`)
+- Al tocar cada feature, aplicar simultáneamente:
+  - Estructura estándar (sección 8 de este documento)
+  - Propagación de componentes UI compartidos (PaginationControl, SearchableSelect/MultiSelect)
+  - Imports absolutos donde aplique
+- **Orden sugerido**: empezar por features simples (empresas, almacen) e ir hacia los complejos (obras)
+
+#### Propagación pendiente (aplicar al tocar cada fichero):
+- **PaginationControl** y **SearchableSelect/MultiSelect**: ver instrucciones detalladas en sección 7
+- **Nota**: GastosList no tiene PaginationControl intencionalmente — su paginación se implementará cuando se refactorice el componente completo
+- **Path aliases**: actualizar imports relativos profundos a absolutos progresivamente
 
 ### Contexto importante:
 - El cliente API centralizado está en `Services/api/client.js` (capital S) — todos los servicios migrados lo usan
@@ -344,7 +391,6 @@ Esto evita iteraciones innecesarias sobre refactorizaciones ya realizadas.
 - Hooks genéricos (10 atómicos) ya en `hooks/` global. Hooks de dominio (14) se mantienen en `features/obras/hooks/`
 - Utils genéricos (`fechas.js`) en `utils/` global. Utils de dominio (`calculos.js`, `filtrosHelpers.js`) en `features/obras/utils/`
 - Componentes UI compartidos en `Components/ui/` con barrel export (PaginationControl, SearchableSelect, SearchableMultiSelect, SearchDropdown)
-- Quedan instrucciones de propagación pendientes documentadas arriba para PaginationControl y SearchableSelect/MultiSelect
 
 **Path aliases — Convención de imports absolutos (baseUrl: "src"):**
 - `jsconfig.json` creado en `FRONT-END/` con `baseUrl: "src"`

@@ -54,7 +54,7 @@ const ListaObras = () => {
   const {
     currentPage,
     setCurrentPage,
-    obrasActuales,
+    itemsActuales: obrasActuales,
     totalPaginas,
     startPage,
     endPage,

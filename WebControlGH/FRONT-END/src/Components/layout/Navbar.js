@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react"; // Importa React y el hook useState
 import { useNavigate, Link } from "react-router-dom"; // Importa el hook useNavigate para la navegación
-import "../css/Navbar.css"; // Importa los estilos específicos de Navbar
+import "styles/Navbar.css"; // Importa los estilos específicos de Navbar
 
 // Componente Navbar
 function Navbar() {
