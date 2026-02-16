@@ -1,8 +1,8 @@
 // Hook refactorizado para operaciones sobre obras (finalizar, borrar, copiar, imprimir)
 import { useNavigate } from "react-router-dom";
-import { useApiRequest } from "./useApiRequest.js";
+import { useApiRequest } from "../../../hooks/useApiRequest.js";
 import { obraService } from "../services/obra.service.js";
-import { normalizarFecha } from "../utils/fechas.js";
+import { normalizarFecha } from "../../../utils/fechasHelper.js";
 
 /**
  * Hook para operaciones CRUD de obras (no confundir con el CRUD de entidades individuales)
@@ -18,7 +18,7 @@ export const useOperacionesObras = (
   fetchObras,
   clearSelections,
   setCurrentPage,
-  setObraFacturadaSelec = null
+  setObraFacturadaSelec = null,
 ) => {
   const navigate = useNavigate();
   const apiRequest = useApiRequest();
@@ -59,15 +59,15 @@ export const useOperacionesObras = (
       return false;
     }
 
-    if (!window.confirm("¿Estás seguro de dar de baja las obras seleccionadas?")) {
+    if (
+      !window.confirm("¿Estás seguro de dar de baja las obras seleccionadas?")
+    ) {
       return false;
     }
 
     try {
       // Eliminar obras en paralelo
-      const deletePromises = selectedObras.map((id) =>
-        obraService.delete(id)
-      );
+      const deletePromises = selectedObras.map((id) => obraService.delete(id));
       await Promise.all(deletePromises);
 
       await fetchObras();
@@ -77,7 +77,7 @@ export const useOperacionesObras = (
     } catch (error) {
       console.error(
         "Error al dar de baja las obras:",
-        error.response?.data || error.message
+        error.response?.data || error.message,
       );
       alert("Error al dar de baja las obras seleccionadas");
       return false;

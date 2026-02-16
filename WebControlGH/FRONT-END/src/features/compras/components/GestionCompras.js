@@ -4,7 +4,6 @@ import {
   Form,
   Button,
   Table,
-  Pagination,
   Container,
   Row,
   Col,
@@ -12,6 +11,8 @@ import {
 
 import { useNavigate } from "react-router-dom";
 import { compraService } from "../services/compra.service";
+
+import { PaginationControl } from "../../../Components/ui";
 
 let allFacturas = null;
 
@@ -397,17 +398,12 @@ function GestionCompras() {
         </tbody>
       </Table>
 
-      <Pagination>
-        {Array.from({ length: totalPaginas }, (_, i) => (
-          <Pagination.Item
-            key={i}
-            active={i + 1 === currentPage}
-            onClick={() => handlePageChange(i + 1)}
-          >
-            {i + 1}
-          </Pagination.Item>
-        ))}
-      </Pagination>
+      <PaginationControl
+        currentPage={currentPage}
+        totalPaginas={totalPaginas}
+        onPageChange={handlePageChange}
+        simple
+      />
     </div>
   );
 }

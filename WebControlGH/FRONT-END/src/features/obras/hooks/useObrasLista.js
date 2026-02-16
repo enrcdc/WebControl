@@ -1,6 +1,6 @@
 // Hook refactorizado para gestión de lista de obras
 import { useState, useEffect, useCallback } from "react";
-import { useSeleccionMultiple } from "./useSeleccionMultiple.js";
+import { useSeleccionMultiple } from "../../../hooks/useSeleccionMultiple.js";
 import { obraService } from "../services/obra.service.js";
 import { apiClient } from "../../../Services/api/client.js";
 import { API_ENDPOINTS } from "../../../constants/api";

@@ -1,6 +1,7 @@
 // ESTE ARCHIVO CONTIENE LA MODAL DE GASTOS DE ALMACEN PARAMETRIZADA
 
 import { Modal, Form, Button, Col } from "react-bootstrap";
+import { SearchableSelect } from "Components/ui";
 
 const ModalGastoAlmacen = ({
   show,
@@ -28,52 +29,18 @@ const ModalGastoAlmacen = ({
           <Form.Group className="mb-2">
             <Form.Label>Referencia:</Form.Label>
 
-            <div className="mb-2 position-relative">
-              <Form.Control
-                type="text"
-                placeholder="Buscar producto por referencia..."
-                value={busquedaProducto}
-                onChange={onBuscarProducto}
-                autoComplete="off"
-                disabled={editID}
-              />
-              {/* Sugerencias productos*/}
-              {sugerenciasProductos.length > 0 && (
-                <ul
-                  className="list-group position-absolute w-100"
-                  style={{ zIndex: 10 }}
-                >
-                  {sugerenciasProductos.map((producto) => (
-                    <li
-                      key={producto.id}
-                      className="list-group-item list-group-item-action"
-                      onClick={() => onSeleccionarProducto(producto)}
-                      style={{ cursor: "pointer" }}
-                    >
-                      {producto.descripcion}
-                    </li>
-                  ))}
-                </ul>
-              )}
-              {/* Producto seleccionado */}
-              {productoSeleccionado && (
-                <div className="mt-2">
-                  <span>
-                    <strong>Producto:</strong>{" "}
-                    {productoSeleccionado.descripcion}
-                  </span>
-                  <Button
-                    variant="outline-danger"
-                    size="sm"
-                    className="ms-2"
-                    onClick={onEliminarProducto}
-                    disabled={editID}
-                  >
-                    Quitar
-                  </Button>
-                </div>
-              )}
-            </div>
+            <SearchableSelect
+              placeholder="Buscar producto por referencia..."
+              value={busquedaProducto}
+              onChange={onBuscarProducto}
+              suggestions={sugerenciasProductos}
+              onSelect={onSeleccionarProducto}
+              renderSuggestion={(p) => p.descripcion}
+              selected={productoSeleccionado}
+              renderSelected={(p) => <><strong>Producto:</strong> {p.descripcion}</>}
+              onRemove={onEliminarProducto}
+              disabled={!!editID}
+            />
           </Form.Group>
           <Form.Group className="mb-2">
             <Form.Label>Fecha del movimiento:</Form.Label>

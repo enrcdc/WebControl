@@ -6,7 +6,7 @@ import "../css/App.css";
 // -- LOGIN -- \\
 import { Login } from "../features/auth";
 // -- NAVBAR -- \\
-import Navbar from "../Navbar/Navbar";
+import Navbar from "../Components/layout/Navbar";
 
 // -- RENTABILIDAD -- \\
 import { ProfitabilityTable } from "../features/rentabilidad";
@@ -15,23 +15,41 @@ import { ProfitabilityTable } from "../features/rentabilidad";
 import { GestionAlmacen } from "../features/almacen";
 
 // -- OBRA -- \\
-import { GestionObras as ListaObras, DetalleObra, CrearObra, ImprimirObras } from "../features/obras";
+import {
+  GestionObras as ListaObras,
+  DetalleObra,
+  CrearObra,
+  ImprimirObras,
+} from "../features/obras";
 
 // -- FACTURA -- \\
-import { GestionFacturas, DetalleFactura, NuevaFactura, ImprimirFacturas } from "../features/facturas";
+import {
+  GestionFacturas,
+  DetalleFactura,
+  NuevaFactura,
+  ImprimirFacturas,
+} from "../features/facturas";
 
 // -- PEDIDO -- \\
-import { GestionPedidos, DetallePedido, NuevoPedido, ImprimirPedido } from "../features/pedidos";
+import {
+  GestionPedidos,
+  DetallePedido,
+  NuevoPedido,
+  ImprimirPedido,
+} from "../features/pedidos";
 
 // -- COMPRA -- \\
-import { GestionCompras, DetalleCompra, NuevaCompra } from "../features/compras";
+import {
+  GestionCompras,
+  DetalleCompra,
+  NuevaCompra,
+} from "../features/compras";
 
 // -- HORAS -- \\
 import { HorasList, DetalleHora, NuevaHora } from "../features/horas";
 
 // -- GASTOS -- \\
 import { GastosList } from "../features/gastos";
-
 
 // Componente principal de la aplicación
 function App() {
@@ -93,10 +111,8 @@ function MainLayout() {
             path="registro-horas/detalle/:idUsuario"
             element={<DetalleHora />}
           />
-          
           {/*Gastos  */}
           <Route path="gastos-obras" element={<GastosList />} />
-
         </Routes>
       </div>
     </div>

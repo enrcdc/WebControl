@@ -1,5 +1,9 @@
 // ESTE ARCHIVO CONTIENE LA MODAL DE CONTACTOS PARAMETRIZADA
 import { Modal, Form, Button, ListGroup } from "react-bootstrap";
+import {
+  SearchableSelect,
+  SearchableMultiSelect,
+} from "../../../../../../Components/ui";
 
 const ModalContacto = ({
   show,
@@ -102,99 +106,37 @@ const ModalContacto = ({
           </Form.Group>
           <Form.Group className="mb-2">
             <Form.Label>Empresa del Contacto:</Form.Label>
-            <div className="mb-2 position-relative">
-              <Form.Control
-                type="text"
-                placeholder="Buscar empresa por nombre..."
-                value={busquedaEmpresa}
-                onChange={onBuscarEmpresa}
-                autoComplete="off"
-              />
-              {/* Sugerencias empresas*/}
-              {sugerenciasEmpresas.length > 0 && (
-                <ul
-                  className="list-group position-absolute w-100"
-                  style={{ zIndex: 10 }}
-                >
-                  {sugerenciasEmpresas.map((empresa) => (
-                    <li
-                      key={empresa.id}
-                      className="list-group-item list-group-item-action"
-                      onClick={() => onSeleccionarEmpresa(empresa)}
-                      style={{ cursor: "pointer" }}
-                    >
-                      {empresa.nombre}
-                    </li>
-                  ))}
-                </ul>
+            <SearchableSelect
+              placeholder={"Buscar empresa por nombre..."}
+              value={busquedaEmpresa}
+              onChange={onBuscarEmpresa}
+              suggestions={sugerenciasEmpresas}
+              onSelect={onSeleccionarEmpresa}
+              renderSuggestion={(e) => e.nombre}
+              keyField="id"
+              selected={formData.empresa}
+              renderSelected={(e) => (
+                <>
+                  <strong>Empresa:</strong> {formData.empresa.nombre}
+                </>
               )}
-              {/* Empresa seleccionada */}
-              {formData.empresa && (
-                <div className="mt-2">
-                  <span>
-                    <strong>Empresa:</strong> {formData.empresa.nombre}
-                  </span>
-                  <Button
-                    variant="outline-danger"
-                    size="sm"
-                    className="ms-2"
-                    onClick={onEliminarEmpresa}
-                  >
-                    Quitar
-                  </Button>
-                </div>
-              )}
-            </div>
+              onRemove={onEliminarEmpresa}
+            />
           </Form.Group>
           <Form.Group className="mb-2">
             <Form.Label>Complejo del Contacto:</Form.Label>
-            <div className="mb-2 position-relative">
-              <Form.Control
-                type="text"
-                placeholder="Buscar complejo por nombre..."
-                value={busquedaComplejos}
-                onChange={onBuscarComplejo}
-                autoComplete="off"
-              />
-              {/* Sugerencias complejos*/}
-              {sugerenciasComplejos.length > 0 && (
-                <ul
-                  className="list-group position-absolute w-100"
-                  style={{ zIndex: 10 }}
-                >
-                  {sugerenciasComplejos.map((complejo) => (
-                    <li
-                      key={complejo.id}
-                      className="list-group-item list-group-item-action"
-                      onClick={() => onSeleccionarComplejo(complejo)}
-                      style={{ cursor: "pointer" }}
-                    >
-                      {complejo.nombre}
-                    </li>
-                  ))}
-                </ul>
-              )}
-              {/* Complejo seleccionado */}
-              {formData.complejos.length > 0 && (
-                <ListGroup className="mt-2">
-                  {formData.complejos.map((c) => (
-                    <ListGroup.Item
-                      key={c.id}
-                      className="d-flex justify-content-between align-items-center"
-                    >
-                      <span>{c.nombre}</span>
-                      <Button
-                        variant="outline-danger"
-                        size="sm"
-                        onClick={() => onEliminarComplejo(c)}
-                      >
-                        Quitar
-                      </Button>
-                    </ListGroup.Item>
-                  ))}
-                </ListGroup>
-              )}
-            </div>
+            <SearchableMultiSelect
+              placeholder={"Buscar compljejo por nombre..."}
+              value={busquedaComplejos}
+              onChange={onBuscarComplejo}
+              suggestions={sugerenciasComplejos}
+              onSelect={onSeleccionarComplejo}
+              renderSuggestion={(c) => c.nombre}
+              keyField="id"
+              selectedItems={formData.complejos || []}
+              renderSelected={(c) => <span>{c.nombre}</span>}
+              onRemove={(c) => onEliminarComplejo(c)}
+            />
           </Form.Group>
           <Form.Group>
             <Form.Label>Observaciones</Form.Label>

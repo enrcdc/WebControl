@@ -4,6 +4,13 @@
 import React from "react";
 import { Card, Form, Row, Col, Button, ListGroup } from "react-bootstrap";
 
+import {
+  SearchableSelect,
+  SearchableMultiSelect,
+} from "../../../../../Components/ui";
+
+const renderObra = (obra) => `${obra.codigo_obra} - ${obra.descripcion_obra}`;
+
 const InformacionGeneral = ({
   formObra,
   editarObra,
@@ -105,108 +112,36 @@ const InformacionGeneral = ({
             <strong>Relación con otras obras:</strong>
           </Form.Label>
           <div>
-            {/* Obra Padre */}
-            <div className="mb-2 position-relative">
-              <strong>Depende de la obra:</strong>
-              <Form.Control
-                type="text"
-                placeholder="Buscar obra padre..."
-                value={busquedaPadre}
-                onChange={onBuscarObraPadre}
-                autoComplete="off"
-                disabled={!editarObra}
-              />
-              {/* Sugerencias obra padre */}
-              {sugerenciasPadre.length > 0 && (
-                <ul
-                  className="list-group position-absolute w-100"
-                  style={{ zIndex: 10 }}
-                >
-                  {sugerenciasPadre.map((obra) => (
-                    <li
-                      key={obra.id_obra}
-                      className="list-group-item list-group-item-action"
-                      onClick={() => onSeleccionarObraPadre(obra)}
-                      style={{ cursor: "pointer" }}
-                    >
-                      {obra.codigo_obra} - {obra.descripcion_obra}
-                    </li>
-                  ))}
-                </ul>
+            Depende de la obra:
+            {/* Obra Padre — selección única */}
+            <SearchableSelect
+              placeholder={"Buscar obra padre..."}
+              value={busquedaPadre}
+              onChange={onBuscarObraPadre}
+              suggestions={sugerenciasPadre || []}
+              onSelect={onSeleccionarObraPadre}
+              renderSuggestion={renderObra}
+              keyField="id_obra"
+              selected={obraPadre}
+              renderSelected={(o) => (
+                <>Obra padre seleccionada: {renderObra(o)}</>
               )}
-              {/* Obra padre seleccionada */}
-              {obraPadre && (
-                <div className="mt-2">
-                  <span>
-                    <strong>Obra padre seleccionada:</strong>{" "}
-                    {obraPadre.codigo_obra} - {obraPadre.descripcion_obra}
-                  </span>
-                  <Button
-                    variant="outline-danger"
-                    size="sm"
-                    className="ms-2"
-                    onClick={onEliminarObraPadre}
-                    disabled={!editarObra}
-                  >
-                    Quitar
-                  </Button>
-                </div>
-              )}
-            </div>
-
-            {/* Obras Hijas */}
-            <div className="position-relative">
-              <strong>Obras Subordinadas:</strong>
-              <Form.Control
-                type="text"
-                placeholder="Buscar obra hija..."
-                value={busquedaHijas}
-                onChange={onBuscarObraHija}
-                autoComplete="off"
-                disabled={!editarObra}
-              />
-              {/* Sugerencias obras hijas */}
-              {sugerenciasHijas.length > 0 && (
-                <ul
-                  className="list-group position-absolute w-100"
-                  style={{ zIndex: 10 }}
-                >
-                  {sugerenciasHijas.map((obra) => (
-                    <li
-                      key={obra.id_obra}
-                      className="list-group-item list-group-item-action"
-                      onClick={() => onAgregarObraHija(obra)}
-                      style={{ cursor: "pointer" }}
-                    >
-                      {obra.codigo_obra} - {obra.descripcion_obra}
-                    </li>
-                  ))}
-                </ul>
-              )}
-              {/* Listado de obras hijas seleccionadas */}
-              {obrasHijas.length > 0 && (
-                <ListGroup className="mt-2">
-                  {obrasHijas.map((obra) => (
-                    <ListGroup.Item
-                      key={obra.id_obra}
-                      className="d-flex justify-content-between align-items-center"
-                    >
-                      <span>
-                        {obra.codigo_obra} - {obra.descripcion_obra}
-                      </span>
-                      <Button
-                        variant="outline-danger"
-                        size="sm"
-                        onClick={() => onEliminarObraHija(obra.id_obra)}
-                        disabled={!editarObra}
-                      >
-                        Quitar
-                      </Button>
-                    </ListGroup.Item>
-                  ))}
-                </ListGroup>
-              )}
-            </div>
+              onRemove={onEliminarObraPadre}
+            />
+            {/* Obras Hijas — selección múltiple */}
+            Obras Subordinadas:
+            <SearchableMultiSelect
+              placeholder={"Buscar obra hija..."}
+              value={busquedaHijas}
+              onChange={onBuscarObraHija}
+              suggestions={sugerenciasHijas || []}
+              onSelect={onAgregarObraHija}
+              renderSuggestion={renderObra}
+              keyField="id_obra"
+              selectedItems={obrasHijas || []}
+              renderSelected={renderObra}
+              onRemove={(obra) => onEliminarObraHija(obra.id_obra)}
+            />
           </div>
         </Form.Group>
       </Form>

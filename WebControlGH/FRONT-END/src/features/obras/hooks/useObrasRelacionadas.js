@@ -1,6 +1,6 @@
 // Hook refactorizado para gestionar obras relacionadas (padre e hijas)
 import { useState, useEffect } from "react";
-import { useBusquedaEntidad } from "./useBusquedaEntidad.js";
+import { useBusquedaEntidad } from "../../../hooks/useBusquedaEntidad.js";
 import { obraService, relacionObraService } from "../services/obra.service.js";
 
 /**

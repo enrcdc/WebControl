@@ -1,6 +1,6 @@
 // Hook refactorizado para orquestar la creación de una obra
 import { useNavigate } from "react-router-dom";
-import { useApiRequest } from "./useApiRequest.js";
+import { useApiRequest } from "../../../hooks/useApiRequest.js";
 import { obraService, relacionObraService } from "../services/obra.service.js";
 
 /**
@@ -37,7 +37,10 @@ export const useCrearObra = () => {
       const idObraPadre = obraPadreSeleccionada
         ? obraPadreSeleccionada.id_obra
         : null;
-      await relacionObraService.setObraPadre({ idObraPadre, idObraHija: idNuevaObra });
+      await relacionObraService.setObraPadre({
+        idObraPadre,
+        idObraHija: idNuevaObra,
+      });
 
       // 3. Guardar relaciones con obras hijas
       const idsObrasHijas =

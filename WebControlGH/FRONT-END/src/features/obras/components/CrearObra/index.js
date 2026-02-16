@@ -1,6 +1,6 @@
 // Componente principal orquestador para la creación de obras
 import { Form, Button, Container } from "react-bootstrap";
-import "../../../../css/NuevoObra.css";
+import "../../../../styles/NuevoObra.css";
 
 // Hooks personalizados (refactorizados)
 import { useObraForm } from "../../hooks/useObraForm";

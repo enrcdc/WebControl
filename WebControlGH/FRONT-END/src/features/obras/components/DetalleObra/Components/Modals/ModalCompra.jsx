@@ -2,6 +2,8 @@
 
 import { Modal, Form, Button, Col } from "react-bootstrap";
 
+import { SearchableSelect } from "../../../../../../Components/ui";
+
 const ModalCompra = ({
   show,
   formData,
@@ -62,51 +64,17 @@ const ModalCompra = ({
           <Form.Group className="mb-2">
             <Form.Label>Factura:</Form.Label>
 
-            <div className="mb-2 position-relative">
-              <Form.Control
-                type="text"
-                placeholder="Buscar factura por concepto..."
-                value={busquedaFactura}
-                onChange={onBuscarFactura}
-                autoComplete="off"
-                disabled={editID}
-              />
-              {/* Sugerencias productos*/}
-              {sugerenciasFacturas.length > 0 && (
-                <ul
-                  className="list-group position-absolute w-100"
-                  style={{ zIndex: 10 }}
-                >
-                  {sugerenciasFacturas.map((factura) => (
-                    <li
-                      key={factura.id}
-                      className="list-group-item list-group-item-action"
-                      onClick={() => onSeleccionarFactura(factura)}
-                      style={{ cursor: "pointer" }}
-                    >
-                      {factura.Concepto}
-                    </li>
-                  ))}
-                </ul>
+            <SearchableSelect
+              placeholder={"Buscar factura por concepto..."}
+              suggestions={sugerenciasFacturas}
+              renderSuggestion={(f) => f.Concepto}
+              selected={facturaSeleccionada}
+              renderSelected={(f) => (
+                <>
+                  <strong>Factura:</strong> {f.Concepto}
+                </>
               )}
-              {/* Producto seleccionado */}
-              {facturaSeleccionada && (
-                <div className="mt-2">
-                  <span>
-                    <strong>Factura:</strong> {facturaSeleccionada.Concepto}
-                  </span>
-                  <Button
-                    variant="outline-danger"
-                    size="sm"
-                    className="ms-2"
-                    onClick={onEliminarFactura}
-                    disabled={editID}
-                  >
-                    Quitar
-                  </Button>
-                </div>
-              )}
-            </div>
+            />
           </Form.Group>
           <Form.Group>
             <Form.Label>Importe:</Form.Label>

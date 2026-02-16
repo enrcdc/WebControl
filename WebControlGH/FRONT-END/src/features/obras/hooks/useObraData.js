@@ -1,10 +1,10 @@
 // Hook refactorizado para cargar y gestionar datos de una obra
 import { useState, useEffect, useCallback } from "react";
 import { useObraForm } from "./useObraForm.js";
-import { useApiRequest } from "./useApiRequest.js";
+import { useApiRequest } from "../../../hooks/useApiRequest.js";
 import { obraService } from "../services/obra.service.js";
 import { rentabilidadService } from "../../rentabilidad";
-import { normalizarFecha } from "../utils/fechas";
+import { normalizarFecha } from "../../../utils/fechasHelper.js";
 
 /**
  * Hook para gestión completa de datos de una obra (ver/editar)
@@ -100,9 +100,7 @@ export const useObraData = (idObra) => {
       };
 
       console.log("Datos del formulario a enviar:", dataToSend);
-      await apiRequest.execute(() =>
-        obraService.update(idObra, dataToSend),
-      );
+      await apiRequest.execute(() => obraService.update(idObra, dataToSend));
       await fetchObra();
       setEditarObra(false);
       return true;

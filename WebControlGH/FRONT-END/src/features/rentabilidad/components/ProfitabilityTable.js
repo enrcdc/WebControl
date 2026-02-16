@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import "../../../css/Profitability.css";
+import "../../../styles/Profitability.css";
 
 // Componente ProfitabilityTable
 function ProfitabilityTable() {

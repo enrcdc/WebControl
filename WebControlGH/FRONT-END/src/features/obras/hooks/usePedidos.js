@@ -1,5 +1,5 @@
 // Hook refactorizado para gestión de pedidos usando useCrudEntidad
-import { useCrudEntidad } from "./useCrudEntidad.js";
+import { useCrudEntidad } from "../../../hooks/useCrudEntidad";
 import { pedidoService } from "../../pedidos";
 
 /**
@@ -33,7 +33,7 @@ export const usePedidos = (idObra) => {
     // Transformación de datos de BD a formulario (solo para edición)
     transformAfterFetch: (pedidos) =>
       pedidos.map((pedido) => ({
-        fechaPedido: pedido.fecha ? pedido.fecha.split('T')[0] : "",
+        fechaPedido: pedido.fecha ? pedido.fecha.split("T")[0] : "",
         codigoPedido: pedido.codigo_pedido || "",
         posicion: pedido.posicion || "",
         importe: pedido.importe || 0,
@@ -44,7 +44,12 @@ export const usePedidos = (idObra) => {
 
     // Validación
     validarForm: (form) => {
-      if (!form.codigoPedido || !form.fechaPedido || !form.importe || !form.posicion) {
+      if (
+        !form.codigoPedido ||
+        !form.fechaPedido ||
+        !form.importe ||
+        !form.posicion
+      ) {
         return "Faltan campos obligatorios: código, fecha, importe o posición";
       }
       return null;

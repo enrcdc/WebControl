@@ -4,14 +4,15 @@ import {
   Form,
   Button,
   Table,
-  Pagination,
   Container,
   Row,
   Col,
 } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import "../../../css/FacturaDetalle.css";
+import "../../../styles/FacturaDetalle.css";
 import { pedidoService } from "../services/pedido.service";
+
+import { PaginationControl } from "../../../Components/ui/index";
 
 let allPedidos = null;
 
@@ -337,18 +338,13 @@ function GestionPedidos() {
           )}
         </tbody>
       </Table>
-
-      <Pagination>
-        {Array.from({ length: totalPaginas }, (_, i) => (
-          <Pagination.Item
-            key={i}
-            active={i + 1 === currentPage}
-            onClick={() => handlePageChange(i + 1)}
-          >
-            {i + 1}
-          </Pagination.Item>
-        ))}
-      </Pagination>
+      {/* Migrar a la paginación compleja con los botones Prev, Next, etc */}
+      <PaginationControl
+        currentPage={currentPage}
+        totalPaginas={totalPaginas}
+        onPageChange={handlePageChange}
+        simple
+      />
     </div>
   );
 }

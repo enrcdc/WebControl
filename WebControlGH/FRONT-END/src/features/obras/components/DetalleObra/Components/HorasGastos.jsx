@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Button, Form } from "react-bootstrap";
-import { formatearFechaLocal } from "../../../utils/fechas";
+import { formatearFechaLocal } from "../../../../../utils/fechasHelper.js";
 
 const HorasGastos = ({
   horas,

@@ -1,7 +1,7 @@
 // Hook compuesto para gestión completa del formulario de obra
 import { useEffect } from "react";
-import { useFormulario } from "./useFormulario.js";
-import { useCheckboxCondicional } from "./useCheckboxCondicional.js";
+import { useFormulario } from "../../../hooks/useFormulario.js";
+import { useCheckboxCondicional } from "../../../hooks/useCheckboxCondicional.js";
 import { useCatalogosBase } from "./useCatalogosBase.js";
 
 /**

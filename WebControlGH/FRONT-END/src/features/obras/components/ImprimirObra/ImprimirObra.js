@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import "../../../../css/ImprimirObra.css";
+import "../../../../styles/ImprimirObra.css";
 
 import { obraService } from "../../services/obra.service.js";
 

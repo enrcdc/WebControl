@@ -3,7 +3,7 @@
 Documento complementario al `PLAN_REORGANIZACION.md`.
 Recoge todas las decisiones y especificaciones tomadas durante el progreso de refactorización del frontend.
 
-**Última actualización:** 13/02/2026
+**Última actualización:** 16/02/2026
 **Rama de trabajo:** `refactor/project-structure`
 
 > Para decisiones y especificaciones del backend, consultar `CONTEXTO_REFACTORIZACION_BACKEND.md`
@@ -183,7 +183,17 @@ Esto evita iteraciones innecesarias sobre refactorizaciones ya realizadas.
 
 ---
 
-## 6. Progreso de la refactorización
+## 6. Directriz para Claude Code: Optimización de uso
+
+**Para maximizar el aprovechamiento de Claude Code y evitar consumo excesivo en tareas mecánicas**, Claude Code deberá:
+
+1. **Cambios mecánicos y repetitivos**: Aplicar el cambio en UN archivo significativo como ejemplo, y proporcionar instrucciones claras para que el desarrollador replique el patrón en el resto de archivos afectados.
+2. **Nueva lógica/funcionalidad propagable**: Implementar la lógica en UN archivo significativo como referencia, y dar instrucciones para propagar esa lógica al resto de archivos que lo requieran.
+3. **Asesoramiento proactivo**: Cuando la situación lo requiera, aconsejar al desarrollador sobre cómo aprovechar mejor Claude Code y evitar uso excesivo en tareas simples (ej: copias mecánicas, renombrados masivos, cambios de imports repetitivos).
+
+---
+
+## 7. Progreso de la refactorización
 
 ### Iteración 1: Infraestructura base — COMPLETADA ✅
 
@@ -265,39 +275,80 @@ Esto evita iteraciones innecesarias sobre refactorizaciones ya realizadas.
 - Cuando un componente necesita datos de otra entidad (ej: GastosList necesita usuarios y obras), se usa `apiClient` + `API_ENDPOINTS` directamente en el componente, con un `// TODO: Dependencia cross-feature` para migrar cuando esa feature tenga su servicio.
 - `Horas/Services/userService.js` migrado a `features/horas/services/user.service.js` — cuando se cree la feature de usuario/responsable, se refactorizará.
 
-### Iteración 3: Limpieza y optimización — PENDIENTE
+### Iteración 3: Limpieza y optimización — EN PROGRESO
 
 | Paso | Estado |
 |------|--------|
-| Eliminar carpetas viejas | ⬜ |
-| Componentes UI compartidos | ⬜ |
-| Estilos | ⬜ |
-| Path aliases | ⬜ |
+| Eliminar carpetas viejas | ✅ (realizado manualmente por el desarrollador, excepto `Services/` parcial — quedan servicios sin migrar: contacto, edificio, estadoObra, tipoFacturable, tipoObra) |
+| Componentes UI compartidos | ✅ (4 componentes creados en `Components/ui/`: PaginationControl, SearchableSelect, SearchableMultiSelect, SearchDropdown. ActionButtonGroup descartado por abstracción prematura.) |
+| Estilos (`css/` → `styles/`) | ✅ (realizado manualmente por el desarrollador) |
+| Hooks genéricos a `hooks/` global | ✅ (realizado manualmente por el desarrollador — 10 hooks atómicos movidos) |
+| Utils genéricos a `utils/` global | ✅ (`fechas.js` movido a `utils/` global; `calculos.js` y `filtrosHelpers.js` se mantienen en `features/obras/utils/` por ser específicos de dominio) |
+| Path aliases | ✅ (`jsconfig.json` con `baseUrl: "src"`. Imports absolutos aplicables progresivamente.) |
+
+**Componentes UI compartidos — Progreso:**
+
+| Componente | Estado | Ubicación |
+|------------|--------|-----------|
+| `PaginationControl` | ✅ Creado | `Components/ui/PaginationControl.jsx` |
+| `SearchableSelect` | ✅ Creado | `Components/ui/SearchableSelect.jsx` (selección única) |
+| `SearchableMultiSelect` | ✅ Creado | `Components/ui/SearchableMultiSelect.jsx` (selección múltiple) |
+| `SearchDropdown` | ✅ Creado | `Components/ui/SearchDropdown.jsx` (base compartida interna — no usar directamente) |
+| `ActionButtonGroup` | ❌ Descartado | Los botones de acción (barras de lista, footers de modales, detalle) son 2-4 líneas de JSX simple con labels/handlers variables. Extraerlos añadiría indirección sin ganancia real. La clase `custom-button` se unificará en el paso de estilos. |
+
+**Instrucciones de propagación pendientes:**
+
+**PaginationControl** — Reemplazar paginación inline por `<PaginationControl>` importado desde `Components/ui`:
+- `features/obras/components/GestionObras/index.js` → ✅ Aplicado (ejemplo). Eliminar `PaginacionObras.jsx` (ya no se usa).
+- `features/facturas/components/GestionFacturas.js` → Modo completo (con `paginasVisibles`, `startPage`, `endPage`). Reemplazar bloque `<Pagination>` (~L482-500).
+- `features/horas/components/HorasList.js` → Modo completo. Reemplazar bloque `<Pagination>` (~L892-918).
+- `features/pedidos/components/GestionPedidos.js` → Modo simple (`simple` prop). Reemplazar bloque `<Pagination>` (~L341-351).
+- `features/compras/components/GestionCompras.js` → Modo simple. Mismo patrón que GestionPedidos.
+- `features/gastos/components/GastosList.js` → Usa botones HTML propios. Migrar cuando se refactorice su paginación a `usePaginacion`.
+- **Nota**: Los features en modo simple (pedidos, compras) deberían migrar su lógica de paginación al hook `usePaginacion` global para consistencia. Actualmente calculan paginación inline.
+
+**SearchableSelect** — Reemplazar bloques `<div position-relative>...(input + sugerencias + seleccionado)...</div>` por `<SearchableSelect>`:
+- `features/obras/components/DetalleObra/Components/Modals/ModalGastoAlmacen.jsx` → ✅ Aplicado (ejemplo).
+- `features/obras/components/DetalleObra/Components/Modals/ModalCompra.jsx` → Misma carpeta. Props: `placeholder="Buscar factura por concepto..."`, `suggestions={sugerenciasFacturas}`, `renderSuggestion={(f) => f.Concepto}`, `selected={facturaSeleccionada}`, `renderSelected={(f) => <><strong>Factura:</strong> {f.Concepto}</>}`.
+- `features/obras/components/CrearObra/Components/SelectorObrasRelacionadas.jsx` → ✅ Aplicado (ejemplo). Usa `SearchableSelect` para obra padre (single) + `SearchableMultiSelect` para obras hijas (multi).
+- `features/obras/components/DetalleObra/Components/InformacionGeneral.jsx` → Tiene búsqueda de obras relacionadas (padre + hijas). Mismos componentes que SelectorObrasRelacionadas, con `keyField="id_obra"`.
+- `features/obras/components/CrearObra/Components/Modals/ModalContacto.jsx` → 2 instancias. Complejos: `SearchableMultiSelect` (selección múltiple de complejos). Empresa: `SearchableSelect` (selección única de empresa).
+
+**SearchableMultiSelect** — Props clave vs SearchableSelect:
+- `selectedItems` (array) en vez de `selected` (object)
+- `onRemove(item)` recibe el item completo en vez de no recibir argumentos
+- Renderiza `ListGroup` con cada item + botón "Quitar"
 
 ---
 
 ## TODO: Punto de continuación para el próximo chat
 
-**Última sesión:** 13/02/2026
-**Estado:** Iteración 1 completada. Iteración 2 completada (4 olas). Próximo: Iteración 3 (limpieza y optimización).
+**Última sesión:** 16/02/2026
+**Estado:** Iteraciones 1, 2 y 3 completadas. La estructura del frontend está definida y lista para escalar.
 
 ### Próxima tarea:
 
-1. **Iteración 3: Limpieza y optimización** — Requiere discusión de diseño (directriz 5). Pasos previstos:
-   - **Paso 1**: Eliminar carpetas viejas (`Almacen/`, `Compra/`, `Factura/`, `Gastos/`, `Horas/`, `Login/`, `Obra/`, `Pedido/`, `Rentabilidad/`, `Empresas/`, `Services/` antiguos). Incluye `Factura/FacturaDetalle.js` (huérfano) y `Obra/CrearObra/NuevoObra.js` (legacy, 28.6 KB).
-   - **Paso 2**: Componentes UI compartidos — extraer a `components/ui/` componentes reutilizables + extracción de lógica a hooks genéricos. Discutir en detalle.
-   - **Paso 3**: Estilos — renombrar `css/` a `styles/`, organizar
-   - **Paso 4**: Path aliases — configurar `jsconfig.json` para `@features/`, `@components/`, etc.
+1. **Propagación pendiente** — Aplicar progresivamente los componentes UI compartidos y los imports absolutos a medida que se toquen los ficheros (ver instrucciones de propagación arriba).
+2. **Nuevas features / funcionalidades** — El proyecto está listo para desarrollar nuevas funcionalidades siguiendo la arquitectura feature-based establecida.
 
 ### Contexto importante:
 - El cliente API centralizado está en `Services/api/client.js` (capital S) — todos los servicios migrados lo usan
 - Las constantes de endpoints están en `constants/api.js`
 - Endpoints corregidos durante la migración: `/compras` → `/facturaCompra`, `/inventario` → `/almacen`, `/pedidos` y `/ecoPedido/` → `/pedidoObra`, `/api/facturas` y `/ecoFactura/` → `/facturaObra`
 - El backend está completamente refactorizado (ver `CONTEXTO_REFACTORIZACION_BACKEND.md`)
-- Seguir la **directriz 5** de este documento: presentar decisiones de diseño antes de implementar
-- `App.js` importa TODAS las features desde sus barrel exports. Solo `Navbar` usa la estructura antigua (`../Navbar/Navbar`)
+- Seguir las **directrices 5, 6** de este documento
+- `App.js` importa TODAS las features desde sus barrel exports. `Navbar` ya migrado a `Components/layout/`
 - El `almacenService` incluye tanto operaciones de almacén como `movimientoAlmacenService` (ambos exportados desde el barrel)
 - Dependencias cross-feature se resuelven con `apiClient` + `API_ENDPOINTS` directos — hay múltiples `// TODO: Dependencia cross-feature` en hooks de obras (catálogos: tipoObra, estadoObra, tipoFacturable, usuario, edificio, contacto)
-- Iteración 3 paso 2: No solo extracción presentacional (JSX), sino también extracción de lógica a hooks genéricos o específicos
-- Ficheros a eliminar en Iteración 3: `Factura/FacturaDetalle.js` (huérfano), `Obra/CrearObra/NuevoObra.js` (legacy)
-- Obras tiene 24 hooks con arquitectura de 3 niveles (Atómicos → Compuestos → Dominio) — candidatos para extracción en paso 2
+- `Services/` aún contiene 5 servicios sin migrar (contacto, edificio, estadoObra, tipoFacturable, tipoObra) — se retirarán a medida que se implementen como features o se resuelvan como dependencias cross-feature
+- Hooks genéricos (10 atómicos) ya en `hooks/` global. Hooks de dominio (14) se mantienen en `features/obras/hooks/`
+- Utils genéricos (`fechas.js`) en `utils/` global. Utils de dominio (`calculos.js`, `filtrosHelpers.js`) en `features/obras/utils/`
+- Componentes UI compartidos en `Components/ui/` con barrel export (PaginationControl, SearchableSelect, SearchableMultiSelect, SearchDropdown)
+- Quedan instrucciones de propagación pendientes documentadas arriba para PaginationControl y SearchableSelect/MultiSelect
+
+**Path aliases — Convención de imports absolutos (baseUrl: "src"):**
+- `jsconfig.json` creado en `FRONT-END/` con `baseUrl: "src"`
+- **Entre features o hacia carpetas globales** → import absoluto: `import { X } from "Components/ui"`, `import { apiClient } from "Services/api/client"`, `import { API_ENDPOINTS } from "constants/api"`, `import { usePaginacion } from "hooks/usePaginacion"`
+- **Dentro del mismo feature** → import relativo: `import { obraService } from "../services/obra.service"`, `import TablaObras from "./Components/TablaObras"`
+- **Retrocompatible**: los imports relativos existentes siguen funcionando. Actualizar progresivamente al tocar cada fichero.
+- Ejemplo aplicado: `ModalGastoAlmacen.jsx` — `"../../../../../../Components/ui"` → `"Components/ui"`

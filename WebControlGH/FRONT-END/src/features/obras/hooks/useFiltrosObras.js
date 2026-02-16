@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { useSessionStorage } from "./useSessionStorage";
+import { useSessionStorage } from "../../../hooks/useSessionStorage.js";
 import {
   aplicarFiltroPorFecha,
   aplicarFiltroPorComplejo,
@@ -59,7 +59,7 @@ export const useFiltrosObras = (allObras, setFilteredObras) => {
       filtered = aplicarFiltroPorFecha(
         filtered,
         formData.fechaInicio,
-        formData.fechaFin
+        formData.fechaFin,
       );
       filtered = aplicarFiltroPorComplejo(filtered, formData.complejo);
       filtered = aplicarFiltroPorEmpresa(filtered, formData.empresa);
@@ -73,14 +73,14 @@ export const useFiltrosObras = (allObras, setFilteredObras) => {
       filtered = aplicarFiltroPorGastos(filtered, formData.conGastos);
       filtered = aplicarFiltroPorRelacion(
         filtered,
-        formData.relacionEntreObras
+        formData.relacionEntreObras,
       );
       filtered = aplicarFiltroPorBaja(filtered, formData.obrasDadasDeBaja);
       filtered = aplicarFiltroPorCodigo(filtered, searchTerm);
 
       setFilteredObras(filtered);
     },
-    [allObras, formData, searchTerm, setFilteredObras]
+    [allObras, formData, searchTerm, setFilteredObras],
   );
 
   // Resetear filtros

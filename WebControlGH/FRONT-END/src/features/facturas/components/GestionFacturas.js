@@ -4,14 +4,14 @@ import {
   Form,
   Button,
   Table,
-  Pagination,
   Container,
   Row,
-  Col,
 } from "react-bootstrap";
 
+import { PaginationControl } from "../../../Components/ui/index.js";
+
 import { useNavigate } from "react-router-dom";
-import "../../../css/FacturaDetalle.css";
+import "../../../styles/FacturaDetalle.css";
 import { facturaService } from "../services/factura.service";
 
 let allFacturas = null;
@@ -437,9 +437,7 @@ function GestionFacturas() {
                 </td>
                 <td>
                   {factura.fecha_actualizacion
-                    ? new Date(
-                        factura.fecha_actualizacion,
-                      ).toLocaleDateString()
+                    ? new Date(factura.fecha_actualizacion).toLocaleDateString()
                     : "-"}
                 </td>
                 <td>
@@ -461,9 +459,7 @@ function GestionFacturas() {
                   <Button
                     variant="info"
                     onClick={() =>
-                      navigate(
-                        `/home/gestion-facturas/detalle/${factura.id}`,
-                      )
+                      navigate(`/home/gestion-facturas/detalle/${factura.id}`)
                     }
                   >
                     Detalle
@@ -479,25 +475,14 @@ function GestionFacturas() {
         </tbody>
       </Table>
 
-      <Pagination>
-        <Pagination.First onClick={() => handlePageChange(1)} />
-        {startPage > 1 && (
-          <Pagination.Prev onClick={() => handlePageChange(startPage - 1)} />
-        )}
-        {paginasVisibles.map((page) => (
-          <Pagination.Item
-            key={page}
-            active={page === currentPage}
-            onClick={() => handlePageChange(page)}
-          >
-            {page}
-          </Pagination.Item>
-        ))}
-        {endPage < totalPaginas && (
-          <Pagination.Next onClick={() => handlePageChange(endPage + 1)} />
-        )}
-        <Pagination.Last onClick={() => handlePageChange(totalPaginas)} />
-      </Pagination>
+      <PaginationControl
+        currentPage={currentPage}
+        totalPaginas={totalPaginas}
+        paginasVisibles={paginasVisibles}
+        startPage={startPage}
+        endPage={endPage}
+        onPageChange={handlePageChange}
+      />
     </div>
   );
 }

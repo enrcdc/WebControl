@@ -5,14 +5,16 @@ import {
   Table,
   Button,
   Form,
-  Pagination,
   Container,
   Row,
   Col,
   Dropdown,
   Accordion,
 } from "react-bootstrap";
-import "../../../css/Horas.css";
+
+import { PaginationControl } from "../../../Components/ui/index.js";
+
+import "../../../styles/Horas.css";
 import { useNavigate } from "react-router-dom";
 import { horaService } from "../services/hora.service";
 import { getSubordinadosUsuarioActual } from "../services/user.service";
@@ -535,7 +537,8 @@ const HorasList = () => {
                                         setEstadosSeleccionados((prev) =>
                                           prev.filter(
                                             (item) =>
-                                              item !== estado.descripcion_estado,
+                                              item !==
+                                              estado.descripcion_estado,
                                           ),
                                         );
                                       }
@@ -889,33 +892,14 @@ const HorasList = () => {
 
         {/* Paginación */}
         {mostrarListado && horasFiltradas.length > 0 && (
-          <Pagination>
-            <Pagination.First
-              onClick={() => handlePageChange(1)}
-              disabled={currentPage === 1}
-            />
-            {startPage > 1 && (
-              <Pagination.Prev
-                onClick={() => handlePageChange(startPage - 1)}
-              />
-            )}
-            {paginasVisibles.map((page) => (
-              <Pagination.Item
-                key={page}
-                active={page === currentPage}
-                onClick={() => handlePageChange(page)}
-              >
-                {page}
-              </Pagination.Item>
-            ))}
-            {endPage < totalPaginas && (
-              <Pagination.Next onClick={() => handlePageChange(endPage + 1)} />
-            )}
-            <Pagination.Last
-              onClick={() => handlePageChange(totalPaginas)}
-              disabled={currentPage === totalPaginas}
-            />
-          </Pagination>
+          <PaginationControl
+            currentPage={currentPage}
+            totalPaginas={totalPaginas}
+            paginasVisibles={paginasVisibles}
+            startPage={startPage}
+            endPage={endPage}
+            onPageChange={handlePageChange}
+          />
         )}
 
         {/* LEYENDA DE COLORES */}

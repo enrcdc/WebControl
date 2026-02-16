@@ -1,5 +1,5 @@
-import { useBusquedaEntidad } from "./useBusquedaEntidad";
-import { useCrudEntidad } from "./useCrudEntidad";
+import { useBusquedaEntidad } from "../../../hooks/useBusquedaEntidad.js";
+import { useCrudEntidad } from "../../../hooks/useCrudEntidad.js";
 import { apiClient } from "../../../Services/api/client.js";
 import { API_ENDPOINTS } from "../../../constants/api";
 

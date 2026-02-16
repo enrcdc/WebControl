@@ -1,5 +1,5 @@
 // Hook refactorizado para gestión de facturas usando useCrudEntidad
-import { useCrudEntidad } from "./useCrudEntidad.js";
+import { useCrudEntidad } from "../../../hooks/useCrudEntidad";
 import { facturaService } from "../../facturas";
 
 /**

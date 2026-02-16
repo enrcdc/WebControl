@@ -1,3 +1,5 @@
+// TODO: Si aparecen muchas constantes de este tipo a lo largo del backend,
+// quizás sea conveniente crear un fichero sólo para las constantes en /config
 const DEFAULT_LIMIT = 200;
 
 /**
@@ -17,8 +19,7 @@ const DEFAULT_LIMIT = 200;
 export async function applyPagination(query, filters = {}) {
   const limit =
     filters.limit !== undefined ? Number(filters.limit) : DEFAULT_LIMIT;
-  const offset =
-    filters.offset !== undefined ? Number(filters.offset) : 0;
+  const offset = filters.offset !== undefined ? Number(filters.offset) : 0;
 
   // limit=0 → sin límite, devolver todo
   if (limit === 0) {

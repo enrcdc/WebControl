@@ -2,14 +2,14 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Container, Row } from "react-bootstrap";
-import "../../../../css/ObrasList.css";
+import "../../../../styles/ObrasList.css";
 
 // Hooks personalizados
 import { useObrasLista } from "../../hooks/useObrasLista";
 import { useFiltrosObras } from "../../hooks/useFiltrosObras";
 import { useObrasEspeciales } from "../../hooks/useObrasEspeciales";
 import { useOperacionesObras } from "../../hooks/useOperacionesObras";
-import { usePaginacion } from "../../hooks/usePaginacion";
+import { usePaginacion } from "../../../../hooks/usePaginacion";
 
 // Componentes
 import AlertasObras from "./Components/AlertasObras";
@@ -17,7 +17,7 @@ import FiltrosObras from "./Components/FiltrosObras";
 import BarraBusqueda from "./Components/BarraBusqueda";
 import BarraAcciones from "./Components/BarraAcciones";
 import TablaObras from "./Components/TablaObras";
-import PaginacionObras from "./Components/PaginacionObras";
+import { PaginationControl } from "../../../../Components/ui";
 
 const ListaObras = () => {
   const navigate = useNavigate();
@@ -164,8 +164,9 @@ const ListaObras = () => {
         onVerDetalle={handleVerDetalle}
       />
 
-      {/* Paginación */}
-      <PaginacionObras
+      {/* Paginación. 
+      TODO: Sólo este usa correctamente el hook de paginación. El resto también debe*/}
+      <PaginationControl
         currentPage={currentPage}
         totalPaginas={totalPaginas}
         paginasVisibles={paginasVisibles}

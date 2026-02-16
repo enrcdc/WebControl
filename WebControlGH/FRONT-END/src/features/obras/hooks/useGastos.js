@@ -1,6 +1,6 @@
 // Hook refactorizado para gestión de gastos usando useCrudConBusqueda
 import { useState, useEffect } from "react";
-import { useCrudConBusqueda } from "./useCrudConBusqueda.js";
+import { useCrudConBusqueda } from "../../../hooks/useCrudConBusqueda.js";
 import { almacenService, movimientoAlmacenService } from "../../almacen";
 import { horaService } from "../../horas";
 import { compraService } from "../../compras";

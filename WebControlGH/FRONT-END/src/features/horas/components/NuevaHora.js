@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Form, Button, Col, Row, Container } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import "../../../css/NuevaHora.css";
+import "../../../styles/NuevaHora.css";
 import { horaService } from "../services/hora.service";
 import { getSubordinadosUsuarioActual } from "../services/user.service";
 import { apiClient } from "../../../Services/api/client.js";

@@ -20,6 +20,8 @@ apiClient.interceptors.request.use((config) => {
 });
 
 // Interceptor de response: redirigir a login si el token es inválido/expirado
+// TODO: Qué ocurre si el usuario no tiene permisos de acceso al recurso
+// ¿Se le reenvía al login? - Revisar.
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {

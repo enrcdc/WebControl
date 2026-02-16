@@ -531,6 +531,7 @@ function GastosList() {
               </tr>
             </thead>
             <tbody>
+              {/* TODO: Implementar Paginación consistente */}
               {paginatedGastos.length === 0 ? (
                 <tr>
                   <td colSpan={17} className="text-center">
