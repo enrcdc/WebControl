@@ -14,6 +14,7 @@ import edificioRouter from "./edificio.routes.js";
 import empresaRouter from "./empresa.routes.js";
 import estadoObraRouter from "./estado-obra.routes.js";
 import tipoFacturableRouter from "./tipo-facturable.routes.js";
+import tipoFacRouter from "./tipo-factura.routes.js";
 import tipoObraRouter from "./tipo-obra.routes.js";
 import usuarioRouter from "./usuario.routes.js";
 import relacionObrasRouter from "./relacion-obra.routes.js";
@@ -62,6 +63,7 @@ router.use("/movimientos-almacen", movimientosAlmacenRouter);
 
 router.use("/tipo-obra", tipoObraRouter);
 router.use("/tipo-facturable", tipoFacturableRouter);
+router.use("/tipo-factura", tipoFacRouter);
 router.use("/estado-obra", estadoObraRouter);
 router.use("/responsables", responsablesRouter);
 

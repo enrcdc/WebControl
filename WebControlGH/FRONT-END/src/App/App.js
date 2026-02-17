@@ -4,12 +4,15 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import "styles/App.css";
 
 // -- LOGIN -- \\
-import { Login } from "../features/auth";
+import { Login, AuthProvider, PrivateRoute } from "../features/auth";
 // -- NAVBAR -- \\
 import Navbar from "../Components/layout/Navbar";
 
 // -- RENTABILIDAD -- \\
 import { ProfitabilityTable } from "../features/rentabilidad";
+
+// -- EMPRESAS -- \\
+import { GestionEmpresas, CrearEmpresa } from "../features/empresas";
 
 // -- ALMACEN -- \\
 import { GestionAlmacen } from "../features/almacen";
@@ -55,15 +58,22 @@ import { GastosList } from "../features/gastos";
 function App() {
   return (
     <BrowserRouter>
-      <div className="app-container">
-        {" "}
-        {/* Usa una clase del CSS global */}
-        <Routes>
-          <Route path="/" element={<Navigate replace to="/login" />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/home/*" element={<MainLayout />} />
-        </Routes>
-      </div>
+      <AuthProvider>
+        <div className="app-container">
+          <Routes>
+            <Route path="/" element={<Navigate replace to="/login" />} />
+            <Route path="/login" element={<Login />} />
+            <Route
+              path="/home/*"
+              element={
+                <PrivateRoute>
+                  <MainLayout />
+                </PrivateRoute>
+              }
+            />
+          </Routes>
+        </div>
+      </AuthProvider>
     </BrowserRouter>
   );
 }
@@ -99,6 +109,8 @@ function MainLayout() {
           <Route path="imprimir-factura" element={<ImprimirFacturas />} />{" "}
           {/* Nueva ruta para imprimir facturas */}
           <Route path="imprimir-pedido" element={<ImprimirPedido />} />
+          <Route path="gestion-empresas" element={<GestionEmpresas />} />
+          <Route path="nueva-empresa" element={<CrearEmpresa />} />
           <Route path="gestion-almacen" element={<GestionAlmacen />} />
           <Route path="gestion-pedidos" element={<GestionPedidos />} />
           <Route path="gestion-compras" element={<GestionCompras />} />

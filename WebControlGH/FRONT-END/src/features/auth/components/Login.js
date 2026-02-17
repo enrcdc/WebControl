@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../../styles/Login.css";
 import { authService } from "../services/auth.service";
+import { useAuth } from "../AuthContext";
 
 function Login() {
   const [username, setUsername] = useState("");
@@ -9,6 +10,7 @@ function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -26,10 +28,7 @@ function Login() {
 
       if (res.data?.success) {
         const { token, usuario } = res.data.data;
-
-        localStorage.setItem("token", token);
-        localStorage.setItem("user", JSON.stringify(usuario));
-
+        login(token, usuario);
         navigate("/home/gestion-obras");
       } else {
         setError(res.data?.message || "Error al iniciar sesión");

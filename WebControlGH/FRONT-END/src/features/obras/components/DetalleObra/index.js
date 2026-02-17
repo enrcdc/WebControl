@@ -77,7 +77,7 @@ const DetalleObra = () => {
 
   useEffect(() => {
     const idsObrasHijas = obrasRelacionadasHook.obrasHijas.map(
-      (obra) => obra.id_obra
+      (obra) => obra.id_obra,
     );
 
     if (idsObrasHijas.length > 0) {

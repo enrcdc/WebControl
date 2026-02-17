@@ -321,93 +321,299 @@ Esto evita iteraciones innecesarias sobre refactorizaciones ya realizadas.
 
 ---
 
-## 8. Estructura estándar de features (confirmada)
+## 8. Estructura definitiva de features (confirmada)
 
-### Contexto histórico (por qué existe discrepancia entre features)
+### Contexto histórico
 
-Actualmente hay una discrepancia estructural entre la feature `obras` y el resto de features:
+Discrepancia entre la feature `obras` (orchestrator + presentacionales + 14 hooks + 3 niveles de nesting) y el resto de features (archivos .js monolíticos, 0 hooks, estructura plana). La causa: obras creció hasta ~3000 líneas y se refactorizó; el resto no.
 
-- **Resto de features** (facturas, pedidos, compras, etc.): tienen los archivos `.js` directamente dentro de `components/` (estructura plana, monolítica). Cada archivo corresponde a un módulo de la entidad: Gestion (listado + filtros + paginación), Detalle, Crear, Imprimir.
-- **Feature obras**: tiene subcarpetas dentro de `components/` (GestionObras/, DetalleObra/, CrearObra/, ImprimirObra/), cada una con un `index.js` orchestrator, componentes presentacionales `.jsx`, y en algunos casos una subcarpeta `Modals/`. Además tiene carpetas `hooks/` (24 hooks especializados en 3 niveles: atómicos → compuestos → dominio) y `utils/` (funciones de dominio).
+### Decisión de estrategia de migración
 
-**Razón de la discrepancia:** La feature obras se desarrolló primero con la estructura plana (un archivo por módulo), pero los archivos crecieron hasta ~3000 líneas (DetalleObra). Se refactorizó aplicando el patrón orchestrator + presentacionales + hooks, resultando en la estructura actual. El resto de features se migraron después sin esa refactorización interna porque aún no han crecido lo suficiente.
+**Opción elegida: Una sola pasada, estructura primero.**
 
-**Decisión tomada:** Todas las features deben converger hacia una estructura común. La estructura de obras es la referencia, pero aplanada un nivel (ver estructura objetivo abajo). La homogeneización se hará incrementalmente al tocar cada feature, no como refactorización masiva. No todas las entidades necesitarán los mismos módulos ni la misma cantidad — el split orchestrator/presentacional solo se aplica cuando se supera el umbral de líneas.
+En vez de hacer dos pasadas (1. conectar al backend → 2. reestructurar), se define primero la estructura definitiva y se implementa cada feature una sola vez en su forma final. Esto evita trabajo descartable y es más eficiente.
 
-### Estructura objetivo
+### Estructura definitiva por feature
 
-**Decisión:** Aplanar un nivel la estructura interna de cada feature. Eliminar la subcarpeta `Components/` intermedia, modales al mismo nivel, nombres simplificados.
-
-**Estructura objetivo por feature:**
 ```
 features/[nombre]/
 ├── components/
-│   ├── Gestion.jsx           # (antes GestionObras/ o GestionPedidos/)
-│   ├── Detalle.jsx           # (antes DetalleObra/ o DetallePedido/)
-│   ├── Crear.jsx             # (si aplica)
-│   ├── Imprimir.jsx          # (si aplica)
-│   ├── TablaObras.jsx        # Sub-componentes presentacionales al mismo nivel
-│   ├── ModalGasto.jsx        # Modales al mismo nivel (sin subcarpeta Modals/)
+│   ├── Gestion[Nombre].jsx          # Vista lista
+│   ├── Detalle[Nombre].jsx          # Vista detalle/edición
+│   ├── Crear[Nombre].jsx            # Formulario de creación (si aplica)
+│   ├── Imprimir[Nombre].jsx         # Vista impresión (si aplica)
+│   ├── Tabla[Nombre].jsx            # Presentacionales al mismo nivel
+│   ├── Filtros[Nombre].jsx          # Panel de filtros (si aplica)
+│   ├── Modal[Entidad].jsx           # Modales al mismo nivel (sin subcarpeta)
 │   └── ...
-├── hooks/
+├── hooks/                            # Solo si se necesita (ver regla abajo)
+│   └── use[Concepto].js
 ├── services/
-├── utils/                    # (solo si tiene utils específicos de dominio)
-└── index.js                  # Barrel export
+│   └── [nombre].service.js
+├── utils/                            # Solo si tiene utils de dominio
+│   └── [dominio].js
+└── index.js                          # Barrel export
 ```
 
-**Reglas del patrón orchestrator:**
-- **< 150 líneas** → archivo único (no split)
-- **150-300 líneas** → evaluar si el split aporta claridad
-- **> 300 líneas** → split obligatorio en orchestrator (`index.js`) + componentes presentacionales
+### Convenciones confirmadas
 
-**Nota:** Esta estructura se aplicará incrementalmente al tocar cada feature (no como refactorización masiva separada).
+**1. Nombres de archivo (Decisión 1):**
+- Los componentes INCLUYEN el nombre de la entidad: `GestionPedidos.jsx`, no `Gestion.jsx`
+- Razón: diferenciación en pestañas del editor cuando hay múltiples features abiertas
+
+**2. Extensiones de archivo (Decisión 2):**
+- `.jsx` para archivos con JSX (componentes, modales)
+- `.js` para archivos de lógica pura (hooks, services, utils, barrel exports)
+- Señaliza visualmente qué archivos tienen UI
+
+**3. Cuándo crear hooks de feature (Decisión 3):**
+- **NO** crear hooks preventivamente — es abstracción prematura
+- Extraer hooks cuando: (1) componente supera ~300 líneas, (2) lógica se reutiliza entre componentes del mismo feature, o (3) lógica es testeable independientemente
+- Features simples (empresas, almacen) no necesitan hooks
+- Features medianas/complejas (horas, gastos, obras) sí los necesitarán
+
+**4. Catálogos cross-feature (Decisión 4):**
+- Mantener `apiClient` + `API_ENDPOINTS` para lookups de catálogos (tipoObra, estadoObra, etc.)
+- Los 5 servicios legacy en `Services/` (contacto, edificio, estadoObra, tipoFacturable, tipoObra) se eliminarán
+- Si en el futuro se necesita reutilizar lógica de catálogos, crear un `services/catalog.service.js` global
+
+### Reglas del patrón orchestrator
+
+- **< 150 líneas** → archivo único, sin split
+- **150-300 líneas** → evaluar si el split aporta claridad
+- **> 300 líneas** → split obligatorio en orchestrator (`index.js` dentro de subcarpeta) + componentes presentacionales `.jsx` al mismo nivel
+- Orchestrators solo se crean cuando el split es necesario. Componentes simples se quedan como archivo único (`GestionAlmacen.jsx`)
+
+### Orden de migración
+
+Cada feature se implementa una sola vez en su forma definitiva (estructura + consumo backend + paginación):
+
+| Ola | Feature | Razón |
+|-----|---------|-------|
+| 1 | empresas | Skeleton, CRUD simple, sin cross-feature deps. Establece template |
+| 2 | compras, pedidos | Complejidad media, CRUD completo, estructura similar |
+| 3 | facturas | Similar a pedidos/compras pero con filtros parciales |
+| 4 | gastos | 574 líneas monolíticas, filtrado complejo, necesita split |
+| 5 | horas | 962 líneas, el más complejo tras obras, necesita hooks |
+| 6 | rentabilidad | Skeleton con datos demo, conectar a API real |
+| 7 | obras | El más complejo. Aplanar nesting, migrar a server-side pagination |
+
+### Proceso por feature
+
+1. **Analizar** el estado actual del componente y el backend disponible
+2. **Implementar** con la estructura definitiva (service corregido + componentes .jsx + paginación server-side + imports absolutos)
+3. **Extraer** hooks/utils/componentes reutilizables si surgen durante el proceso
+4. **Directriz 6**: Implementar UN feature como ejemplo, dar instrucciones para features similares
+
+---
+
+## 9. Autenticación frontend (Route Guards)
+
+### Implementación — COMPLETADA ✅
+
+**Opción elegida:** AuthContext + PrivateRoute (estándar de la industria para React + JWT)
+
+**Archivos creados:**
+- `features/auth/AuthContext.js` — `AuthProvider` (gestiona estado auth en React state + localStorage) + hook `useAuth()` que expone `{ user, token, isAuthenticated, login, logout }`
+- `features/auth/components/PrivateRoute.js` — Comprueba `isAuthenticated` vía `useAuth()`, redirige a `/login` si no hay sesión
+
+**Archivos modificados:**
+- `features/auth/index.js` — Añadidos exports de `AuthProvider`, `useAuth`, `PrivateRoute`
+- `features/auth/components/Login.js` — Usa `useAuth().login()` en vez de `localStorage` directo
+- `App/App.js` — `AuthProvider` envuelve toda la app, `PrivateRoute` protege `/home/*`
+
+**Flujo:**
+1. Acceso a `/home/*` sin token → `PrivateRoute` redirige a `/login`
+2. Login exitoso → `login(token, usuario)` guarda en state + localStorage → navega a `/home/gestion-obras`
+3. Token inválido durante uso → interceptor 401 de `apiClient` limpia localStorage y redirige
+4. Cualquier componente accede al usuario con `const { user, logout } = useAuth()`
+
+**Propagación pendiente:** Componentes que leen `JSON.parse(localStorage.getItem("user"))` directamente pueden migrar a `useAuth().user` progresivamente.
+
+---
+
+## 10. Paginación server-side
+
+### Hook `useServerPagination` — CREADO ✅
+
+**Ubicación:** `hooks/useServerPagination.js`
+
+**Diferencia con `usePaginacion` (client-side):**
+- `usePaginacion`: recibe todos los items, pagina con `.slice()` en JS
+- `useServerPagination`: el backend pagina con `LIMIT`/`OFFSET`, devuelve `{ total, limit, offset }`
+
+**API del hook:**
+```javascript
+const {
+  currentPage, totalPaginas, limit, offset,
+  startPage, endPage, paginasVisibles,
+  handlePageChange, resetToFirstPage,
+} = useServerPagination(total, defaultLimit);
+// total: viene de res.data.pagination.total
+// defaultLimit: registros por página (default 50)
+```
+
+**Patrón de uso en componentes:**
+```javascript
+// 1. Hook provee limit/offset
+const { limit, offset, ... } = useServerPagination(total);
+// 2. Componente pasa limit/offset al service
+const res = await service.getAll({ ...filters, limit, offset });
+// 3. Backend devuelve { data, pagination: { total, limit, offset } }
+setItems(res.data.data);
+setTotal(res.data.pagination?.total ?? 0);
+// 4. PaginationControl muestra la navegación
+```
+
+**Compatible con `PaginationControl`:** Devuelve las mismas props (`paginasVisibles`, `startPage`, `endPage`, `handlePageChange`).
+
+`usePaginacion` se mantiene para features que aún usen paginación client-side. Se retirará cuando todas migren.
+
+---
+
+## 11. Progreso de migración de features
+
+### Checklist por feature
+
+Al implementar cada feature en su forma definitiva, verificar:
+- [ ] Servicio: endpoints correctos, `res.data.data` para array, delete single-item por URL param
+- [ ] Componentes: `.jsx`, nombres con entidad, paginación server-side, loading/error
+- [ ] Hooks: reutilizar hooks globales (`useFormulario`, `useModal`, `useSeleccionMultiple`, `useBusquedaMultiple`, `useServerPagination`) antes de crear estado manual
+- [ ] Imports: absolutos para cross-feature/globales
+- [ ] Barrel export: `index.js` exporta componentes públicos + servicios
+- [ ] Estructura: acorde a sección 8 (split si >300 líneas, hooks si necesario)
+
+### Progreso
+
+| Feature | Estado | Notas |
+|---------|--------|-------|
+| almacen | ✅ | Service corregido (delete single-item, eliminado `buscarPorDescripcion`), `movimientoAlmacenService` corregido (`getByObra` → `getAll`). Componente reescrito: campos reales del backend, `useServerPagination`, `PaginationControl`, loading/error. Imports absolutos. **Nota**: migrado antes de fijar la estructura definitiva — usa `.js` en vez de `.jsx`. Renombrar al tocar. |
+| empresas | En progreso | GestionEmpresas + CrearEmpresa + ModalNuevoContacto completados con hooks. Falta: DetalleEmpresa, ImprimirEmpresa. Ola 1. |
+| compras | Pendiente | 3 componentes (412+166+164 líneas). Ola 2. |
+| pedidos | Pendiente | 3-4 componentes (354+178+242 líneas). Ola 2. |
+| facturas | Pendiente | 3-4 componentes (469+110+225 líneas). Filtros parciales. Ola 3. |
+| gastos | Pendiente | 1 componente monolítico (574 líneas). Necesita split. Ola 4. |
+| horas | Pendiente | 3 componentes (962+209+132 líneas). Necesita hooks. Ola 5. |
+| rentabilidad | Pendiente | Skeleton con datos demo. Ola 6. |
+| obras | Pendiente | El más complejo (14 hooks, 3 niveles nesting). Aplanar + server-side. Ola 7. |
+
+---
+
+## 12. Feature empresas — EN PROGRESO
+
+### Decisiones de diseño confirmadas
+
+**Creación de contactos desde CrearEmpresa (Opción A: Modal simplificado + guardado diferido):**
+- El backend `POST /contacto` requiere `empresa: { id }`, pero al crear una nueva empresa aún no existe ID → problema circular
+- Solución: modal simplificado (solo campos del contacto, sin campo empresa) + guardado diferido
+- Contactos nuevos se acumulan en estado local con indicador visual "(nuevo)"
+- Al guardar empresa: (1) `POST /empresa` con IDs existentes, (2) `POST /contacto` con `empresa: { id: nuevaEmpresaId }` para cada contacto nuevo
+- Descartada Opción B (reutilizar ModalContacto de obras) por UX confuso (obligaría a seleccionar empresa existente)
+
+### Cambios realizados — GestionEmpresas
+
+**Backend (ajuste menor):**
+- `empresa.model.js` getAll: añadido `tipoEmpresa`, `porDefecto`, subquery `contactosCount` al SELECT. Añadido filtro `tipoEmpresa`
+
+**Frontend:**
+- `empresa.service.js` reescrito: imports absolutos, `delete({ idEmpresas })` corregido, añadidos `getById` y `buscarPorNombre`
+- `constants/api.js`: añadido `TIPO_FACTURA: "/tipo-factura"`
+- `GestionEmpresas.jsx` creado (~210 líneas): tabla con columnas Nombre/Tipo/Teléfono/Email/Contactos/PorDefecto/Acción, búsqueda por nombre, filtro tipoEmpresa (dropdown hardcodeado), selección batch con checkbox, acciones (Nueva/Baja/Imprimir), `useServerPagination(20)`, `PaginationControl`, loading/error states
+- `App.js`: añadida ruta `gestion-empresas` + import de `GestionEmpresas`
+- Eliminado `GestionEmpresas.js` (antiguo skeleton)
+
+**Constantes hardcodeadas (TODO para futuro):**
+```javascript
+const TIPOS_EMPRESA = [
+  { id: 1, descripcion: "Sin Especificar" },
+  { id: 3, descripcion: "Cliente" },
+];
+```
+
+### Cambios realizados — CrearEmpresa
+
+- `ModalNuevoContacto.jsx` creado (~80 líneas): modal simplificado, prop-driven, estado interno con `useFormulario`
+- `CrearEmpresa.jsx` creado (~290 líneas): form completo, SearchableMultiSelect para contactos, guardado orquestado
+- `App.js`: ruta `nueva-empresa`, import `CrearEmpresa`
+
+### Refactorización de hooks — COMPLETADA ✅
+
+**Problema detectado:** Los componentes de empresas no reutilizaban los hooks globales existentes. Esto impediría escalar el patrón a complejos, proveedores, contactos y tipos de gasto.
+
+**Nuevo hook creado: `useBusquedaMultiple`** (`hooks/useBusquedaMultiple.js`, ~100 líneas):
+- Búsqueda + sugerencias + selección múltiple + filtrado automático de ya seleccionados
+- Compatible directamente con las props de `SearchableMultiSelect`
+- Incluye race condition protection (`requestRef`)
+- Reutilizable en: CrearEmpresa (contactos), CrearObra (obras hijas, complejos), CrearContacto (empresas, complejos), etc.
+
+```javascript
+// API del hook:
+const contactos = useBusquedaMultiple(
+  (nombre) => apiClient.get(API_ENDPOINTS.CONTACTO, { params: { nombre, limit: 10 } }),
+  { minLength: 2, keyField: "id" }
+);
+// → contactos.busqueda, .sugerencias, .seleccionados, .handleBuscar, .seleccionar, .remover, .limpiar
+```
+
+**Hooks reutilizados en componentes:**
+
+| Hook | Componente | Reemplaza |
+|------|-----------|-----------|
+| `useFormulario` | CrearEmpresa | `formData`, `setFormData`, `handleInputChange` manual |
+| `useFormulario` | ModalNuevoContacto | `form`, `setForm`, `handleChange`, reset manual |
+| `useModal` | CrearEmpresa | `showModalContacto`, `setShowModalContacto` |
+| `useBusquedaMultiple` | CrearEmpresa | búsqueda, sugerencias, seleccionados (~40 líneas) |
+| `useSeleccionMultiple` | GestionEmpresas | `selectedIds`, `handleSelectAll`, `handleSelectOne` |
+| `useServerPagination` | GestionEmpresas | ya estaba desde la creación |
+
+**Hooks evaluados que NO aplican (y por qué):**
+- `useCrudEntidad`: diseñado para CRUD modal, no para navegación a páginas ni guardado orquestado
+- `useCrudConBusqueda`: extiende useCrudEntidad, mismas limitaciones
+- `useApiRequest`: demasiado genérico para fetch paginado con filtros
+- `useCheckboxCondicional`: los checkboxes de empresa no tienen side-effects
+- `useBusquedaEntidad`: solo soporta selección única, no múltiple (reemplazado por `useBusquedaMultiple`)
+
+### Módulos pendientes
+
+| Módulo | Estado | Notas |
+|--------|--------|-------|
+| GestionEmpresas.jsx | ✅ | Lista + useServerPagination + useSeleccionMultiple |
+| CrearEmpresa.jsx | ✅ | Form + useFormulario + useModal + useBusquedaMultiple |
+| ModalNuevoContacto.jsx | ✅ | Modal simplificado + useFormulario |
+| DetalleEmpresa.jsx | Pendiente | Mismo form que Crear pero read-only con toggle editar/eliminar |
+| ImprimirEmpresa.jsx | Pendiente | Placeholder/TODO |
 
 ---
 
 ## TODO: Punto de continuación para el próximo chat
 
-**Última sesión:** 16/02/2026
-**Estado:** Iteraciones 1, 2 y 3 completadas. La estructura del frontend está definida y lista para escalar.
+**Última sesión:** 17/02/2026
+**Estado:** GestionEmpresas, CrearEmpresa y ModalNuevoContacto completados y refactorizados con hooks globales. Hook `useBusquedaMultiple` creado. Continuar con DetalleEmpresa.jsx.
 
-### Próximos pasos (por orden de prioridad):
+### Próximo paso:
 
-#### Prioridad 1: Route guards (autenticación frontend)
-- El backend ya tiene JWT implementado (`POST /api/auth/login` → `{ token, usuario }`)
-- El frontend ya tiene `authService` y `apiClient` con interceptor JWT
-- **Falta**: Proteger las rutas de `App.js` para que redirijan a `/login` si no hay token válido
-- Opciones a evaluar: `<PrivateRoute>` wrapper vs middleware en el router vs contexto de autenticación
-- Esto es prerequisito para que el flujo login → app funcione correctamente
+**Feature `empresas` — DetalleEmpresa.jsx**: Mismo form que CrearEmpresa pero read-only con toggle editar/eliminar. Evaluar si extraer FormEmpresa.jsx como componente compartido.
 
-#### Prioridad 2: Consumir backend + homogenizar features (incremental)
-- Conectar cada feature al backend refactorizado (paginación server-side, filtros SQL, formato `{ success, data, pagination }`)
-- Al tocar cada feature, aplicar simultáneamente:
-  - Estructura estándar (sección 8 de este documento)
-  - Propagación de componentes UI compartidos (PaginationControl, SearchableSelect/MultiSelect)
-  - Imports absolutos donde aplique
-- **Orden sugerido**: empezar por features simples (empresas, almacen) e ir hacia los complejos (obras)
-
-#### Propagación pendiente (aplicar al tocar cada fichero):
-- **PaginationControl** y **SearchableSelect/MultiSelect**: ver instrucciones detalladas en sección 7
-- **Nota**: GastosList no tiene PaginationControl intencionalmente — su paginación se implementará cuando se refactorice el componente completo
-- **Path aliases**: actualizar imports relativos profundos a absolutos progresivamente
+### Orden de migración restante:
+1. ~~almacen~~ ✅
+2. **empresas** ← en progreso (GestionEmpresas ✅, faltan Crear/Detalle/Imprimir)
+3. compras + pedidos (ola 2, estructura similar)
+4. facturas (ola 3)
+5. gastos (ola 4, necesita split >574 líneas)
+6. horas (ola 5, necesita hooks >962 líneas)
+7. rentabilidad (ola 6, skeleton con demo data)
+8. obras (ola 7, aplanar nesting + server-side pagination)
 
 ### Contexto importante:
-- El cliente API centralizado está en `Services/api/client.js` (capital S) — todos los servicios migrados lo usan
-- Las constantes de endpoints están en `constants/api.js`
-- Endpoints corregidos durante la migración: `/compras` → `/facturaCompra`, `/inventario` → `/almacen`, `/pedidos` y `/ecoPedido/` → `/pedidoObra`, `/api/facturas` y `/ecoFactura/` → `/facturaObra`
-- El backend está completamente refactorizado (ver `CONTEXTO_REFACTORIZACION_BACKEND.md`)
-- Seguir las **directrices 5, 6** de este documento
-- `App.js` importa TODAS las features desde sus barrel exports. `Navbar` ya migrado a `Components/layout/`
-- El `almacenService` incluye tanto operaciones de almacén como `movimientoAlmacenService` (ambos exportados desde el barrel)
-- Dependencias cross-feature se resuelven con `apiClient` + `API_ENDPOINTS` directos — hay múltiples `// TODO: Dependencia cross-feature` en hooks de obras (catálogos: tipoObra, estadoObra, tipoFacturable, usuario, edificio, contacto)
-- `Services/` aún contiene 5 servicios sin migrar (contacto, edificio, estadoObra, tipoFacturable, tipoObra) — se retirarán a medida que se implementen como features o se resuelvan como dependencias cross-feature
-- Hooks genéricos (10 atómicos) ya en `hooks/` global. Hooks de dominio (14) se mantienen en `features/obras/hooks/`
-- Utils genéricos (`fechas.js`) en `utils/` global. Utils de dominio (`calculos.js`, `filtrosHelpers.js`) en `features/obras/utils/`
-- Componentes UI compartidos en `Components/ui/` con barrel export (PaginationControl, SearchableSelect, SearchableMultiSelect, SearchDropdown)
+- **Estructura definitiva**: Sección 8 — nombres con entidad, `.jsx` componentes / `.js` lógica, hooks por necesidad, catálogos via `apiClient`
+- **Directrices 5 y 6**: Decisiones de diseño + optimización de uso (implementar uno, instrucciones para replicar)
+- Cliente API en `Services/api/client.js`, endpoints en `constants/api.js`
+- `App.js` importa TODAS las features desde barrel exports
+- Hooks globales (11) en `hooks/` — incluye `useServerPagination` para paginación server-side
+- Componentes UI compartidos en `Components/ui/` (PaginationControl, SearchableSelect, SearchableMultiSelect)
+- `Services/` aún tiene 5 servicios legacy (contacto, edificio, estadoObra, tipoFacturable, tipoObra) — eliminar cuando se resuelvan como catálogos cross-feature
+- Backend completamente refactorizado (ver `CONTEXTO_REFACTORIZACION_BACKEND.md`)
 
-**Path aliases — Convención de imports absolutos (baseUrl: "src"):**
-- `jsconfig.json` creado en `FRONT-END/` con `baseUrl: "src"`
-- **Entre features o hacia carpetas globales** → import absoluto: `import { X } from "Components/ui"`, `import { apiClient } from "Services/api/client"`, `import { API_ENDPOINTS } from "constants/api"`, `import { usePaginacion } from "hooks/usePaginacion"`
-- **Dentro del mismo feature** → import relativo: `import { obraService } from "../services/obra.service"`, `import TablaObras from "./Components/TablaObras"`
-- **Retrocompatible**: los imports relativos existentes siguen funcionando. Actualizar progresivamente al tocar cada fichero.
-- Ejemplo aplicado: `ModalGastoAlmacen.jsx` — `"../../../../../../Components/ui"` → `"Components/ui"`
+**Path aliases (baseUrl: "src"):**
+- Cross-feature/globales → absoluto: `"Components/ui"`, `"Services/api/client"`, `"constants/api"`, `"hooks/useServerPagination"`
+- Dentro del mismo feature → relativo: `"../services/obra.service"`, `"./TablaObras"`

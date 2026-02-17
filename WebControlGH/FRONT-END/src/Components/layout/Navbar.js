@@ -118,7 +118,7 @@ function Navbar() {
             {showSubMenu.config && (
               <div className="submenu">
                 <a href="#usuarios">Gestión de Usuarios</a>
-                <a href="#roles">Gestión de Empresas</a>
+                <Link to="/home/gestion-empresas">Gestión de Empresas</Link>
                 <a href="#permisos">Gestión de Proveedores</a>
                 <a href="#sistema">Gestión de Complejos</a>
                 <a href="#red">Gestión de Contactos</a>

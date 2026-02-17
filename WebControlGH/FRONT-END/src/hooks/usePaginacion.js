@@ -1,4 +1,4 @@
-// hooks/usePaginacion.js
+// hooks/usePaginacion.js -> Paginación client-side
 import { useMemo } from "react";
 import { useSessionStorage } from "./useSessionStorage.js";
 

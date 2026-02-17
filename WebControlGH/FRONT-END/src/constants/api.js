@@ -24,6 +24,7 @@ export const API_ENDPOINTS = {
   // Catálogos
   TIPO_OBRA: "/tipo-obra",
   TIPO_FACTURABLE: "/tipo-facturable",
+  TIPO_FACTURA: "/tipo-factura",
   ESTADO_OBRA: "/estado-obra",
   RESPONSABLES: "/responsables",
 

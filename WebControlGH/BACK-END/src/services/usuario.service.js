@@ -48,7 +48,7 @@ export class UsuarioService {
       nombreUsuario: usuario.nombre_usuario,
       codigoFirma: usuario.codigo_firma,
     };
-
+    
     const token = jwt.sign(payload, config.jwt.secret, {
       expiresIn: config.jwt.expiresIn,
     });

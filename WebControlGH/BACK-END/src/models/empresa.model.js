@@ -18,10 +18,14 @@ export class EmpresaModel {
       .select(
         db.ref("id_empresa").as("id"),
         "nombre",
-        "direccion",
+        db.ref("tipo_empresa").as("tipoEmpresa"),
         "telefono1",
         "email",
+        db.ref("pordefecto").as("porDefecto"),
         "fecha_baja",
+        db.raw(
+          "(SELECT COUNT(*) FROM empresas_contactos WHERE empresas_contactos.id_empresa = empresas.id_empresa) as contactosCount",
+        ),
       )
       .orderBy("nombre");
 
@@ -31,6 +35,10 @@ export class EmpresaModel {
 
     if (filters.nombre) {
       query.where("nombre", "like", `%${filters.nombre}%`);
+    }
+
+    if (filters.tipoEmpresa) {
+      query.where("tipo_empresa", filters.tipoEmpresa);
     }
 
     return applyPagination(query, filters);

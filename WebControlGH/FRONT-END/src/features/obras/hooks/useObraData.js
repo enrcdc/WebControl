@@ -32,7 +32,8 @@ export const useObraData = (idObra) => {
       const res = await apiRequest.execute(() => obraService.getById(idObra));
       if (!res) return;
 
-      const obraData = res[0];
+      // CUIDADO, getById devuelve un objeto, no un array. Antes estaba con res[0]
+      const obraData = res;
       setObra(obraData);
 
       // Actualizar formulario con datos de la obra
