@@ -75,7 +75,7 @@ function DetalleEmpresa() {
       try {
         const [resEmpresa, resContactos, resTiposFactura] = await Promise.all([
           empresaService.getById(id),
-          apiClient.get(`${API_ENDPOINTS.CONTACTO}/${id}`),
+          apiClient.get(`${API_ENDPOINTS.CONTACTO}?idEmpresa=${id}`),
           apiClient.get(API_ENDPOINTS.TIPO_FACTURA),
         ]);
 
@@ -194,7 +194,7 @@ function DetalleEmpresa() {
           readOnly={!editando}
           tiposFactura={tiposFactura}
         >
-          {/* Contactos (solo lectura) */}
+          {/* TODO: Contactos solo de lectura. Dar la posibilidad de añadir o quitar*/}
           <div className="mb-3">
             <label className="form-label">Contactos de la Empresa</label>
             {contactos.length === 0 ? (

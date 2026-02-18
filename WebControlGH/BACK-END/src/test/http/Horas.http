@@ -5,8 +5,7 @@ POST http://localhost:3002/api/horas/filtrar
 Content-Type: application/json
 
 {
-    "idsObra": [4037],
-    "manager": 4
+    "idsObra": [1212]
 }
 
 ### Crear una hora

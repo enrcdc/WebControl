@@ -41,7 +41,7 @@ export const calcularGastoTotal = (
   importeGastos,
   importeHorasExtra,
   importeMovimientosAlmacen,
-  importeCompras
+  importeCompras,
 ) => {
   return (
     importeHoras +
@@ -68,16 +68,15 @@ export const calcularPorcentajePedido = (totalPedidos, importe) => {
 
 export const getTiposGastos = (gastosObra) => {
   const resumen = {};
-
   gastosObra.forEach((gasto) => {
-    if (gasto.tipo_gasto) {
+    if (gasto.descripcion_gasto) {
       const totalGasto = gasto.cantidad * gasto.importe;
-      if (!resumen[gasto.tipo_gasto]) {
-        resumen[gasto.tipo_gasto] = 0;
+      if (!resumen[gasto.descripcion_gasto]) {
+        resumen[gasto.descripcion_gasto] = 0;
       }
-      resumen[gasto.tipo_gasto] += totalGasto;
-      resumen[gasto.tipo_gasto] =
-        Math.round(resumen[gasto.tipo_gasto] * 100) / 100;
+      resumen[gasto.descripcion_gasto] += totalGasto;
+      resumen[gasto.descripcion_gasto] =
+        Math.round(resumen[gasto.descripcion_gasto] * 100) / 100;
     }
   });
 

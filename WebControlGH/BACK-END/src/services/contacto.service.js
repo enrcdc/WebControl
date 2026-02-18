@@ -9,33 +9,7 @@ import { validateId, validateNotEmpty } from "../utils/index.js";
 export class ContactoService {
   static async getAll(filters = {}) {
     const { data, pagination } = await ContactoModel.getAll(filters);
-
-    if (!data || data.length === 0) {
-      throw new NotFoundError(
-        "Contactos",
-        null,
-        "No hay contactos registrados en el sistema",
-      );
-    }
-
     return { data, pagination };
-  }
-
-  // TODO: Eliminar cuando el frontend use getAll(filters)
-  static async getByEmpresa(idEmpresa) {
-    const validId = validateId(idEmpresa, "ID de empresa");
-
-    const contactos = await ContactoModel.getByEmpresa({ idEmpresa: validId });
-
-    if (!contactos || contactos.length === 0) {
-      throw new NotFoundError(
-        "Contactos",
-        null,
-        `No se encontraron contactos para la empresa con ID ${validId}`,
-      );
-    }
-
-    return contactos;
   }
 
   static async create(contactoData) {

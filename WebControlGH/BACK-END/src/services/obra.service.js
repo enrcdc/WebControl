@@ -77,32 +77,6 @@ export class ObraService {
     return this._enrichObraData(obra);
   }
 
-  // TODO: Eliminar cuando el frontend use getAll(filters)
-  /**
-   * Buscar obras por descripción
-   */
-  static async getByDescripcion(descripcion) {
-    const sanitized = validateAndSanitizeString(
-      descripcion,
-      "descripción de búsqueda",
-      { minLength: 2 },
-    );
-
-    const obras = await ObraModel.getByDescripcion({
-      descripcionObra: sanitized,
-    });
-
-    if (!obras || obras.length === 0) {
-      throw new NotFoundError(
-        "Obras",
-        null,
-        `No se encontraron obras con la descripción "${sanitized}"`,
-      );
-    }
-
-    return obras;
-  }
-
   /**
    * Crear una nueva obra
    */

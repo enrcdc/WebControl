@@ -53,13 +53,6 @@ export class EmpresaModel {
     );
   }
 
-  // TODO: Eliminar cuando el frontend use getAll(filters)
-  static async getByNombre({ nombre }) {
-    return db("empresas")
-      .select(db.ref("id_empresa").as("id"), "nombre")
-      .where("nombre", "like", `%${nombre}%`);
-  }
-
   static async create(input) {
     const [idEmpresa] = await db("empresas").insert({
       nombre: input.nombre,

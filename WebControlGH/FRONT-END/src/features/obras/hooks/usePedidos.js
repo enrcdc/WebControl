@@ -12,7 +12,7 @@ import { pedidoService } from "../../pedidos";
 export const usePedidos = (idObra) => {
   const pedidosHook = useCrudEntidad({
     // Configuración de fetch
-    fetchFunction: (ids) => pedidoService.getByObras(ids),
+    fetchFunction: (ids) => pedidoService.filtrar({ idsObra: ids }),
     fetchParams: [[idObra]],
 
     // Configuración de operaciones CRUD
@@ -60,9 +60,9 @@ export const usePedidos = (idObra) => {
   });
 
   // Función separada para fetch de pedidos de obras hijas
-  const fetchPedidosHijas = async (idsObras) => {
+  const fetchPedidosHijas = async (idsObra) => {
     try {
-      const res = await pedidoService.getByObras(idsObras);
+      const res = await pedidoService.filtrar({ idsObra });
       return res.data.data || [];
     } catch (error) {
       console.error(`Error al obtener pedidos de hijas - ${error}`);

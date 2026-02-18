@@ -671,7 +671,13 @@ export const [entidad]Service = {
 ## TODO: Punto de continuación para el próximo chat
 
 **Última sesión:** 18/02/2026
-**Estado:** Feature empresas casi completa (falta ImprimirEmpresa placeholder). FormEmpresa.jsx extraído como componente compartido. Sección 13 (código reutilizable) creada.
+**Estado:** Feature empresas casi completa (falta ImprimirEmpresa placeholder). Eliminación completa de endpoints legacy `/buscar/` en backend y frontend. Todas las búsquedas ahora usan `getAll + filters`.
+
+### Tareas completadas esta sesión:
+- DetalleEmpresa.jsx + FormEmpresa.jsx (componente compartido Crear/Detalle)
+- Sección 13 (código reutilizable entre features)
+- **Eliminación de búsquedas especializadas** — backend (rutas, controllers, services, models) y frontend (services, hooks, callers) para obra, empresa, facturaCompra, edificio. `Services/edificioService.js` eliminado.
+- Backend: añadido filtro `descripcion` a `obra.model.js` getAll
 
 ### Próximo paso:
 
@@ -679,8 +685,8 @@ export const [entidad]Service = {
 Luego: **Ola 2 — compras + pedidos** siguiendo la estructura definitiva (sección 8).
 
 ### Orden de migración restante:
-1. ~~almacen~~ ✅
-2. **empresas** ← en progreso (GestionEmpresas ✅, faltan Crear/Detalle/Imprimir)
+1. ~~almacen~~ Parcial (consume backend, falta estructura definitiva con módulos)
+2. **empresas** ← en progreso (GestionEmpresas ✅, CrearEmpresa ✅, DetalleEmpresa ✅, falta ImprimirEmpresa)
 3. compras + pedidos (ola 2, estructura similar)
 4. facturas (ola 3)
 5. gastos (ola 4, necesita split >574 líneas)
@@ -695,7 +701,7 @@ Luego: **Ola 2 — compras + pedidos** siguiendo la estructura definitiva (secci
 - `App.js` importa TODAS las features desde barrel exports
 - Hooks globales (11) en `hooks/` — incluye `useServerPagination` para paginación server-side
 - Componentes UI compartidos en `Components/ui/` (PaginationControl, SearchableSelect, SearchableMultiSelect)
-- `Services/` aún tiene 5 servicios legacy (contacto, edificio, estadoObra, tipoFacturable, tipoObra) — eliminar cuando se resuelvan como catálogos cross-feature
+- `Services/` aún tiene 4 servicios legacy (contacto, estadoObra, tipoFacturable, tipoObra) — eliminar cuando se resuelvan como catálogos cross-feature. `edificioService.js` ya eliminado.
 - Backend completamente refactorizado (ver `CONTEXTO_REFACTORIZACION_BACKEND.md`)
 
 **Path aliases (baseUrl: "src"):**

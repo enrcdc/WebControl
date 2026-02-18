@@ -12,11 +12,6 @@ export const obraService = {
   update: (id, data) => apiClient.put(`${API_ENDPOINTS.OBRA}/${id}`, data),
 
   delete: (id) => apiClient.delete(`${API_ENDPOINTS.OBRA}/${id}`),
-
-  buscarPorDescripcion: (descripcion) =>
-    apiClient.get(`${API_ENDPOINTS.OBRA}/buscar/descripcion`, {
-      params: { descripcionObra: descripcion },
-    }),
 };
 
 export const relacionObraService = {

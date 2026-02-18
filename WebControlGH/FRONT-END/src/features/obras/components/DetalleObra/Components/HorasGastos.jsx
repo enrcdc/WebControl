@@ -68,14 +68,22 @@ const HorasGastos = ({
               horas.map((hora, idx) => (
                 <tr key={idx}>
                   <td>{formatearFechaLocal(hora.dia_trabajado)}</td>
-                  <td>{hora.usuario}</td>
-                  <td>{hora.id_tarea}</td>
+                  <td
+                    title={`${hora.nombre} ${hora.apellido1} ${hora.apellido2}`}
+                  >
+                    {hora.codigo_firma}
+                  </td>
+                  <td title={hora.descripcion_tarea}>{hora.tarea}</td>
                   <td>
                     {hora.fecha_validacion
                       ? formatearFechaLocal(hora.fecha_validacion)
                       : "[NO]"}
                   </td>
-                  <td>{hora.usuario_validacion || "-"}</td>
+                  <td
+                    title={`${hora.nombre_validador} ${hora.apellido1_validador} ${hora.apellido2_validador}`}
+                  >
+                    {hora.firma_validador || "-"}
+                  </td>
                   <td>{hora.num_horas}</td>
                   <td>{hora.precio_hora}</td>
                   <td>{(hora.num_horas * hora.precio_hora).toFixed(2)}</td>
@@ -115,8 +123,8 @@ const HorasGastos = ({
               horasExtra.map((hora, idx) => (
                 <tr key={idx}>
                   <td>{formatearFechaLocal(hora.fecha_gasto)}</td>
-                  <td>{hora.usuario}</td>
-                  <td>{hora.descripcion}</td>
+                  <td>{hora.usuario_alta}</td>
+                  <td>{hora.descripcion_gasto}</td>
                   <td>{hora.cantidad}</td>
                   <td>{hora.importe}</td>
                   <td>{(hora.cantidad * hora.importe).toFixed(2)}</td>
@@ -168,7 +176,7 @@ const HorasGastos = ({
                 <tr key={idx}>
                   <td>{formatearFechaLocal(gasto.fecha_gasto)}</td>
                   <td>{gasto.usuario_alta}</td>
-                  <td>{gasto.tipo_gasto}</td>
+                  <td>{gasto.descripcion_gasto}</td>
                   <td>{gasto.cantidad}</td>
                   <td>{gasto.importe}</td>
                   <td>{(gasto.importe * gasto.cantidad).toFixed(2)}</td>
@@ -290,7 +298,7 @@ const HorasGastos = ({
             {facturasCompras.length > 0 ? (
               facturasCompras.map((compra, idx) => (
                 <tr key={idx}>
-                  <td>{`${compra.Numero} - ${compra.Concepto}`}</td>
+                  <td>{`${compra.num_factura} - ${compra.concepto}`}</td>
                   <td>{formatearFechaLocal(compra.fecha_alta)}</td>
                   <td>{compra.importe}</td>
                   <td>

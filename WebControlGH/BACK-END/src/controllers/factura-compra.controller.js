@@ -22,28 +22,6 @@ export class FacturaCompraController {
     }
   }
 
-  // TODO: Eliminar cuando el frontend use getAll(filters)
-  static async getByObra(req, res, next) {
-    try {
-      const { idObra } = req.params;
-      const facturas = await FacturaCompraService.getByObra(idObra);
-      res.json({ success: true, data: facturas });
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  // TODO: Eliminar cuando el frontend use getAll(filters)
-  static async getByConcepto(req, res, next) {
-    try {
-      const { concepto } = req.query;
-      const facturas = await FacturaCompraService.getByConcepto(concepto);
-      res.json({ success: true, data: facturas });
-    } catch (error) {
-      next(error);
-    }
-  }
-
   static async create(req, res, next) {
     try {
       const facturaData = req.body;

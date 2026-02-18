@@ -31,21 +31,6 @@ export class ObraController {
     }
   }
 
-  // TODO: Eliminar cuando el frontend use getAll(filters)
-  static async getByDescripcion(req, res, next) {
-    try {
-      const { descripcionObra } = req.query;
-      const obras = await ObraService.getByDescripcion(descripcionObra);
-      res.json({
-        success: true,
-        data: obras,
-        count: obras.length,
-      });
-    } catch (error) {
-      next(error);
-    }
-  }
-
   static async create(req, res, next) {
     try {
       const obraData = req.body;

@@ -18,13 +18,13 @@ export const useObrasRelacionadas = (idObra = null) => {
 
   // Búsqueda de obra padre
   const busquedaPadre = useBusquedaEntidad(
-    (termino) => obraService.buscarPorDescripcion(termino),
+    (termino) => obraService.getAll({ descripcion: termino, limit: 10 }),
     { minLength: 3, keyField: "id_obra" },
   );
 
   // Búsqueda de obras hijas
   const busquedaHijas = useBusquedaMultiple(
-    (termino) => obraService.buscarPorDescripcion(termino),
+    (termino) => obraService.getAll({ descripcion: termino, limit: 10 }),
     { minLength: 3, keyField: "id_obra" },
   );
 

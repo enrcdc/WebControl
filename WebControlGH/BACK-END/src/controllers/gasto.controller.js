@@ -20,26 +20,4 @@ export class GastoController {
       next(error);
     }
   }
-
-  // TODO: Eliminar cuando el frontend use getAll(filters)
-  static async getGastosByObra(req, res, next) {
-    try {
-      const { idsObra } = req.body;
-      const gastosPorObra = await GastoService.getGastosByObra(idsObra);
-      res.json({ success: true, data: gastosPorObra });
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  // TODO: Eliminar cuando el frontend use getAll(filters)
-  static async getHorasExtraByObra(req, res, next) {
-    try {
-      const { idsObra } = req.body;
-      const horasExtra = await GastoService.getHorasExtraByObra(idsObra);
-      res.json({ success: true, data: horasExtra });
-    } catch (error) {
-      next(error);
-    }
-  }
 }

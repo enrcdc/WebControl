@@ -1,7 +1,6 @@
 import { EmpresaModel } from "../models/empresa.model.js";
 import { AlreadyDeletedError, NotFoundError } from "../errors/index.js";
 import {
-  validateAndSanitizeString,
   validateNotEmpty,
   validateId,
 } from "../utils/index.js";
@@ -35,25 +34,6 @@ export class EmpresaService {
     }
 
     return empresa;
-  }
-
-  // TODO: Eliminar cuando el frontend use getAll(filters)
-  static async getByNombre(nombre) {
-    const sanitized = validateAndSanitizeString(nombre, "nombre de empresa", {
-      minLength: 2,
-    });
-
-    const empresas = await EmpresaModel.getByNombre({ nombre: sanitized });
-
-    if (!empresas || empresas.length === 0) {
-      throw new NotFoundError(
-        "Empresas",
-        null,
-        `No se encontraron empresas con el nombre "${sanitized}"`,
-      );
-    }
-
-    return empresas;
   }
 
   static async create(empresaData) {

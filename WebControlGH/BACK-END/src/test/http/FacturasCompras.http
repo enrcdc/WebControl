@@ -1,9 +1,9 @@
 ############################ facturaCompra ############################
 
 ### GET facturaCompra
-GET http://localhost:3002/api/facturaCompra?concepto=MATERIAL VARIO FERRETERIA-HERRAMIENTA
+GET http://localhost:3002/api/facturaCompra?idObra=1212
 
-### GET FACTURA BY ID (Debería desaparecer)
+### GET FACTURA BY ID 
 GET http://localhost:3002/api/facturaCompra/209
 
 ### GET facturaCompra BY OBRAS (Debería desaparecer)

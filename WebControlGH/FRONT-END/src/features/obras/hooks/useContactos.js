@@ -38,16 +38,16 @@ export const useContactos = () => {
   // Hook de búsqueda de entidad (complejo y empresa en este caso)
   const buscadorComplejos = useBusquedaEntidad(
     (termino) =>
-      apiClient.get(`${API_ENDPOINTS.EDIFICIO}/buscar/nombre`, {
-        params: { nombre: termino },
+      apiClient.get(API_ENDPOINTS.EDIFICIO, {
+        params: { nombre: termino, limit: 10 },
       }),
     { minLength: 3 },
   );
 
   const buscadorEmpresas = useBusquedaEntidad(
     (termino) =>
-      apiClient.get(`${API_ENDPOINTS.EMPRESA}/buscar/nombre`, {
-        params: { nombre: termino },
+      apiClient.get(API_ENDPOINTS.EMPRESA, {
+        params: { nombre: termino, limit: 10 },
       }),
     { minLength: 3 },
   );

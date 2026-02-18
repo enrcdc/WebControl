@@ -16,18 +16,6 @@ export class GastoService {
     return { data, pagination };
   }
 
-  // TODO: Eliminar cuando el frontend use getAll(filters)
-  static async getGastosByObra(idsObra) {
-    this._validateIdsObra(idsObra);
-    return GastoModel.getGastosByObra({ idsObra });
-  }
-
-  // TODO: Eliminar cuando el frontend use getAll(filters)
-  static async getHorasExtraByObra(idsObra) {
-    this._validateIdsObra(idsObra);
-    return GastoModel.getHorasExtraByObra({ idsObra });
-  }
-
   // ============================================
   // MÉTODOS PRIVADOS
   // ============================================

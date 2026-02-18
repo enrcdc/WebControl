@@ -5,7 +5,7 @@ POST http://localhost:3002/api/pedidoObra/filtrar
 Content-Type: application/json
 
 {
-    "mostrarBaja": true
+    "idsObra": [1212]
 }
 
 ### Borrar un pedido asociado a una obra

@@ -1,7 +1,7 @@
 ###### ENDPOINTS GASTOS #############
 
-### Obtener todos los gastos por validar
-GET http://localhost:3002/api/gastos/por-validar
+### Obtener todos los gastos 
+GET http://localhost:3002/api/gastos
 
 ### Obtener todos los gastos por pagar
 GET http://localhost:3002/api/gastos/por-pagar
@@ -28,9 +28,8 @@ POST http://localhost:3002/api/gastos/filtrar
 Content-Type: application/json
 
 {
-    "tipo": "por-pagar",
-    "idsObra": [4039],
-    "tipoGasto": "Cena"
+    "idsObra": [1212],
+    "tipoGasto": "Hora Extra"
 
 }
 

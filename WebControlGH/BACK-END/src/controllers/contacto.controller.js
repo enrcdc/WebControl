@@ -11,16 +11,6 @@ export class ContactoController {
     }
   }
 
-  // TODO: Eliminar cuando el frontend use getAll(filters)
-  static async getByEmpresa(req, res, next) {
-    try {
-      const { idEmpresa } = req.params;
-      const contactos = await ContactoService.getByEmpresa(idEmpresa);
-      res.json({ success: true, data: contactos });
-    } catch (error) {
-      next(error);
-    }
-  }
 
   static async create(req, res, next) {
     try {

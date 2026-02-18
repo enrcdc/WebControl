@@ -1,7 +1,6 @@
 import { EdificioModel } from "../models/edificio.model.js";
 import { NotFoundError, AlreadyDeletedError } from "../errors/index.js";
 import {
-  validateAndSanitizeString,
   validateId,
   validateNotEmpty,
 } from "../utils/index.js";
@@ -19,25 +18,6 @@ export class EdificioService {
     }
 
     return { data, pagination };
-  }
-
-  // TODO: Eliminar cuando el frontend use getAll(filters)
-  static async getByNombre(nombre) {
-    const sanitized = validateAndSanitizeString(nombre, "nombre de complejo", {
-      minLength: 2,
-    });
-
-    const edificios = await EdificioModel.getByNombre({ nombre: sanitized });
-
-    if (!edificios || edificios.length === 0) {
-      throw new NotFoundError(
-        "Complejos",
-        null,
-        `No se encontraron complejos con el nombre "${sanitized}"`,
-      );
-    }
-
-    return edificios;
   }
 
   static async create(edificioData) {

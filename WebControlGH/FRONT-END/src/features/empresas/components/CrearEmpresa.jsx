@@ -186,6 +186,7 @@ function CrearEmpresa() {
                 Nuevo Contacto
               </Button>
             </div>
+            {/* TODO: Da un warning de "Encountered two children with the same key, `15`". Corregir*/}
             <SearchableMultiSelect
               placeholder="Buscar contacto por nombre..."
               value={contactos.busqueda}
@@ -220,11 +221,7 @@ function CrearEmpresa() {
           >
             Cancelar
           </Button>
-          <Button
-            variant="primary"
-            onClick={handleGuardar}
-            disabled={loading}
-          >
+          <Button variant="primary" onClick={handleGuardar} disabled={loading}>
             {loading ? <Spinner size="sm" /> : "Guardar"}
           </Button>
         </div>

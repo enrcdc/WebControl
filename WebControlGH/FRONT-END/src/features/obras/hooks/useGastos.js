@@ -29,7 +29,7 @@ export const useGastos = (idObra) => {
   const almacenHook = useCrudConBusqueda(
     {
       // Config CRUD
-      fetchFunction: () => movimientoAlmacenService.getByObra(idObra),
+      fetchFunction: () => movimientoAlmacenService.getAll({ idObra }),
       createFunction: (data) => movimientoAlmacenService.create(data),
       updateFunction: (id, data) => movimientoAlmacenService.update(id, data),
       deleteFunction: (id) => movimientoAlmacenService.delete([id]),
@@ -74,7 +74,8 @@ export const useGastos = (idObra) => {
     },
     {
       // Config Búsqueda
-      buscarFunction: (termino) => almacenService.buscarPorDescripcion(termino),
+      buscarFunction: (termino) =>
+        almacenService.getAll({ descripcion: termino, limit: 10 }),
       fieldName: "idReferencia",
       minLength: 3,
     },
@@ -84,7 +85,7 @@ export const useGastos = (idObra) => {
   const comprasHook = useCrudConBusqueda(
     {
       // Config CRUD
-      fetchFunction: () => compraService.getByObra(idObra),
+      fetchFunction: () => compraService.getAll({ idObra }),
       createFunction: (data) => compraService.create(data),
       updateFunction: (id, data) => compraService.update(id, data),
       deleteFunction: (id) => compraService.delete([id]),
@@ -124,7 +125,8 @@ export const useGastos = (idObra) => {
     },
     {
       // Config Búsqueda
-      buscarFunction: (termino) => compraService.buscarPorConcepto(termino),
+      buscarFunction: (termino) =>
+        compraService.getAll({ concepto: termino, limit: 10 }),
       fieldName: "idFacturasCompras",
       minLength: 3,
     },
@@ -133,7 +135,7 @@ export const useGastos = (idObra) => {
   // === FETCH DE GASTOS (no es CRUD, solo lectura) ===
   const fetchGastos = async (idsObra, tipo = "Padre") => {
     try {
-      const res = await gastoService.getByObras(idsObra);
+      const res = await gastoService.filtrar({ idsObra });
       if (tipo === "Padre") {
         setGastos(res.data.data);
         setTiposGastos(getTiposGastos(res.data.data));
@@ -149,7 +151,7 @@ export const useGastos = (idObra) => {
   // === FETCH DE HORAS (no es CRUD, solo lectura) ===
   const fetchHoras = async (idsObra, tipo = "Padre") => {
     try {
-      const res = await horaService.getByObras(idsObra);
+      const res = await horaService.filtrar({ idsObra });
       tipo === "Padre" ? setHoras(res.data.data) : setHorasHijas(res.data.data);
     } catch (error) {
       console.error(`Error al obtener horas (${tipo}) - ${error}`);
@@ -159,7 +161,10 @@ export const useGastos = (idObra) => {
   // === FETCH DE HORAS EXTRA (no es CRUD, solo lectura) ===
   const fetchHorasExtra = async (idsObra, tipo = "Padre") => {
     try {
-      const res = await horaService.getHorasExtra(idsObra);
+      const res = await gastoService.filtrar({
+        idsObra,
+        tipoGasto: "Hora Extra",
+      });
       tipo === "Padre"
         ? setHorasExtra(res.data.data)
         : setHorasExtraHijas(res.data.data);

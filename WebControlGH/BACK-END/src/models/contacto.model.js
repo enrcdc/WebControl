@@ -60,21 +60,6 @@ export class ContactoModel {
     );
   }
 
-  // TODO: Eliminar cuando el frontend use getAll(filters)
-  static async getByEmpresa({ idEmpresa }) {
-    return db("contactos as c")
-      .select(
-        db.ref("c.id_contacto").as("id"),
-        db.ref("c.nombre_contacto").as("nombre"),
-        "c.apellido1",
-        "c.apellido2",
-      )
-      .leftJoin("empresas_contactos as ec", "c.id_contacto", "ec.id_contacto")
-      .where("ec.id_empresa", idEmpresa)
-      .orWhere("c.id_contacto", 1)
-      .orderBy("c.nombre_contacto");
-  }
-
   static async create(input) {
     const [idContacto] = await db("contactos").insert({
       nombre_contacto: input.nombre,

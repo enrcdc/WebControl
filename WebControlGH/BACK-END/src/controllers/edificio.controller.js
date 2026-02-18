@@ -11,17 +11,6 @@ export class EdificioController {
     }
   }
 
-  // TODO: Eliminar cuando el frontend use getAll(filters)
-  static async getByNombre(req, res, next) {
-    try {
-      const { nombre } = req.query;
-      const edificios = await EdificioService.getByNombre(nombre);
-      res.json({ success: true, data: edificios });
-    } catch (error) {
-      next(error);
-    }
-  }
-
   static async create(req, res, next) {
     try {
       const edificio = await EdificioService.create(req.body);

@@ -208,7 +208,7 @@ function GestionAlmacen() {
                     <td
                       className="text-truncate"
                       style={{ maxWidth: "120px" }}
-                      title={prod.descripcion}
+                      title={prod.codigo}
                     >
                       {prod.codigo}
                     </td>

@@ -8,12 +8,6 @@ export const empresaService = {
   getById: (idEmpresa) =>
     apiClient.get(`${API_ENDPOINTS.EMPRESA}/${idEmpresa}`),
 
-  // TODO: Este debería desaparecer y ser sustituido por getAll + filters
-  buscarPorNombre: (nombre) =>
-    apiClient.get(`${API_ENDPOINTS.EMPRESA}/buscar/nombre`, {
-      params: { nombre },
-    }),
-
   create: (data) => apiClient.post(API_ENDPOINTS.EMPRESA, data),
 
   update: (idEmpresa, data) =>

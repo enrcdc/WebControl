@@ -5,11 +5,7 @@ export const compraService = {
   getAll: (filters = {}) =>
     apiClient.get(API_ENDPOINTS.FACTURA_COMPRA, { params: filters }),
 
-  getById: (id) =>
-    apiClient.get(`${API_ENDPOINTS.FACTURA_COMPRA}/${id}`),
-
-  getByObra: (idObra) =>
-    apiClient.get(`${API_ENDPOINTS.FACTURA_COMPRA}/obra/${idObra}`),
+  getById: (id) => apiClient.get(`${API_ENDPOINTS.FACTURA_COMPRA}/${id}`),
 
   create: (data) => apiClient.post(API_ENDPOINTS.FACTURA_COMPRA, data),
 
@@ -18,9 +14,4 @@ export const compraService = {
 
   delete: (ids) =>
     apiClient.delete(API_ENDPOINTS.FACTURA_COMPRA, { data: { ids } }),
-
-  buscarPorConcepto: (concepto) =>
-    apiClient.get(`${API_ENDPOINTS.FACTURA_COMPRA}/buscar/concepto`, {
-      params: { concepto },
-    }),
 };

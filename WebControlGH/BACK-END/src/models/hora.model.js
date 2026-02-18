@@ -1,7 +1,8 @@
 import { db } from "../config/database.js";
 import { applyPagination } from "../utils/index.js";
 
-// TODO: Faltan más operaciones CRUD
+// TODO: No mezclar aquí los managers de los usuarios que imputan horas.
+// Eso generaba filas duplicadas.
 
 export class HoraModel {
   /**
@@ -29,8 +30,8 @@ export class HoraModel {
         "u.nombre",
         "u.apellido1",
         "u.apellido2",
+        "u.codigo_firma",
         db.ref("u.usuario_bonita").as("nombre_usuario"),
-        "r.cod_usuario_manager",
         "o.id_obra",
         "o.codigo_obra",
         "o.descripcion_obra",
@@ -43,22 +44,23 @@ export class HoraModel {
         "h.fecha_validacion",
         "h.fecha_planificacion",
         "h.codigo_usuario_validacion",
+        "h.precio_hora",
         db.ref("u_validador.nombre").as("nombre_validador"),
         db.ref("u_validador.apellido1").as("apellido1_validador"),
         db.ref("u_validador.apellido2").as("apellido2_validador"),
         db.ref("u_validador.usuario_bonita").as("nombre_usuario_validador"),
+        db.ref("u_validador.codigo_firma").as("firma_validador"),
         db.ref("t.etiqueta").as("tarea"),
         db.ref("t.descripcion").as("descripcion_tarea"),
         "h.num_horas",
       )
-      .join("usuarios as u", "h.codigo_usuario", "u.codigo_usuario")
-      .join("responsables as r", "u.codigo_usuario", "r.cod_usuario")
+      .leftJoin("usuarios as u", "h.codigo_usuario", "u.codigo_usuario")
       .leftJoin(
         "usuarios as u_validador",
         "h.codigo_usuario_validacion",
         "u_validador.codigo_usuario",
       )
-      .join("obras as o", "h.id_obra", "o.id_obra")
+      .leftJoin("obras as o", "h.id_obra", "o.id_obra")
       .leftJoin("tipoestadosobras as eo", "o.estado_obra", "eo.codigo_estado")
       .leftJoin("tipoobra as tip", "o.tipo_obra", "tip.id_tipo")
       .leftJoin("tareas as t", "h.id_tarea", "t.id")

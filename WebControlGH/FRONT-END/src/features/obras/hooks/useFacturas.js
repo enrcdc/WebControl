@@ -13,7 +13,7 @@ import { facturaService } from "../../facturas";
 export const useFacturas = (idObra, pedidos = []) => {
   const facturasHook = useCrudEntidad({
     // Configuración de fetch
-    fetchFunction: (ids) => facturaService.getByObras(ids),
+    fetchFunction: (ids) => facturaService.filtrar({ idsObra: ids }),
     fetchParams: [[idObra]],
 
     // Configuración de operaciones CRUD
@@ -87,9 +87,9 @@ export const useFacturas = (idObra, pedidos = []) => {
   };
 
   // Función separada para fetch de facturas de obras hijas
-  const fetchFacturasHijas = async (idsObras) => {
+  const fetchFacturasHijas = async (idsObra) => {
     try {
-      const res = await facturaService.getByObras(idsObras);
+      const res = await facturaService.filtrar({ idsObra });
       return res.data.data || [];
     } catch (error) {
       console.error(`Error al obtener facturas de hijas - ${error}`);

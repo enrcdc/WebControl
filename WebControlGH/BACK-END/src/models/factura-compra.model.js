@@ -86,28 +86,6 @@ export class FacturaCompraModel {
       .first() ?? null;
   }
 
-  // TODO: Eliminar cuando el frontend use getAll(filters)
-  static async getByObra({ idObra }) {
-    return db("facturascompras_obra as fo")
-      .select(
-        "fo.*",
-        "fc.Numero",
-        "fc.Concepto",
-        "u.codigo_firma",
-      )
-      .leftJoin("facturascompras as fc", "fo.id_facturascompras", "fc.id")
-      .leftJoin("usuarios as u", "fo.codigo_usuario_alta", "u.codigo_usuario")
-      .where("fo.id_obra", idObra)
-      .whereNull("fo.fecha_baja");
-  }
-
-  // TODO: Eliminar cuando el frontend use getAll(filters)
-  static async getByConcepto({ concepto }) {
-    return db("facturascompras")
-      .select("id", "Numero", "Concepto")
-      .where("Concepto", "like", `%${concepto}%`);
-  }
-
   static async create({ input }) {
     const [insertId] = await db("facturascompras_obra").insert({
       id_obra: input.idObra,

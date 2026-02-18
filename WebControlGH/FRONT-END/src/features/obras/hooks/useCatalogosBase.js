@@ -72,7 +72,9 @@ export const useCatalogosBase = () => {
    */
   const fetchContactosEmpresa = useCallback(async (idEmpresa) => {
     try {
-      const res = await apiClient.get(`${API_ENDPOINTS.CONTACTO}/${idEmpresa}`);
+      const res = await apiClient.get(
+        `${API_ENDPOINTS.CONTACTO}?idEmpresa=${idEmpresa}`,
+      );
       setCatalogos((prev) => ({
         ...prev,
         contactosEmpresa: res.data.data || [],

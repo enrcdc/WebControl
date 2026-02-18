@@ -38,13 +38,6 @@ export class EdificioModel {
     );
   }
 
-  // TODO: Eliminar cuando el frontend use getAll(filters)
-  static async getByNombre({ nombre }) {
-    return db("edificios")
-      .select(db.ref("id_edificio").as("id"), "nombre")
-      .where("nombre", "like", `%${nombre}%`);
-  }
-
   static async create(input) {
     const [idEdificio] = await db("edificios").insert({
       nombre: input.nombre,

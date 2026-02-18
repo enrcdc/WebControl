@@ -37,33 +37,6 @@ export class FacturaCompraService {
     return factura;
   }
 
-  // TODO: Eliminar cuando el frontend use getAll(filters)
-  static async getByObra(idObra) {
-    const validId = validateId(idObra, "ID de obra");
-    return FacturaCompraModel.getByObra({ idObra: validId });
-  }
-
-  // TODO: Eliminar cuando el frontend use getAll(filters)
-  static async getByConcepto(concepto) {
-    if (!concepto || concepto.trim().length === 0) {
-      throw new InvalidDataError("El concepto de búsqueda es obligatorio", {
-        field: "concepto",
-      });
-    }
-
-    const facturas = await FacturaCompraModel.getByConcepto({ concepto });
-
-    if (!facturas || facturas.length === 0) {
-      throw new NotFoundError(
-        "Facturas",
-        null,
-        `No se encontraron facturas con el concepto "${concepto}"`,
-      );
-    }
-
-    return facturas;
-  }
-
   static async create(facturaData) {
     validateNotEmpty(facturaData, "datos de la factura");
 

@@ -9,9 +9,6 @@ export const obraRouter = Router();
 // NO SE PROCESARÁN LAS RUTAS ESPECÍFICAS
 obraRouter.get("/", ObraController.getAll);
 obraRouter.get("/estadisticas", ObraController.getEstadisticas);
-// TODO: Eliminar cuando el frontend use getAll(filters)
-obraRouter.get("/buscar/descripcion", ObraController.getByDescripcion);
-// TODO: Eliminar cuando el frontend use getAll(filters)
 obraRouter.get("/:idObra", ObraController.getById);
 obraRouter.post("/filtrar", ObraController.filtrar);
 // FÍJATE EN COMO SE ESPECIFICA EL MIDDLEWARE DE VALIDACIÓN PARA LA RUTA DE POST

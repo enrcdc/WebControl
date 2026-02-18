@@ -17,8 +17,6 @@ export class GastoModel {
    * @param {string} [filters.usuarioAlta] - filtrar por usuario de alta
    * @returns {Promise<Array>} Array de resultados de filtrado
    * 
-   * @note Es recomendable especificar al menos el filtro de "filters.tipo" porque recuperar todos los
-   * registros de gastos es costoso.
    */
   static async getAll(filters = {}) {
     const query = db("gastosobra as g")
@@ -77,55 +75,5 @@ export class GastoModel {
     }
 
     return applyPagination(query, filters);
-  }
-
-  // TODO: Eliminar cuando el frontend use getAll(filters)
-  static async getGastosByObra({ idsObra }) {
-    return db("gastosobra as g")
-      .select(
-        "g.fecha_gasto",
-        db.ref("u.codigo_firma").as("usuario_alta"),
-        db.ref("tg.descripcion").as("descripcion_gasto"),
-        "g.fecha_validacion",
-        db.ref("u2.codigo_firma").as("usuario_validacion"),
-        "g.pagado_visa",
-        "g.fecha_pago",
-        "g.cantidad",
-        "g.importe",
-        "g.observaciones",
-      )
-      .leftJoin("usuarios as u", "g.codigo_usuario", "u.codigo_usuario")
-      .leftJoin(
-        "usuarios as u2",
-        "g.codigo_usuario_validacion",
-        "u2.codigo_usuario",
-      )
-      .leftJoin("tipogasto as tg", "g.id_tipogasto", "tg.id_tipogasto")
-      .whereIn("g.id_obra", idsObra);
-  }
-
-  // TODO: Eliminar cuando el frontend use getAll(filters)
-  static async getHorasExtraByObra({ idsObra }) {
-    return db("gastosobra as g")
-      .select(
-        "g.fecha_gasto",
-        db.ref("u.codigo_firma").as("usuario"),
-        "tg.descripcion",
-        "g.fecha_validacion",
-        db.ref("u2.codigo_firma").as("usuario_validacion"),
-        "g.pagado_visa",
-        "g.fecha_pago",
-        "g.cantidad",
-        "g.importe",
-      )
-      .leftJoin("tipogasto as tg", "g.id_tipogasto", "tg.id_tipogasto")
-      .leftJoin("usuarios as u", "g.codigo_usuario", "u.codigo_usuario")
-      .leftJoin(
-        "usuarios as u2",
-        "g.codigo_usuario_validacion",
-        "u2.codigo_usuario",
-      )
-      .where("tg.descripcion", "Hora Extra")
-      .whereIn("g.id_obra", idsObra);
   }
 }

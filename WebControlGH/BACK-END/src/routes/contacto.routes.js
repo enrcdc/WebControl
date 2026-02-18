@@ -9,8 +9,6 @@ import {
 const contactoRouter = Router();
 
 contactoRouter.get("/", ContactoController.getAll);
-// TODO: Eliminar cuando el frontend use getAll(filters)
-contactoRouter.get("/:idEmpresa", ContactoController.getByEmpresa);
 contactoRouter.post(
   "/",
   validate(createContactoSchema),

@@ -12,6 +12,7 @@ export class ObraModel {
    * @param {number} [filters.idObra] - filtrar por id
    * @param {string} [filters.empresa] - filtrar por nombre de empresa (like)
    * @param {string} [filters.complejo] - filtrar por nombre de edificio (like)
+   * @param {string} [filters.descripcion] - filtrar por descripción de obra (like)
    * @param {Array<string>} [filters.estados] - filtrar por descripciones de estado [Array]
    * @param {Array<string>} [filters.tipos] - filtrar por descripciones de tipo [Array]
    * @param {boolean} [filters.enSeguimiento] - true: con fecha_seg, false: sin fecha_seg
@@ -120,6 +121,10 @@ export class ObraModel {
 
     if (filters.complejo) {
       query.where("ed.nombre", "like", `%${filters.complejo}%`);
+    }
+
+    if (filters.descripcion) {
+      query.where("o.descripcion_obra", "like", `%${filters.descripcion}%`);
     }
 
     if (filters.estados) {
@@ -272,14 +277,6 @@ export class ObraModel {
         .first() ?? null
     );
   }
-
-  // TODO: Eliminar cuando el frontend use getAll(filters)
-  static async getByDescripcion({ descripcionObra }) {
-    return db("obras")
-      .select("id_obra", "codigo_obra", "descripcion_obra")
-      .where("descripcion_obra", "like", `%${descripcionObra}%`);
-  }
-
 
   // Al llegar aquí, input ya está validado gracias al middleware de validación.
   static async create({ input }) {
