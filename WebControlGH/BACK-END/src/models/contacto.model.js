@@ -23,7 +23,16 @@ export class ContactoModel {
         db.ref("c.nombre_contacto").as("nombre"),
         "c.apellido1",
         "c.apellido2",
+        db.ref("c.num_identificativo").as("dni"),
+        "c.telefono",
+        "c.telefono2",
+        "c.email",
+        "c.email2",
+        "c.direccion",
+        "c.observaciones",
+        "c.fecha_baja",
         db.ref("e.nombre").as("nombre_empresa"),
+        db.ref("ec.id_empresa").as("idEmpresa"),
       )
       .leftJoin("empresas_contactos as ec", "c.id_contacto", "ec.id_contacto")
       .leftJoin("empresas as e", "ec.id_empresa", "e.id_empresa")
@@ -41,13 +50,35 @@ export class ContactoModel {
       query.where("c.apellido1", "like", `%${filters.apellido}%`);
     }
 
-    // TODO: Comprobar si este filtro se va a necesitar
     if (filters.empresa) {
       query.where("e.nombre", "like", `%${filters.empresa}%`);
     }
 
     if (filters.idEmpresa) {
       query.where("ec.id_empresa", filters.idEmpresa);
+    }
+
+    // Filtro por múltiples empresas (array)
+    if (filters.idsEmpresa) {
+      const ids = Array.isArray(filters.idsEmpresa)
+        ? filters.idsEmpresa
+        : [filters.idsEmpresa];
+      query.whereIn("ec.id_empresa", ids);
+    }
+
+    // Filtro por complejo asociado (via edificios_contactos)
+    if (filters.idEdificio) {
+      query.whereExists(
+        db("edificios_contactos")
+          .select(db.raw("1"))
+          .whereRaw("edificios_contactos.id_contacto = c.id_contacto")
+          .where("edificios_contactos.id_edificio", filters.idEdificio),
+      );
+    }
+
+    // Por defecto solo muestra activos; mostrarBaja=1 muestra todos
+    if (!filters.mostrarBaja || filters.mostrarBaja === "0") {
+      query.whereNull("c.fecha_baja");
     }
 
     return applyPagination(query, filters);

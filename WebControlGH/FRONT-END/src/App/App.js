@@ -18,6 +18,20 @@ import {
   DetalleEmpresa,
 } from "../features/empresas";
 
+// -- COMPLEJOS -- \\
+import {
+  GestionComplejos,
+  CrearComplejo,
+  DetalleComplejo,
+} from "../features/complejos";
+
+// -- CONTACTOS -- \\
+import {
+  GestionContactos,
+  CrearContacto,
+  DetalleContacto,
+} from "../features/contactos";
+
 // -- ALMACEN -- \\
 import { GestionAlmacen } from "../features/almacen";
 
@@ -118,6 +132,18 @@ function MainLayout() {
           <Route
             path="gestion-empresas/detalle/:id"
             element={<DetalleEmpresa />}
+          />
+          <Route path="gestion-complejos" element={<GestionComplejos />} />
+          <Route path="nuevo-complejo" element={<CrearComplejo />} />
+          <Route
+            path="gestion-complejos/detalle/:id"
+            element={<DetalleComplejo />}
+          />
+          <Route path="gestion-contactos" element={<GestionContactos />} />
+          <Route path="nuevo-contacto" element={<CrearContacto />} />
+          <Route
+            path="gestion-contactos/detalle/:id"
+            element={<DetalleContacto />}
           />
           <Route path="gestion-almacen" element={<GestionAlmacen />} />
           <Route path="gestion-pedidos" element={<GestionPedidos />} />

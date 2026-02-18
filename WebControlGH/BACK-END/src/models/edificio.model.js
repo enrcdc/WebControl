@@ -15,7 +15,17 @@ export class EdificioModel {
    */
   static async getAll(filters = {}) {
     const query = db("edificios")
-      .select(db.ref("id_edificio").as("id"), "nombre", "fecha_baja")
+      .select(
+        db.ref("id_edificio").as("id"),
+        "nombre",
+        "direccion",
+        "telefono1",
+        "telefono2",
+        "email",
+        "observaciones",
+        db.ref("pordefecto").as("porDefecto"),
+        "fecha_baja",
+      )
       .orderBy("nombre");
 
     if (filters.idEdificio) {
@@ -24,6 +34,21 @@ export class EdificioModel {
 
     if (filters.nombre) {
       query.where("nombre", "like", `%${filters.nombre}%`);
+    }
+
+    // Por defecto solo muestra activos; mostrarBaja=1 muestra todos
+    if (!filters.mostrarBaja || filters.mostrarBaja === "0") {
+      query.whereNull("fecha_baja");
+    }
+
+    // Filtro por contacto asociado (via edificios_contactos)
+    if (filters.idContacto) {
+      query.whereExists(
+        db("edificios_contactos")
+          .select(db.raw("1"))
+          .whereRaw("edificios_contactos.id_edificio = edificios.id_edificio")
+          .where("edificios_contactos.id_contacto", filters.idContacto),
+      );
     }
 
     return applyPagination(query, filters);
