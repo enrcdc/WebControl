@@ -13,6 +13,16 @@ export class EmpresaController {
     }
   }
 
+  static async getById(req, res, next) {
+    try {
+      const { idEmpresa } = req.params;
+      const empresa = await EmpresaService.getById(idEmpresa);
+      res.json({ success: true, data: empresa });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   // TODO: Eliminar cuando el frontend use getAll(filters)
   static async getByNombre(req, res, next) {
     try {

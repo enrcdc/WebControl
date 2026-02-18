@@ -8,6 +8,7 @@ import { useState, useCallback, useRef } from "react";
  * @param {Function} buscarFunction - Función async que realiza la búsqueda
  * @param {Object} options - Opciones de configuración
  * @param {number} options.minLength - Mínimo de caracteres para buscar (default: 3)
+ * @param {string} options.keyField - Campo ID para filtrar duplicados (default: "id")
  * @returns {Object} Estado y funciones de búsqueda
  *
  * @example
@@ -25,7 +26,7 @@ import { useState, useCallback, useRef } from "react";
  * );
  */
 export const useBusquedaEntidad = (buscarFunction, options = {}) => {
-  const { minLength = 3} = options;
+  const { minLength = 3, keyField = "id" } = options;
 
   const [busqueda, setBusqueda] = useState("");
   const [sugerencias, setSugerencias] = useState([]);
@@ -52,7 +53,12 @@ export const useBusquedaEntidad = (buscarFunction, options = {}) => {
           if (currentRef !== requestRef.current) return;
 
           const datos = res?.data?.data || res?.data || [];
-          setSugerencias(datos);
+
+          // Filtrar items ya seleccionados
+          const idSeleccionado = entidadSeleccionada
+            ? entidadSeleccionada[keyField]
+            : "";
+          setSugerencias(datos.filter((d) => d[keyField] !== idSeleccionado));
         } catch (error) {
           console.error(`Error al buscar entidad - ${error}`);
           setSugerencias([]);

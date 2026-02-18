@@ -11,6 +11,7 @@ export const empresaRouter = Router();
 empresaRouter.get("/", EmpresaController.getAll);
 // TODO: Eliminar cuando el frontend use getAll(filters)
 empresaRouter.get("/buscar/nombre", EmpresaController.getByNombre);
+empresaRouter.get("/:idEmpresa", EmpresaController.getById)
 empresaRouter.post(
   "/",
   validate(createEmpresaSchema),

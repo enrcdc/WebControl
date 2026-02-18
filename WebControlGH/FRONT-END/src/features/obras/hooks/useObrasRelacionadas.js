@@ -1,6 +1,7 @@
 // Hook refactorizado para gestionar obras relacionadas (padre e hijas)
 import { useState, useEffect } from "react";
 import { useBusquedaEntidad } from "../../../hooks/useBusquedaEntidad.js";
+import { useBusquedaMultiple } from "hooks/useBusquedaMultiple.js";
 import { obraService, relacionObraService } from "../services/obra.service.js";
 
 /**
@@ -18,13 +19,13 @@ export const useObrasRelacionadas = (idObra = null) => {
   // Búsqueda de obra padre
   const busquedaPadre = useBusquedaEntidad(
     (termino) => obraService.buscarPorDescripcion(termino),
-    { minLength: 3 }
+    { minLength: 3, keyField: "id_obra" },
   );
 
   // Búsqueda de obras hijas
-  const busquedaHijas = useBusquedaEntidad(
+  const busquedaHijas = useBusquedaMultiple(
     (termino) => obraService.buscarPorDescripcion(termino),
-    { minLength: 3 }
+    { minLength: 3, keyField: "id_obra" },
   );
 
   /**
@@ -86,14 +87,15 @@ export const useObrasRelacionadas = (idObra = null) => {
     if (!obrasHijas.some((o) => o.id_obra === obra.id_obra)) {
       setObrasHijas([...obrasHijas, obra]);
     }
-    busquedaHijas.limpiar();
+    busquedaHijas.seleccionar(obra);
   };
 
   /**
    * Elimina una obra hija
    */
-  const eliminarObraHija = (idObraHija) => {
-    setObrasHijas(obrasHijas.filter((o) => o.id_obra !== idObraHija));
+  const eliminarObraHija = (obraHija) => {
+    setObrasHijas(obrasHijas.filter((o) => o.id_obra !== obraHija.id_obra));
+    busquedaHijas.remover(obraHija);
   };
 
   /**
@@ -108,12 +110,18 @@ export const useObrasRelacionadas = (idObra = null) => {
     try {
       // Guardar obra padre
       const idObraPadre = obraPadre ? obraPadre.id_obra : null;
-      await relacionObraService.setObraPadre({ idObraPadre, idObraHija: idObra });
+      await relacionObraService.setObraPadre({
+        idObraPadre,
+        idObraHija: idObra,
+      });
 
       // Guardar obras hijas
       const idsObrasHijas =
         obrasHijas.length > 0 ? obrasHijas.map((obra) => obra.id_obra) : [];
-      await relacionObraService.setObrasHijas({ idObraPadre: idObra, idsObrasHijas });
+      await relacionObraService.setObrasHijas({
+        idObraPadre: idObra,
+        idsObrasHijas,
+      });
 
       return true;
     } catch (error) {

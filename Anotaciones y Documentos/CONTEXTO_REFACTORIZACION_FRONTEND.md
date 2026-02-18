@@ -487,8 +487,8 @@ Al implementar cada feature en su forma definitiva, verificar:
 
 | Feature | Estado | Notas |
 |---------|--------|-------|
-| almacen | ✅ | Service corregido (delete single-item, eliminado `buscarPorDescripcion`), `movimientoAlmacenService` corregido (`getByObra` → `getAll`). Componente reescrito: campos reales del backend, `useServerPagination`, `PaginationControl`, loading/error. Imports absolutos. **Nota**: migrado antes de fijar la estructura definitiva — usa `.js` en vez de `.jsx`. Renombrar al tocar. |
-| empresas | En progreso | GestionEmpresas + CrearEmpresa + ModalNuevoContacto completados con hooks. Falta: DetalleEmpresa, ImprimirEmpresa. Ola 1. |
+| almacen | Parcial | Service corregido y componente consume backend, pero **NO tiene estructura definitiva**. Falta: separar en módulos (Gestion/Crear/Detalle/Imprimir), renombrar `.js` → `.jsx`. Se completará en su ola correspondiente. |
+| empresas | En progreso | GestionEmpresas + CrearEmpresa + DetalleEmpresa + FormEmpresa (compartido) + ModalNuevoContacto completados. Falta: ImprimirEmpresa (placeholder). Ola 1. |
 | compras | Pendiente | 3 componentes (412+166+164 líneas). Ola 2. |
 | pedidos | Pendiente | 3-4 componentes (354+178+242 líneas). Ola 2. |
 | facturas | Pendiente | 3-4 componentes (469+110+225 líneas). Filtros parciales. Ola 3. |
@@ -580,19 +580,103 @@ const contactos = useBusquedaMultiple(
 | GestionEmpresas.jsx | ✅ | Lista + useServerPagination + useSeleccionMultiple |
 | CrearEmpresa.jsx | ✅ | Form + useFormulario + useModal + useBusquedaMultiple |
 | ModalNuevoContacto.jsx | ✅ | Modal simplificado + useFormulario |
-| DetalleEmpresa.jsx | Pendiente | Mismo form que Crear pero read-only con toggle editar/eliminar |
+| FormEmpresa.jsx | ✅ | Componente presentacional compartido — campos del form con prop `readOnly` y slot `children` |
+| DetalleEmpresa.jsx | ✅ | Fetch por ID + mapeo snake_case→camelCase + toggle editar/cancelar + guardar + baja. Contactos en read-only (ListGroup). |
 | ImprimirEmpresa.jsx | Pendiente | Placeholder/TODO |
+
+---
+
+## 13. Código reutilizable entre features (seguimiento)
+
+Esta sección identifica código que se repite o puede reutilizarse entre features, para evitar duplicación y escalar de manera consistente.
+
+### Hooks globales ya existentes
+
+| Hook | Qué resuelve | Compatible con | Usado en |
+|------|-------------|----------------|----------|
+| `useServerPagination` | Paginación server-side (limit/offset/total) | `PaginationControl` | GestionEmpresas, GestionAlmacen |
+| `useSeleccionMultiple` | Checkboxes batch (select/selectAll/clear) | — | GestionEmpresas, GestionObras |
+| `useFormulario` | Estado de formulario + handleChange genérico | `Form.Control` | CrearEmpresa, ModalNuevoContacto |
+| `useModal` | Toggle show/hide de modales | `Modal` | CrearEmpresa |
+| `useBusquedaEntidad` | Búsqueda + sugerencias + selección única | `SearchableSelect` | obras (obraPadre, producto, factura) |
+| `useBusquedaMultiple` | Búsqueda + sugerencias + selección múltiple | `SearchableMultiSelect` | CrearEmpresa (contactos) |
+
+### Patrones de Gestión (listado) — reutilizables entre features
+
+Detectado en `GestionEmpresas.jsx` y `GestionObras/index.js`. Patrón común:
+
+1. **Fetch con useEffect** — depende de `[searchTerm, filtro, offset, limit, refreshKey]`
+2. **Búsqueda** — `searchInput` (input local) + `searchTerm` (enviado al backend) + `handleSearch` (submit) + `handleClearSearch`
+3. **Filtros dropdown** — `tipoFiltro` + `handleTipoChange` + `resetToFirstPage()`
+4. **Selección batch** — `useSeleccionMultiple` para checkboxes de tabla
+5. **Paginación** — `useServerPagination` + `PaginationControl`
+6. **Barra de acciones** — botones Nueva/Baja/Imprimir con navegación y confirmación
+7. **Tabla** — `Table striped bordered hover` con columnas específicas de la entidad
+8. **Loading/Error** — `Spinner` centrado + `Alert dismissible`
+
+**Candidato a hook futuro:** `useGestionEntidad` — encapsularía los puntos 1-3 (fetch, búsqueda, filtros, refresh). No crear aún — validar con 2-3 features antes de abstraer (Decisión 3, sección 8).
+
+### Patrones de Creación — reutilizables entre features
+
+Detectado en `CrearEmpresa.jsx` y `CrearObra/index.js`. Patrón común:
+
+1. **useFormulario** — con `INITIAL_FORM` constante
+2. **Fetch de catálogos** — useEffect al montar para cargar dropdowns (tipoEmpresa, tipoFactura, tipoObra, etc.)
+3. **Guardado** — `handleGuardar` con validación, build payload, `service.create()`, navigate a gestión
+4. **Loading/Error** — mismo patrón que Gestión
+5. **Navegación** — botones Guardar + Cancelar con `useNavigate()`
+6. **Layout** — `Card` con `Form` > `Row`/`Col` > `Form.Group`
+
+### Patrones de Detalle (edición) — por validar
+
+Detectado en `DetalleObra/index.js`. Patrón anticipado para DetalleEmpresa:
+
+1. **Fetch por ID** — `useParams()` + `service.getById(id)` al montar
+2. **Modo lectura/edición** — toggle `editarEntidad` (read-only por defecto → click "Editar" → campos editables)
+3. **Guardar/Cancelar** — `service.update(id, payload)` + revert a datos originales
+4. **Baja** — `service.delete([id])` con confirmación + navigate a gestión
+5. **Reutilización de form** — los campos del form son idénticos a Crear → candidato a componente compartido `Form[Entidad].jsx`
+
+**Patrón validado:** `FormEmpresa.jsx` extraído y compartido entre CrearEmpresa y DetalleEmpresa. Props: `formData`, `handleChange`, `readOnly`, `tiposFactura`, `children`. Replicar patrón `Form[Entidad].jsx` en features que tengan Crear + Detalle con campos idénticos.
+
+### Patrones de Servicio — ya estandarizados
+
+Todos los servicios siguen la misma estructura:
+```javascript
+export const [entidad]Service = {
+  getAll: (filters) => apiClient.get(ENDPOINT, { params: filters }),
+  getById: (id) => apiClient.get(`${ENDPOINT}/${id}`),
+  create: (data) => apiClient.post(ENDPOINT, data),
+  update: (id, data) => apiClient.patch(`${ENDPOINT}/${id}`, data),
+  delete: (ids) => apiClient.delete(ENDPOINT, { data: { ids } }),
+};
+```
+
+### Componentes UI compartidos — ya existentes
+
+| Componente | Qué resuelve | Compatible con hooks |
+|------------|-------------|---------------------|
+| `PaginationControl` | Navegación de páginas | `useServerPagination`, `usePaginacion` |
+| `SearchableSelect` | Búsqueda + selección única | `useBusquedaEntidad` |
+| `SearchableMultiSelect` | Búsqueda + selección múltiple | `useBusquedaMultiple` |
+
+### Próximas detecciones pendientes
+
+- [ ] Validar si `useGestionEntidad` es viable tras migrar compras/pedidos (ola 2)
+- [x] ~~Evaluar `Form[Entidad].jsx` compartido tras implementar DetalleEmpresa~~ → Validado. Patrón replicable.
+- [ ] Identificar patrones de modales CRUD reutilizables (ModalPedido, ModalFactura, ModalNuevoContacto)
 
 ---
 
 ## TODO: Punto de continuación para el próximo chat
 
-**Última sesión:** 17/02/2026
-**Estado:** GestionEmpresas, CrearEmpresa y ModalNuevoContacto completados y refactorizados con hooks globales. Hook `useBusquedaMultiple` creado. Continuar con DetalleEmpresa.jsx.
+**Última sesión:** 18/02/2026
+**Estado:** Feature empresas casi completa (falta ImprimirEmpresa placeholder). FormEmpresa.jsx extraído como componente compartido. Sección 13 (código reutilizable) creada.
 
 ### Próximo paso:
 
-**Feature `empresas` — DetalleEmpresa.jsx**: Mismo form que CrearEmpresa pero read-only con toggle editar/eliminar. Evaluar si extraer FormEmpresa.jsx como componente compartido.
+**Feature `empresas` — ImprimirEmpresa.jsx**: Placeholder/TODO. Pendiente de confirmar requisitos con la empresa.
+Luego: **Ola 2 — compras + pedidos** siguiendo la estructura definitiva (sección 8).
 
 ### Orden de migración restante:
 1. ~~almacen~~ ✅

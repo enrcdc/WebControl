@@ -21,6 +21,22 @@ export class EmpresaService {
     return { data, pagination };
   }
 
+  static async getById(id) {
+    const validId = validateId(id, "ID de empresa");
+
+    const empresa = await EmpresaModel.getById({ idEmpresa: validId });
+
+    if (!empresa) {
+      throw new NotFoundError("Empresa", id);
+    }
+
+    if (empresa.fecha_baja) {
+      throw new AlreadyDeletedError("Empresa", id);
+    }
+
+    return empresa;
+  }
+
   // TODO: Eliminar cuando el frontend use getAll(filters)
   static async getByNombre(nombre) {
     const sanitized = validateAndSanitizeString(nombre, "nombre de empresa", {
@@ -56,7 +72,7 @@ export class EmpresaService {
     const validID = validateId(idEmpresa, "ID de empresa");
     validateNotEmpty(updateData, "datos de actualización");
 
-    await this._getEmpresaOrFail(validID);
+    await this._getEmpresaOrFail(validID, false);
 
     const empresaActualizada = await EmpresaModel.update({
       idEmpresa: validID,

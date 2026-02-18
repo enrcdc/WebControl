@@ -54,7 +54,7 @@ const SelectorObrasRelacionadas = ({
           keyField="id_obra"
           selectedItems={obrasHijasSeleccionadas || []}
           renderSelected={renderObra}
-          onRemove={(obra) => onEliminarHija(obra.id_obra)}
+          onRemove={(obra) => onEliminarHija(obra)}
         />
       </div>
     </Form.Group>

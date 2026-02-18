@@ -3,8 +3,11 @@
 ### Obtener empresas
 GET http://localhost:3002/api/empresa
 
-### Obtener empresas por id (soporta por nombre y por id de momento)
-GET http://localhost:3002/api/empresa?idEmpresa=61
+### Obtener empresas por id (soporta por nombre)
+GET http://localhost:3002/api/empresa?nombre=Sie
+
+### Obtener empresa por id (soporta por nombre y por id de momento)
+GET http://localhost:3002/api/empresa/2
 
 ### Crear una empresa
 POST http://localhost:3002/api/empresa

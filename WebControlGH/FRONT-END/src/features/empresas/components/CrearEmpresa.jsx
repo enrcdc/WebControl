@@ -1,14 +1,5 @@
 import { useEffect, useState } from "react";
-import {
-  Form,
-  Button,
-  Alert,
-  Spinner,
-  Row,
-  Col,
-  Badge,
-  Card,
-} from "react-bootstrap";
+import { Form, Button, Alert, Spinner, Badge, Card } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { empresaService } from "../services/empresa.service";
 import { apiClient } from "Services/api/client";
@@ -17,13 +8,8 @@ import { SearchableMultiSelect } from "Components/ui";
 import { useFormulario } from "hooks/useFormulario";
 import { useModal } from "hooks/useModal";
 import { useBusquedaMultiple } from "hooks/useBusquedaMultiple";
+import FormEmpresa from "./FormEmpresa";
 import ModalNuevoContacto from "./ModalNuevoContacto";
-
-// TODO: Mover a catálogo de BBDD en el futuro si es que aumenta
-const TIPOS_EMPRESA = [
-  { id: 1, descripcion: "Sin Especificar" },
-  { id: 3, descripcion: "Cliente" },
-];
 
 const INITIAL_FORM = {
   nombre: "",
@@ -181,209 +167,17 @@ function CrearEmpresa() {
           </Alert>
         )}
 
-        <Form>
-          {/* Datos básicos */}
-          <Row>
-            <Col md={5}>
-              <Form.Group className="mb-2">
-                <Form.Label>Nombre *</Form.Label>
-                <Form.Control
-                  name="nombre"
-                  value={formData.nombre}
-                  onChange={handleChange}
-                />
-              </Form.Group>
-            </Col>
-            <Col md={3}>
-              <Form.Group className="mb-2">
-                <Form.Label>CIF</Form.Label>
-                <Form.Control
-                  name="cif"
-                  value={formData.cif}
-                  onChange={handleChange}
-                />
-              </Form.Group>
-            </Col>
-            <Col md={4}>
-              <Form.Group className="mb-2">
-                <Form.Label>Tipo de Empresa</Form.Label>
-                <Form.Select
-                  name="tipoEmpresa"
-                  value={formData.tipoEmpresa}
-                  onChange={handleChange}
-                >
-                  <option value="">Seleccionar...</option>
-                  {TIPOS_EMPRESA.map((t) => (
-                    <option key={t.id} value={t.id}>
-                      {t.descripcion}
-                    </option>
-                  ))}
-                </Form.Select>
-              </Form.Group>
-            </Col>
-          </Row>
-
-          {/* Dirección */}
-          <Row>
-            <Col md={6}>
-              <Form.Group className="mb-2">
-                <Form.Label>Dirección</Form.Label>
-                <Form.Control
-                  name="direccion"
-                  value={formData.direccion}
-                  onChange={handleChange}
-                />
-              </Form.Group>
-            </Col>
-            <Col md={6}>
-              <Form.Group className="mb-2">
-                <Form.Label>Población</Form.Label>
-                <Form.Control
-                  name="poblacion"
-                  value={formData.poblacion}
-                  onChange={handleChange}
-                />
-              </Form.Group>
-            </Col>
-          </Row>
-          <Row>
-            <Col md={6}>
-              <Form.Group className="mb-2">
-                <Form.Label>Provincia</Form.Label>
-                <Form.Control
-                  name="provincia"
-                  value={formData.provincia}
-                  onChange={handleChange}
-                />
-              </Form.Group>
-            </Col>
-            <Col md={6}>
-              <Form.Group className="mb-2">
-                <Form.Label>Código Postal</Form.Label>
-                <Form.Control
-                  name="cp"
-                  value={formData.cp}
-                  onChange={handleChange}
-                />
-              </Form.Group>
-            </Col>
-          </Row>
-
-          {/* Contacto empresa */}
-          <Row>
-            <Col md={4}>
-              <Form.Group className="mb-2">
-                <Form.Label>Teléfono 1</Form.Label>
-                <Form.Control
-                  name="telefono1"
-                  value={formData.telefono1}
-                  onChange={handleChange}
-                />
-              </Form.Group>
-            </Col>
-            <Col md={4}>
-              <Form.Group className="mb-2">
-                <Form.Label>Teléfono 2</Form.Label>
-                <Form.Control
-                  name="telefono2"
-                  value={formData.telefono2}
-                  onChange={handleChange}
-                />
-              </Form.Group>
-            </Col>
-            <Col md={4}>
-              <Form.Group className="mb-2">
-                <Form.Label>Fax</Form.Label>
-                <Form.Control
-                  name="fax"
-                  value={formData.fax}
-                  onChange={handleChange}
-                />
-              </Form.Group>
-            </Col>
-          </Row>
-          <Form.Group className="mb-2">
-            <Form.Label>Email</Form.Label>
-            <Form.Control
-              name="email"
-              type="email"
-              value={formData.email}
-              onChange={handleChange}
-            />
-          </Form.Group>
-
-          {/* Facturación */}
-          <Row>
-            <Col md={6}>
-              <Form.Group className="mb-2">
-                <Form.Label>Tipo de Factura</Form.Label>
-                <Form.Select
-                  name="tipoFactura"
-                  value={formData.tipoFactura}
-                  onChange={handleChange}
-                >
-                  <option value="">Seleccionar...</option>
-                  {tiposFactura.map((t) => (
-                    <option key={t.id} value={t.id}>
-                      {t.Descripcion}
-                    </option>
-                  ))}
-                </Form.Select>
-              </Form.Group>
-            </Col>
-            <Col md={6}>
-              <Form.Group className="mb-2">
-                <Form.Label>Evaluación</Form.Label>
-                <Form.Control
-                  name="evaluacion"
-                  type="number"
-                  value={formData.evaluacion}
-                  onChange={handleChange}
-                />
-              </Form.Group>
-            </Col>
-          </Row>
-
-          {/* Opciones */}
-          <Row className="mb-3">
-            <Col>
-              <Form.Check
-                type="checkbox"
-                name="mostrarSaldo"
-                label="Mostrar Saldo"
-                checked={!!formData.mostrarSaldo}
-                onChange={handleChange}
-              />
-            </Col>
-            <Col>
-              <Form.Check
-                type="checkbox"
-                name="porDefecto"
-                label="Por Defecto"
-                checked={!!formData.porDefecto}
-                onChange={handleChange}
-              />
-            </Col>
-          </Row>
-
-          {/* Observaciones */}
-          <Form.Group className="mb-3">
-            <Form.Label>Observaciones</Form.Label>
-            <Form.Control
-              as="textarea"
-              rows={3}
-              name="observaciones"
-              value={formData.observaciones}
-              onChange={handleChange}
-            />
-          </Form.Group>
-
+        <FormEmpresa
+          formData={formData}
+          handleChange={handleChange}
+          tiposFactura={tiposFactura}
+        >
           {/* Contactos de la empresa */}
-          <Form.Group className="mb-3">
+          <div className="mb-3">
             <div className="d-flex align-items-center mb-2">
-              <Form.Label className="mb-0 me-auto">
+              <label className="form-label mb-0 me-auto">
                 Contactos de la Empresa *
-              </Form.Label>
+              </label>
               <Button
                 size="sm"
                 variant="outline-primary"
@@ -415,25 +209,25 @@ function CrearEmpresa() {
               )}
               onRemove={handleRemoverContacto}
             />
-          </Form.Group>
-
-          {/* Acciones */}
-          <div className="d-flex gap-2 mb-4">
-            <Button
-              variant="secondary"
-              onClick={() => navigate("/home/gestion-empresas")}
-            >
-              Cancelar
-            </Button>
-            <Button
-              variant="primary"
-              onClick={handleGuardar}
-              disabled={loading}
-            >
-              {loading ? <Spinner size="sm" /> : "Guardar"}
-            </Button>
           </div>
-        </Form>
+        </FormEmpresa>
+
+        {/* Acciones */}
+        <div className="d-flex gap-2 mb-4">
+          <Button
+            variant="secondary"
+            onClick={() => navigate("/home/gestion-empresas")}
+          >
+            Cancelar
+          </Button>
+          <Button
+            variant="primary"
+            onClick={handleGuardar}
+            disabled={loading}
+          >
+            {loading ? <Spinner size="sm" /> : "Guardar"}
+          </Button>
+        </div>
 
         <ModalNuevoContacto
           show={modalContacto.show}

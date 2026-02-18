@@ -5,6 +5,9 @@ import {
   SearchableMultiSelect,
 } from "../../../../../../Components/ui";
 
+// TODO: Es mejor sustituir este componente para la modal de un nuevo contacto 
+// por el componente que está creado en la feature empresas
+
 const ModalContacto = ({
   show,
   formData,

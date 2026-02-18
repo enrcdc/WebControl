@@ -140,7 +140,7 @@ const InformacionGeneral = ({
               keyField="id_obra"
               selectedItems={obrasHijas || []}
               renderSelected={renderObra}
-              onRemove={(obra) => onEliminarObraHija(obra.id_obra)}
+              onRemove={(obra) => onEliminarObraHija(obra)}
             />
           </div>
         </Form.Group>

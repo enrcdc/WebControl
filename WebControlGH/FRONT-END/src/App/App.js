@@ -12,7 +12,11 @@ import Navbar from "../Components/layout/Navbar";
 import { ProfitabilityTable } from "../features/rentabilidad";
 
 // -- EMPRESAS -- \\
-import { GestionEmpresas, CrearEmpresa } from "../features/empresas";
+import {
+  GestionEmpresas,
+  CrearEmpresa,
+  DetalleEmpresa,
+} from "../features/empresas";
 
 // -- ALMACEN -- \\
 import { GestionAlmacen } from "../features/almacen";
@@ -111,6 +115,10 @@ function MainLayout() {
           <Route path="imprimir-pedido" element={<ImprimirPedido />} />
           <Route path="gestion-empresas" element={<GestionEmpresas />} />
           <Route path="nueva-empresa" element={<CrearEmpresa />} />
+          <Route
+            path="gestion-empresas/detalle/:id"
+            element={<DetalleEmpresa />}
+          />
           <Route path="gestion-almacen" element={<GestionAlmacen />} />
           <Route path="gestion-pedidos" element={<GestionPedidos />} />
           <Route path="gestion-compras" element={<GestionCompras />} />
