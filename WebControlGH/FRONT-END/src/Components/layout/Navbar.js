@@ -120,8 +120,8 @@ function Navbar() {
                 <a href="#usuarios">Gestión de Usuarios</a>
                 <Link to="/home/gestion-empresas">Gestión de Empresas</Link>
                 <a href="#permisos">Gestión de Proveedores</a>
-                <a href="#sistema">Gestión de Complejos</a>
-                <a href="#red">Gestión de Contactos</a>
+                <a href="/home/gestion-complejos">Gestión de Complejos</a>
+                <a href="/home/gestion-contactos">Gestión de Contactos</a>
                 <a href="#seguridad">Gestión de Tipos de gasto</a>
                 <a href="#datos">Gestión de Tareas</a>
                 <a href="#backup">Gestión de Calendarios</a>

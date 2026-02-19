@@ -5,6 +5,8 @@ export const complejoService = {
   getAll: (filters = {}) =>
     apiClient.get(API_ENDPOINTS.EDIFICIO, { params: filters }),
 
+  getById: (id) => apiClient.get(`${API_ENDPOINTS.EDIFICIO}/${id}`),
+
   create: (data) => apiClient.post(API_ENDPOINTS.EDIFICIO, data),
 
   update: (id, data) =>

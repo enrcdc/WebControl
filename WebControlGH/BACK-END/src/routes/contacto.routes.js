@@ -9,6 +9,8 @@ import {
 const contactoRouter = Router();
 
 contactoRouter.get("/", ContactoController.getAll);
+contactoRouter.get("/:idContacto", ContactoController.getById);
+contactoRouter.post("/filtrar", ContactoController.filtrar);
 contactoRouter.post(
   "/",
   validate(createContactoSchema),

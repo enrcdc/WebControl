@@ -11,6 +11,25 @@ export class ContactoController {
     }
   }
 
+  static async getById(req, res, next) {
+    try {
+      const { idContacto } = req.params;
+      const contacto = await ContactoService.getById(idContacto);
+      res.json({ success: true, data: contacto });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async filtrar(req, res, next) {
+    try {
+      const filters = req.body;
+      const result = await ContactoService.getAll(filters);
+      res.json({ success: true, ...result });
+    } catch (error) {
+      next(error);
+    }
+  }
 
   static async create(req, res, next) {
     try {

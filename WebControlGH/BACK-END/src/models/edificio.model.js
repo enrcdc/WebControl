@@ -14,7 +14,7 @@ export class EdificioModel {
    * @returns {Promise<Array>} Array de resultados de filtrado
    */
   static async getAll(filters = {}) {
-    const query = db("edificios")
+    const query = db("edificios as e")
       .select(
         db.ref("id_edificio").as("id"),
         "nombre",
@@ -26,7 +26,7 @@ export class EdificioModel {
         db.ref("pordefecto").as("porDefecto"),
         "fecha_baja",
       )
-      .orderBy("nombre");
+      .orderBy("e.nombre");
 
     if (filters.idEdificio) {
       query.where("id_edificio", filters.idEdificio);
@@ -56,9 +56,47 @@ export class EdificioModel {
 
   static async getById({ idEdificio }) {
     return (
-      db("edificios")
-        .select("*")
-        .where("id_edificio", idEdificio)
+      db("edificios as e")
+        .select(
+          db.ref("id_edificio").as("id"),
+          "nombre",
+          "direccion",
+          "telefono1",
+          "telefono2",
+          "email",
+          "observaciones",
+          db.ref("pordefecto").as("porDefecto"),
+          "fecha_baja",
+
+          // Contactos como array
+          db.raw(`
+        (
+        SELECT COALESCE(
+          JSON_ARRAYAGG(
+            JSON_OBJECT(
+              'id', t.id_contacto,
+              'nombre', t.nombre_contacto,
+              'apellido1', t.apellido1,
+              'apellido2', t.apellido2
+            )
+          ),
+          JSON_ARRAY() )
+        
+        FROM (
+          SELECT DISTINCT 
+            c.id_contacto,
+            c.nombre_contacto,
+            c.apellido1,
+            c.apellido2
+          FROM edificios_contactos edc
+          JOIN contactos c
+          ON edc.id_contacto = c.id_contacto
+          WHERE edc.id_edificio = e.id_edificio
+        ) t
+        ) as contactos
+      `),
+        )
+        .where("e.id_edificio", idEdificio)
         .first() ?? null
     );
   }

@@ -1,23 +1,37 @@
 import { EdificioModel } from "../models/edificio.model.js";
 import { NotFoundError, AlreadyDeletedError } from "../errors/index.js";
-import {
-  validateId,
-  validateNotEmpty,
-} from "../utils/index.js";
+import { validateId, validateNotEmpty } from "../utils/index.js";
 
 export class EdificioService {
   static async getAll(filters = {}) {
     const { data, pagination } = await EdificioModel.getAll(filters);
 
+    /* TODO: Lo he comentado por que si no deja acceder a contactos sin edificios
     if (!data || data.length === 0) {
       throw new NotFoundError(
         "Complejos",
         null,
         "No hay complejos registrados en el sistema",
       );
-    }
+    }*/
 
     return { data, pagination };
+  }
+
+  static async getById(id) {
+    const validId = validateId(id, "ID de edificio");
+
+    const edificio = await EdificioModel.getById({ idEdificio: validId });
+
+    if (!edificio) {
+      throw new NotFoundError("Edificio", id);
+    }
+
+    if (edificio.fecha_baja) {
+      throw new AlreadyDeletedError("Edificio", id);
+    }
+
+    return edificio;
   }
 
   static async create(edificioData) {
@@ -47,7 +61,7 @@ export class EdificioService {
   }
 
   // TODO: Llevar esta misma lógica de borrado múltiple al resto de entidades.
-  // El proceso lleva registro de aquellos no encontrados, de aquellos ya eliminados 
+  // El proceso lleva registro de aquellos no encontrados, de aquellos ya eliminados
   // y de aquellos eliminados durante la operación.
   static async delete(idEdificios) {
     const validIDs = idEdificios.map((id) => validateId(id));

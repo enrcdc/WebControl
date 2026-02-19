@@ -1,26 +1,19 @@
-import { useEffect, useState } from "react";
+import { useState, useCallback } from "react";
 import { Table, Button, Form, Alert, Spinner } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { empresaService } from "../services/empresa.service";
-import { useServerPagination } from "hooks/useServerPagination";
+import { useGestionEntidad } from "hooks/useGestionEntidad";
 import { useSeleccionMultiple } from "hooks/useSeleccionMultiple";
 import { PaginationControl } from "Components/ui";
-
-// TODO: Mover a catálogo de BBDD en el futuro si es que aumenta
-const TIPOS_EMPRESA = [
-  { id: 1, descripcion: "Sin Especificar" },
-  { id: 3, descripcion: "Cliente" },
-];
+import { TIPOS_EMPRESA } from "./FormEmpresa";
 
 function GestionEmpresas() {
   const navigate = useNavigate();
-  const [empresas, setEmpresas] = useState([]);
-  const [total, setTotal] = useState(0);
   const [searchInput, setSearchInput] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [tipoFiltro, setTipoFiltro] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [mostrarBaja, setMostrarBaja] = useState(false);
+
   const {
     selected,
     handleSelect,
@@ -28,66 +21,50 @@ function GestionEmpresas() {
     clearSelections,
     isSelected,
   } = useSeleccionMultiple();
-  const [refreshKey, setRefreshKey] = useState(0);
+
+  const fetchEmpresas = useCallback(
+    ({ limit, offset }) =>
+      empresaService.getAll({
+        limit,
+        offset,
+        ...(searchTerm && { nombre: searchTerm }),
+        ...(tipoFiltro && { tipoEmpresa: tipoFiltro }),
+        ...(mostrarBaja && { mostrarBaja: 1 }),
+      }),
+    [searchTerm, tipoFiltro, mostrarBaja],
+  );
 
   const {
-    currentPage,
-    totalPaginas,
-    limit,
-    offset,
-    startPage,
-    endPage,
-    paginasVisibles,
-    handlePageChange,
-    resetToFirstPage,
-  } = useServerPagination(total, 20);
-
-  // Fetch empresas cuando cambia página, búsqueda, filtro o después de CRUD
-  useEffect(() => {
-    const fetchEmpresas = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const params = { limit, offset };
-        if (searchTerm) params.nombre = searchTerm;
-        if (tipoFiltro) params.tipoEmpresa = tipoFiltro;
-        const res = await empresaService.getAll(params);
-        setEmpresas(res.data.data);
-        setTotal(res.data.pagination?.total ?? 0);
-      } catch (err) {
-        if (err.response?.status === 404) {
-          setEmpresas([]);
-          setTotal(0);
-        } else {
-          setError("Error al obtener empresas");
-          setEmpresas([]);
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchEmpresas();
-  }, [searchTerm, tipoFiltro, offset, limit, refreshKey]);
-
-  const refreshData = () => setRefreshKey((k) => k + 1);
+    items: empresas,
+    loading,
+    error,
+    setError,
+    pagination,
+    refreshData,
+  } = useGestionEntidad(fetchEmpresas, 20);
 
   // -- Búsqueda --
   const handleSearch = (e) => {
     e.preventDefault();
     setSearchTerm(searchInput);
-    resetToFirstPage();
+    pagination.resetToFirstPage();
   };
 
   const handleClearSearch = () => {
     setSearchInput("");
     setSearchTerm("");
-    resetToFirstPage();
+    pagination.resetToFirstPage();
   };
 
-  // -- Filtro tipo empresa --
+  // -- Filtros --
   const handleTipoChange = (e) => {
     setTipoFiltro(e.target.value);
-    resetToFirstPage();
+    pagination.resetToFirstPage();
+  };
+
+  const handleMostrarBajaChange = (e) => {
+    setMostrarBaja(e.target.checked);
+    pagination.resetToFirstPage();
   };
 
   // -- Acciones --
@@ -100,7 +77,7 @@ function GestionEmpresas() {
       await empresaService.delete(selected);
       clearSelections();
       refreshData();
-    } catch (err) {
+    } catch {
       setError("Error al dar de baja las empresas");
     }
   };
@@ -138,8 +115,11 @@ function GestionEmpresas() {
         </Button>
       </div>
 
-      {/* Búsqueda + Filtro */}
-      <Form onSubmit={handleSearch} className="d-flex mb-3 gap-2">
+      {/* Búsqueda + Filtros */}
+      <Form
+        onSubmit={handleSearch}
+        className="d-flex mb-3 gap-2 align-items-center flex-wrap"
+      >
         <Form.Control
           type="text"
           placeholder="Buscar por nombre..."
@@ -167,6 +147,13 @@ function GestionEmpresas() {
             </option>
           ))}
         </Form.Select>
+        <Form.Check
+          type="checkbox"
+          label="Mostrar dadas de Baja"
+          checked={mostrarBaja}
+          onChange={handleMostrarBajaChange}
+          className="ms-2"
+        />
       </Form>
 
       {/* Tabla */}
@@ -195,13 +182,14 @@ function GestionEmpresas() {
                 <th>Email</th>
                 <th>Contactos</th>
                 <th>PorDefecto</th>
+                <th>Estado</th>
                 <th>Acción</th>
               </tr>
             </thead>
             <tbody>
               {empresas.length === 0 ? (
                 <tr>
-                  <td colSpan="8" className="text-center">
+                  <td colSpan="9" className="text-center">
                     No se encontraron empresas
                   </td>
                 </tr>
@@ -234,6 +222,13 @@ function GestionEmpresas() {
                     <td>{emp.contactosCount ?? 0}</td>
                     <td>{emp.porDefecto ? "Sí" : "No"}</td>
                     <td>
+                      {emp.fecha_baja ? (
+                        <span className="text-danger">Baja</span>
+                      ) : (
+                        <span className="text-success">Activo</span>
+                      )}
+                    </td>
+                    <td>
                       <Button
                         size="sm"
                         variant="info"
@@ -253,12 +248,12 @@ function GestionEmpresas() {
           </Table>
 
           <PaginationControl
-            currentPage={currentPage}
-            totalPaginas={totalPaginas}
-            paginasVisibles={paginasVisibles}
-            startPage={startPage}
-            endPage={endPage}
-            onPageChange={handlePageChange}
+            currentPage={pagination.currentPage}
+            totalPaginas={pagination.totalPaginas}
+            paginasVisibles={pagination.paginasVisibles}
+            startPage={pagination.startPage}
+            endPage={pagination.endPage}
+            onPageChange={pagination.handlePageChange}
           />
         </>
       )}

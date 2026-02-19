@@ -83,7 +83,7 @@ function CrearComplejo() {
             suggestions={contactos.sugerencias}
             onSelect={contactos.seleccionar}
             renderSuggestion={(c) =>
-              `${c.nombre} ${c.apellido1 ?? ""} ${c.nombre_empresa ? `(${c.nombre_empresa})` : ""}`.trim()
+              `${c.nombre} ${c.apellido1 ?? ""} ${c.nombreEmpresas ? `(${c.nombreEmpresas})` : ""}`.trim()
             }
             keyField="id"
             selectedItems={contactos.seleccionados}

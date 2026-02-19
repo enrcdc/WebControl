@@ -3,7 +3,7 @@
 Documento complementario al `PLAN_REORGANIZACION.md`.
 Recoge todas las decisiones y especificaciones tomadas durante el progreso de refactorización del frontend.
 
-**Última actualización:** 18/02/2026
+**Última actualización:** 19/02/2026
 **Rama de trabajo:** `refactor/project-structure`
 
 > Para decisiones y especificaciones del backend, consultar `CONTEXTO_REFACTORIZACION_BACKEND.md`
@@ -512,22 +512,30 @@ Al implementar cada feature en su forma definitiva, verificar:
 
 ### Cambios realizados — GestionEmpresas
 
-**Backend (ajuste menor):**
+**Backend (sesión 1):**
 - `empresa.model.js` getAll: añadido `tipoEmpresa`, `porDefecto`, subquery `contactosCount` al SELECT. Añadido filtro `tipoEmpresa`
 
-**Frontend:**
+**Backend (sesión 3 — 19/02/2026):**
+- `empresa.model.js` getAll: añadido filtro `mostrarBaja`. Por defecto `whereNull("fecha_baja")`; si `mostrarBaja=1`, muestra todas
+
+**Frontend (sesión 1):**
 - `empresa.service.js` reescrito: imports absolutos, `delete({ idEmpresas })` corregido, añadidos `getById` y `buscarPorNombre`
 - `constants/api.js`: añadido `TIPO_FACTURA: "/tipo-factura"`
-- `GestionEmpresas.jsx` creado (~210 líneas): tabla con columnas Nombre/Tipo/Teléfono/Email/Contactos/PorDefecto/Acción, búsqueda por nombre, filtro tipoEmpresa (dropdown hardcodeado), selección batch con checkbox, acciones (Nueva/Baja/Imprimir), `useServerPagination(20)`, `PaginationControl`, loading/error states
+- `GestionEmpresas.jsx` creado
 - `App.js`: añadida ruta `gestion-empresas` + import de `GestionEmpresas`
 - Eliminado `GestionEmpresas.js` (antiguo skeleton)
 
+**Frontend (sesión 3 — refactorización a `useGestionEntidad`):**
+- `GestionEmpresas.jsx` refactorizado: reemplazado patrón manual (useState+useEffect+refreshKey) por `useGestionEntidad`. Añadido checkbox "Mostrar dadas de Baja" + columna "Estado" (Activo/Baja). `TIPOS_EMPRESA` importado desde `FormEmpresa.jsx` (eliminada duplicación)
+- `FormEmpresa.jsx`: `TIPOS_EMPRESA` exportado como `export const` para reutilización en GestionEmpresas
+
 **Constantes hardcodeadas (TODO para futuro):**
 ```javascript
-const TIPOS_EMPRESA = [
+export const TIPOS_EMPRESA = [
   { id: 1, descripcion: "Sin Especificar" },
   { id: 3, descripcion: "Cliente" },
 ];
+// Definido en FormEmpresa.jsx, importado en GestionEmpresas.jsx
 ```
 
 ### Cambios realizados — CrearEmpresa
@@ -577,11 +585,11 @@ const contactos = useBusquedaMultiple(
 
 | Módulo | Estado | Notas |
 |--------|--------|-------|
-| GestionEmpresas.jsx | ✅ | Lista + useServerPagination + useSeleccionMultiple |
-| CrearEmpresa.jsx | ✅ | Form + useFormulario + useModal + useBusquedaMultiple |
-| ModalNuevoContacto.jsx | ✅ | Modal simplificado + useFormulario |
-| FormEmpresa.jsx | ✅ | Componente presentacional compartido — campos del form con prop `readOnly` y slot `children` |
-| DetalleEmpresa.jsx | ✅ | Fetch por ID + mapeo snake_case→camelCase + toggle editar/cancelar + guardar + baja. Contactos en read-only (ListGroup). |
+| GestionEmpresas.jsx | ✅ | `useGestionEntidad` + `useSeleccionMultiple` + filtro `mostrarBaja` + columna Estado. `TIPOS_EMPRESA` importado de FormEmpresa |
+| CrearEmpresa.jsx | ✅ | Form + useFormulario + useModal + useBusquedaMultiple + ModalNuevoContacto (diferido) |
+| ModalNuevoContacto.jsx | ✅ | Modal simplificado + useFormulario. Reutilizado en CrearEmpresa y DetalleEmpresa |
+| FormEmpresa.jsx | ✅ | Componente presentacional compartido — campos del form con prop `readOnly` y slot `children`. Exporta `TIPOS_EMPRESA` |
+| DetalleEmpresa.jsx | ✅ | Fetch por ID + mapeo snake_case→camelCase + toggle editar/cancelar + guardar + baja. **Contactos editables**: `useBusquedaMultiple` + `SearchableMultiSelect` en edición, `ListGroup` en lectura. Creación inline de nuevos contactos con `ModalNuevoContacto` + guardado diferido + orquestado |
 | ImprimirEmpresa.jsx | Pendiente | Placeholder/TODO |
 
 ---
@@ -594,13 +602,13 @@ Esta sección identifica código que se repite o puede reutilizarse entre featur
 
 | Hook | Qué resuelve | Compatible con | Usado en |
 |------|-------------|----------------|----------|
-| `useServerPagination` | Paginación server-side (limit/offset/total) | `PaginationControl` | GestionEmpresas, GestionAlmacen |
-| `useSeleccionMultiple` | Checkboxes batch (select/selectAll/clear) | — | GestionEmpresas, GestionObras |
-| `useFormulario` | Estado de formulario + handleChange genérico | `Form.Control` | CrearEmpresa, ModalNuevoContacto |
-| `useModal` | Toggle show/hide de modales | `Modal` | CrearEmpresa |
-| `useBusquedaEntidad` | Búsqueda + sugerencias + selección única | `SearchableSelect` | obras (obraPadre, producto, factura) |
-| `useBusquedaMultiple` | Búsqueda + sugerencias + selección múltiple | `SearchableMultiSelect` | CrearEmpresa (contactos), DetalleComplejo, CrearContacto |
-| `useGestionEntidad` | Fetch paginado con refreshKey; recibe `fetchFunction` como useCallback | `useServerPagination`, `PaginationControl` | GestionComplejos, GestionContactos |
+| `useServerPagination` | Paginación server-side (limit/offset/total) | `PaginationControl` | GestionAlmacen (directo), GestionEmpresas/GestionComplejos/GestionContactos (via useGestionEntidad) |
+| `useSeleccionMultiple` | Checkboxes batch (select/selectAll/clear) | — | GestionEmpresas, GestionObras, GestionComplejos, GestionContactos |
+| `useFormulario` | Estado de formulario + handleChange genérico | `Form.Control` | CrearEmpresa, DetalleEmpresa, ModalNuevoContacto, CrearComplejo, DetalleComplejo, CrearContacto, DetalleContacto |
+| `useModal` | Toggle show/hide de modales | `Modal` | CrearEmpresa, DetalleEmpresa |
+| `useBusquedaEntidad` | Búsqueda + sugerencias + selección única | `SearchableSelect` | obras (obraPadre, producto, factura), CrearContacto (empresa) |
+| `useBusquedaMultiple` | Búsqueda + sugerencias + selección múltiple | `SearchableMultiSelect` | CrearEmpresa, DetalleEmpresa, DetalleComplejo, CrearContacto, DetalleContacto, GestionContactos |
+| `useGestionEntidad` | Fetch paginado con refreshKey; recibe `fetchFunction` como useCallback | `useServerPagination`, `PaginationControl` | GestionEmpresas, GestionComplejos, GestionContactos |
 
 **`useGestionEntidad` — documentación:**
 ```javascript
@@ -647,17 +655,19 @@ Detectado en `CrearEmpresa.jsx` y `CrearObra/index.js`. Patrón común:
 5. **Navegación** — botones Guardar + Cancelar con `useNavigate()`
 6. **Layout** — `Card` con `Form` > `Row`/`Col` > `Form.Group`
 
-### Patrones de Detalle (edición) — por validar
+### Patrones de Detalle (edición) — VALIDADO ✅
 
-Detectado en `DetalleObra/index.js`. Patrón anticipado para DetalleEmpresa:
+Validado en DetalleEmpresa, DetalleComplejo y DetalleContacto. Patrón consolidado:
 
 1. **Fetch por ID** — `useParams()` + `service.getById(id)` al montar
-2. **Modo lectura/edición** — toggle `editarEntidad` (read-only por defecto → click "Editar" → campos editables)
-3. **Guardar/Cancelar** — `service.update(id, payload)` + revert a datos originales
+2. **Modo lectura/edición** — toggle `editando` (read-only por defecto → click "Editar" → campos editables)
+3. **Guardar/Cancelar** — `service.update(id, payload)` + revert a datos originales con `formOriginal`
 4. **Baja** — `service.delete([id])` con confirmación + navigate a gestión
-5. **Reutilización de form** — los campos del form son idénticos a Crear → candidato a componente compartido `Form[Entidad].jsx`
+5. **Reutilización de form** — `Form[Entidad].jsx` compartido entre Crear y Detalle
+6. **Relaciones editables** — `useBusquedaMultiple` + `SearchableMultiSelect` en modo edición / `ListGroup` en lectura. Snapshot `contactosList` para revert al cancelar
+7. **Creación inline de relaciones** — `useModal` + `ModalNuevoContacto` + guardado diferido (`_tempId` + `Badge "nuevo"`). Flujo orquestado: (1) crear nuevos vía API, (2) combinar IDs, (3) update entidad
 
-**Patrón validado:** `FormEmpresa.jsx` extraído y compartido entre CrearEmpresa y DetalleEmpresa. Props: `formData`, `handleChange`, `readOnly`, `tiposFactura`, `children`. Replicar patrón `Form[Entidad].jsx` en features que tengan Crear + Detalle con campos idénticos.
+**Patrón validado:** `FormEmpresa.jsx` extraído y compartido entre CrearEmpresa y DetalleEmpresa. Replicado en FormComplejo + FormContacto.
 
 ### Patrones de Servicio — ya estandarizados
 
@@ -684,12 +694,52 @@ export const [entidad]Service = {
 
 - [x] ~~Validar si `useGestionEntidad` es viable tras migrar compras/pedidos (ola 2)~~ → **Validado con complejos y contactos (18/02/2026).** Implementado en `hooks/useGestionEntidad.js`. Replicar en GestionEmpresas y features futuras.
 - [x] ~~Evaluar `Form[Entidad].jsx` compartido tras implementar DetalleEmpresa~~ → Validado. Patrón replicable. Aplicado en FormComplejo + FormContacto.
+- [x] ~~**GestionEmpresas.jsx**: Migrar a `useGestionEntidad`~~ → Completado (19/02/2026). Patrón manual eliminado.
 - [ ] Identificar patrones de modales CRUD reutilizables (ModalPedido, ModalFactura, ModalNuevoContacto)
-- [ ] **GestionEmpresas.jsx**: Migrar a `useGestionEntidad` para eliminar el patrón manual de useState+useEffect+refreshKey duplicado
 
 ---
 
-## 14. Features complejos y contactos — COMPLETADAS ✅
+## 14. Especificación: JSON_ARRAYAGG en modelos backend
+
+### Regla general
+
+- **`getById`**: Incluir `JSON_ARRAYAGG` + `JSON_OBJECT` para relaciones M:N con pocos elementos (contactos de empresa, empresas de contacto, contactos de complejo). Embebe la entidad relacionada como array de objetos con la info indispensable (id, nombre, apellidos). Elimina llamadas API separadas en los detail views.
+- **`getAll`**: **NO** incluir arrays JSON. Usar datos escalares según necesidad:
+  - `COUNT(*)` subquery → cuando la vista lista solo necesita el total (ej: `contactosCount` en GestionEmpresas)
+  - `GROUP_CONCAT(DISTINCT ... SEPARATOR ', ')` → cuando la vista lista necesita nombres para display (ej: `nombreEmpresas` en GestionContactos/sugerencias de búsqueda)
+  - Nada → cuando la vista lista no muestra relaciones (ej: GestionComplejos no muestra contactos)
+
+### Relaciones NO candidatas a JSON_ARRAYAGG
+
+Relaciones 1:N con muchos elementos que tienen sus propios endpoints paginados. Mantener `COUNT`/`SUM` como resumen en `getAll`:
+
+| Tabla | Relación | Razón |
+|---|---|---|
+| `ecopedido` | pedidos de una obra | 10-100+ items, endpoint paginado propio |
+| `ecofactura` | facturas de una obra | 10-100+ items, endpoint paginado propio |
+| `horasobra` | horas de una obra | 50-500+ items, endpoint paginado propio |
+| `gastosobra` | gastos de una obra | 10-100+ items, endpoint paginado propio |
+| `facturascompras_obra` | facturas compra | 10-100+ items, endpoint paginado propio |
+| `movimiento_almacen` | movimientos almacén | muchos items, endpoint paginado propio |
+
+### Candidatas pendientes
+
+| Tabla | Dónde aplicar | Estado |
+|---|---|---|
+| `relacionobras` | Solo `obra.model.js getById` (padre: 0-1, hijas: 0-10) | TODO |
+| `tareas_tipoobra` | `getAll` y `getById` (pocos items, catálogo) | TODO |
+
+### Modelos actuales
+
+| Modelo | `getAll` | `getById` |
+|---|---|---|
+| `empresa.model.js` | `contactosCount` (COUNT) | `contactos` (JSON_ARRAYAGG: id, nombre, apellido1, apellido2) |
+| `edificio.model.js` | Sin relaciones | `contactos` (JSON_ARRAYAGG: id, nombre, apellido1, apellido2) |
+| `contacto.model.js` | `nombreEmpresas` (GROUP_CONCAT) | `empresas` (JSON_ARRAYAGG: id, nombre) + `complejos` (JSON_ARRAYAGG: id, nombre) |
+
+---
+
+## 15. Features complejos y contactos — COMPLETADAS ✅
 
 ### Cambios de backend
 
@@ -750,31 +800,29 @@ export const [entidad]Service = {
 
 ## TODO: Punto de continuación para el próximo chat
 
-**Última sesión:** 18/02/2026
-**Estado:** Features complejos y contactos completadas. Hook `useGestionEntidad` creado y validado. Backend extendido con filtros `mostrarBaja`, `idsEmpresa`, `idContacto`, `idEdificio`.
+**Última sesión:** 19/02/2026
+**Estado:** Feature empresas completada (excepto ImprimirEmpresa). GestionEmpresas migrada a `useGestionEntidad`. DetalleEmpresa con contactos editables + creación inline. Backend con filtro `mostrarBaja` en empresa.
 
-### Tareas completadas esta sesión:
-- `useGestionEntidad` hook (hooks/useGestionEntidad.js)
-- Feature complejos completa: service, FormComplejo, GestionComplejos, CrearComplejo, DetalleComplejo, index.js
-- Feature contactos completa: service, FormContacto, GestionContactos, CrearContacto, DetalleContacto, index.js
-- Backend edificio.model.js: select extendido + filtros `mostrarBaja` + `idContacto`
-- Backend contacto.model.js: select extendido + filtros `mostrarBaja` + `idsEmpresa` + `idEdificio`
-- App.js: 6 nuevas rutas (complejos + contactos)
+### Tareas completadas esta sesión (19/02/2026):
+- `empresa.model.js`: añadido filtro `mostrarBaja` (por defecto `whereNull("fecha_baja")`)
+- `GestionEmpresas.jsx`: refactorizado a `useGestionEntidad` + checkbox "Mostrar dadas de Baja" + columna "Estado"
+- `FormEmpresa.jsx`: `TIPOS_EMPRESA` exportado como `export const` (eliminada duplicación con GestionEmpresas)
+- `DetalleEmpresa.jsx`: contactos editables con `useBusquedaMultiple` + `SearchableMultiSelect` + creación inline con `ModalNuevoContacto` + guardado orquestado (crear nuevos → combinar IDs → update empresa → refetch contactos)
+- **Especificación JSON_ARRAYAGG** (sección 14): `getAll` usa escalares (COUNT/GROUP_CONCAT), `getById` usa arrays JSON. Aplicado en empresa, edificio, contacto. Frontend actualizado (6 archivos)
 
 ### Próximos pasos:
 
-1. **Probar** en navegador las nuevas features (complejos y contactos)
-2. **GestionEmpresas.jsx**: Migrar a `useGestionEntidad` (actualmente usa patrón manual — ver sección 13)
-3. **Navbar**: Añadir enlaces a gestion-complejos y gestion-contactos
-4. **ImprimirEmpresa.jsx**: Placeholder/TODO. Pendiente requisitos.
-5. **Ola 2** — compras + pedidos en estructura definitiva (sección 8)
+1. **Probar** en navegador los cambios (GestionEmpresas mostrarBaja, DetalleEmpresa contactos editables, renderSuggestion con `nombreEmpresas`)
+2. **Navbar**: Añadir enlaces a gestion-complejos y gestion-contactos
+3. **ImprimirEmpresa.jsx**: Placeholder/TODO. Pendiente requisitos.
+4. **Ola 2** — compras + pedidos en estructura definitiva (sección 8)
 
 ### Contexto importante:
 - **Estructura definitiva**: Sección 8 — nombres con entidad, `.jsx` componentes / `.js` lógica, hooks por necesidad
 - **Directrices 5 y 6**: Decisiones de diseño + optimización de uso
 - Cliente API en `Services/api/client.js`, endpoints en `constants/api.js`
 - `App.js` importa TODAS las features desde barrel exports
-- Hooks globales (12) en `hooks/` — incluye `useGestionEntidad` (nuevo), `useServerPagination`
+- Hooks globales (12) en `hooks/` — incluye `useGestionEntidad`, `useServerPagination`, `useBusquedaMultiple`
 - Componentes UI compartidos en `Components/ui/` (PaginationControl, SearchableSelect, SearchableMultiSelect)
 - `Services/` aún tiene 4 servicios legacy (contacto, estadoObra, tipoFacturable, tipoObra) — el de contacto puede eliminarse ahora que existe `features/contactos/services/contacto.service.js`
 - Backend completamente refactorizado (ver `CONTEXTO_REFACTORIZACION_BACKEND.md`)
@@ -787,4 +835,5 @@ export const [entidad]Service = {
 - Siempre revisar qué hooks globales existen antes de crear estado manual
 - `useGestionEntidad` > patrón manual useState+useEffect+refreshKey
 - `useBusquedaMultiple` para cualquier `SearchableMultiSelect` con búsqueda asíncrona
-- `FormComplejo`/`FormContacto` son la referencia del patrón `Form[Entidad].jsx` — compartir entre Crear y Detalle
+- `useModal` para controlar visibilidad de modales
+- `FormComplejo`/`FormContacto`/`FormEmpresa` son la referencia del patrón `Form[Entidad].jsx` — compartir entre Crear y Detalle

@@ -34,6 +34,77 @@ Cuando haces esto:
 
 Si hay índice, la base de datos dice: *"Sé exactamente en qué posición del disco duro está el contacto 50, voy directo por él"*. Sin índice, dice: *"Voy a leer los 10,000 contactos hasta encontrar al 50"*.
 
+Perfecto 👌 tu explicación está muy bien estructurada. Solo te añado un **resumen claro y técnico sobre índices compuestos (índices dobles)** para completar el documento.
+
+Puedes añadir algo como esto al final de tu `.md`:
+
+---
+
+## 4. Índices Compuestos (Índices Dobles)
+
+Un **índice compuesto** es un índice creado sobre **más de una columna**, por ejemplo:
+
+```sql
+CREATE INDEX idx_contacto_empresa
+ON empresas_contactos (id_contacto, id_empresa);
+```
+
+### 🔎 ¿Por qué son importantes?
+
+Cuando una consulta filtra por varias columnas:
+
+```sql
+WHERE id_contacto = 50
+AND id_empresa = 10
+```
+
+Un índice compuesto permite a la base de datos encontrar el registro **de forma mucho más eficiente** que usando dos índices individuales.
+
+---
+
+### 📌 Regla fundamental: el orden importa
+
+Un índice:
+
+```sql
+(id_contacto, id_empresa)
+```
+
+Sirve eficientemente para:
+
+* `WHERE id_contacto = ?`
+* `WHERE id_contacto = ? AND id_empresa = ?`
+
+NO sirve eficientemente para:
+
+* `WHERE id_empresa = ?`
+
+Porque los índices compuestos funcionan de izquierda a derecha.
+
+---
+
+### 🧠 ¿Cuándo usar índice compuesto?
+
+Es ideal cuando:
+
+* La tabla es intermedia (many-to-many).
+* Siempre filtras por ambas columnas.
+* Haces `JOIN` usando esas dos columnas.
+* Usas `WHERE A = ? AND B = ?`.
+
+En tablas puente, lo más correcto suele ser:
+
+```sql
+ALTER TABLE empresas_contactos
+ADD PRIMARY KEY (id_contacto, id_empresa);
+```
+
+Ventajas:
+
+* Evita registros duplicados.
+* Crea automáticamente un índice compuesto.
+* Es el diseño más eficiente y correcto para relaciones many-to-many.
+
 ---
 
 **Resumen:** Que el contenido sea un número (1, 2, 3) ayuda porque los números son fáciles de comparar, pero el **Índice** es la herramienta que permite a la base de datos encontrar esos números sin esfuerzo.

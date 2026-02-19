@@ -9,7 +9,8 @@ import {
 export const empresaRouter = Router();
 
 empresaRouter.get("/", EmpresaController.getAll);
-empresaRouter.get("/:idEmpresa", EmpresaController.getById)
+empresaRouter.get("/:idEmpresa", EmpresaController.getById);
+empresaRouter.post("/filtrar", EmpresaController.filtrar);
 empresaRouter.post(
   "/",
   validate(createEmpresaSchema),

@@ -1,7 +1,18 @@
 ###### ENDPOINTS CONTACTO #############
 
 ### Obtener contacto por filtros
-GET http://localhost:3002/api/contacto?idEmpresa=50
+POST http://localhost:3002/api/contacto/filtrar
+Content-Type: application/json
+
+{
+    "idsContacto": [58]
+}
+
+### Obtener contacto por filtros
+GET http://localhost:3002/api/contacto
+
+### Obtener un contacto
+GET http://localhost:3002/api/contacto/85
 
 ### Obtener todos los contactos
 GET http://localhost:3002/api/contacto

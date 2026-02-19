@@ -9,12 +9,13 @@ export class EmpresaModel {
    * getAll recupera todos los registros según los filtros proporcionados.
    * Si no se especifica un filtro, devuelve todos los registros.
    * @param {Object} filters - El objeto de filtros.
-   * @param {string} [filters.idEmpresa] - filtrar por id
+   * @param {string} [filters.idsEmpresa] - filtrar por ids
    * @param {string} [filters.nombre] - filtrar por nombre de empresa
+   * @param {string} [filters.tipoEmpresa] - filtrar por tipo de empresa
    * @returns {Promise<Array>} Array de resultados de filtrado
    */
   static async getAll(filters = {}) {
-    const query = db("empresas")
+    const query = db("empresas as e")
       .select(
         db.ref("id_empresa").as("id"),
         "nombre",
@@ -24,13 +25,16 @@ export class EmpresaModel {
         db.ref("pordefecto").as("porDefecto"),
         "fecha_baja",
         db.raw(
-          "(SELECT COUNT(*) FROM empresas_contactos WHERE empresas_contactos.id_empresa = empresas.id_empresa) as contactosCount",
+          "(SELECT COUNT(*) FROM empresas_contactos WHERE empresas_contactos.id_empresa = e.id_empresa) as contactosCount",
         ),
       )
       .orderBy("nombre");
 
-    if (filters.idEmpresa) {
-      query.where("id_empresa", filters.idEmpresa);
+    if (filters.idsEmpresa) {
+      const ids = Array.isArray(filters.idsEmpresa)
+        ? filters.idsEmpresa
+        : [filters.idsEmpresa];
+      query.whereIn("id_empresa", ids);
     }
 
     if (filters.nombre) {
@@ -41,13 +45,52 @@ export class EmpresaModel {
       query.where("tipo_empresa", filters.tipoEmpresa);
     }
 
+    if (!filters.mostrarBaja) {
+      query.whereNull("fecha_baja");
+    }
+
     return applyPagination(query, filters);
   }
 
   static async getById({ idEmpresa }) {
     return (
-      db("empresas")
-        .select("*")
+      db("empresas as e")
+        .select(
+          db.ref("id_empresa").as("id"),
+          "nombre",
+          db.ref("tipo_empresa").as("tipoEmpresa"),
+          "telefono1",
+          "email",
+          db.ref("pordefecto").as("porDefecto"),
+          "fecha_baja",
+          // Contactos como array
+          db.raw(`
+        (
+        SELECT COALESCE(
+          JSON_ARRAYAGG(
+            JSON_OBJECT(
+              'id', t.id_contacto,
+              'nombre', t.nombre_contacto,
+              'apellido1', t.apellido1,
+              'apellido2', t.apellido2
+            )
+          ),
+          JSON_ARRAY() )
+        
+        FROM (
+          SELECT DISTINCT 
+            c.id_contacto,
+            c.nombre_contacto,
+            c.apellido1,
+            c.apellido2
+          FROM empresas_contactos edc
+          JOIN contactos c
+          ON edc.id_contacto = c.id_contacto
+          WHERE edc.id_empresa = e.id_empresa
+        ) t
+        ) as contactos
+      `),
+        )
         .where("id_empresa", idEmpresa)
         .first() ?? null
     );

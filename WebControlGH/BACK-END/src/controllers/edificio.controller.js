@@ -11,6 +11,16 @@ export class EdificioController {
     }
   }
 
+  static async getById(req, res, next) {
+    try {
+      const { idEdificio } = req.params;
+      const edificio = await EdificioService.getById(idEdificio);
+      res.json({ success: true, data: edificio });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   static async create(req, res, next) {
     try {
       const edificio = await EdificioService.create(req.body);

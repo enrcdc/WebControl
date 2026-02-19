@@ -1,11 +1,22 @@
 import { useEffect, useState } from "react";
-import { Button, Alert, Spinner, Card, ListGroup } from "react-bootstrap";
+import {
+  Button,
+  Alert,
+  Spinner,
+  Card,
+  ListGroup,
+  Badge,
+} from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
 import { empresaService } from "../services/empresa.service";
 import { apiClient } from "Services/api/client";
 import { API_ENDPOINTS } from "constants/api";
+import { SearchableMultiSelect } from "Components/ui";
 import { useFormulario } from "hooks/useFormulario";
+import { useModal } from "hooks/useModal";
+import { useBusquedaMultiple } from "hooks/useBusquedaMultiple";
 import FormEmpresa from "./FormEmpresa";
+import ModalNuevoContacto from "./ModalNuevoContacto";
 
 const INITIAL_FORM = {
   nombre: "",
@@ -26,9 +37,6 @@ const INITIAL_FORM = {
   porDefecto: 0,
 };
 
-/**
- * Mapea los campos snake_case del backend a camelCase del formulario.
- */
 const mapEmpresaToForm = (empresa) => ({
   nombre: empresa.nombre ?? "",
   cif: empresa.cif ?? "",
@@ -64,8 +72,21 @@ function DetalleEmpresa() {
   // Catálogo tipo factura
   const [tiposFactura, setTiposFactura] = useState([]);
 
-  // Contactos de la empresa
-  const [contactos, setContactos] = useState([]);
+  // Contactos: vista lectura (snapshot al cargar / guardar)
+  const [contactosList, setContactosList] = useState([]);
+
+  // Contactos: búsqueda + selección existentes (modo edición)
+  const contactos = useBusquedaMultiple(
+    (nombre) =>
+      apiClient.get(API_ENDPOINTS.CONTACTO, {
+        params: { nombre, limit: 10 },
+      }),
+    { minLength: 2 },
+  );
+
+  // Contactos: nuevos (guardado diferido)
+  const [contactosNuevos, setContactosNuevos] = useState([]);
+  const modalContacto = useModal();
 
   // Fetch empresa + contactos + catálogo
   useEffect(() => {
@@ -73,9 +94,8 @@ function DetalleEmpresa() {
       setLoading(true);
       setError(null);
       try {
-        const [resEmpresa, resContactos, resTiposFactura] = await Promise.all([
+        const [resEmpresa, resTiposFactura] = await Promise.all([
           empresaService.getById(id),
-          apiClient.get(`${API_ENDPOINTS.CONTACTO}?idEmpresa=${id}`),
           apiClient.get(API_ENDPOINTS.TIPO_FACTURA),
         ]);
 
@@ -83,7 +103,19 @@ function DetalleEmpresa() {
         const mapped = mapEmpresaToForm(empresa);
         setFormData(mapped);
         setFormOriginal(mapped);
-        setContactos(resContactos.data.data ?? []);
+
+        // Asignación de contactos
+        setContactosList(
+          empresa.contactos.map((c) => ({
+            id: c.id,
+            nombre: c.nombre,
+            apellido1: c.apellido1,
+            apellido2: c.apellido2,
+          })),
+        );
+        contactos.setSeleccionados(empresa.contactos);
+
+        // Asignación de tipos de factura
         setTiposFactura(resTiposFactura.data.data ?? []);
       } catch (err) {
         if (err.response?.status === 404) {
@@ -96,11 +128,38 @@ function DetalleEmpresa() {
       }
     };
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
+
+  // -- Contactos: lista combinada (existentes + nuevos) --
+  const todosContactos = [
+    ...contactos.seleccionados,
+    ...contactosNuevos.map((c) => ({ ...c, id: c._tempId })),
+  ];
+
+  const handleRemoverContacto = (contacto) => {
+    if (contacto._tempId) {
+      setContactosNuevos((prev) =>
+        prev.filter((c) => c._tempId !== contacto._tempId),
+      );
+    } else {
+      contactos.remover(contacto);
+    }
+  };
+
+  const handleNuevoContactoGuardar = (data) => {
+    setContactosNuevos((prev) => [
+      ...prev,
+      { ...data, _tempId: `nuevo_${Date.now()}` },
+    ]);
+    modalContacto.handleClose();
+  };
 
   // -- Editar / Cancelar --
   const handleCancelar = () => {
     setFormData(formOriginal);
+    contactos.setSeleccionados(contactosList);
+    setContactosNuevos([]);
     setEditando(false);
   };
 
@@ -108,10 +167,37 @@ function DetalleEmpresa() {
   const handleGuardar = async () => {
     if (!formData.nombre.trim()) return alert("El nombre es obligatorio");
 
+    const totalContactos =
+      contactos.seleccionados.length + contactosNuevos.length;
+    if (totalContactos === 0)
+      return alert("Debes asignar al menos un contacto");
+
     setSaving(true);
     setError(null);
 
     try {
+      // 1. Crear contactos nuevos (diferidos) y recoger sus IDs
+      const nuevosIds = [];
+      for (const contacto of contactosNuevos) {
+        const res = await apiClient.post(API_ENDPOINTS.CONTACTO, {
+          nombre: contacto.nombre,
+          ...(contacto.apellido1 && { apellido1: contacto.apellido1 }),
+          ...(contacto.apellido2 && { apellido2: contacto.apellido2 }),
+          ...(contacto.telefono && { telefono: contacto.telefono }),
+          ...(contacto.email && { email: contacto.email }),
+          empresa: { id: Number(id) },
+        });
+        const nuevoId = res.data.data?.id_contacto ?? res.data.data?.id;
+        if (nuevoId) nuevosIds.push(nuevoId);
+      }
+
+      // 2. Combinar IDs existentes + nuevos
+      const existentesIds = contactos.seleccionados.map(
+        (c) => c.id_contacto ?? c.id,
+      );
+      const todosIds = [...existentesIds, ...nuevosIds];
+
+      // 3. Build payload y actualizar empresa
       const payload = { nombre: formData.nombre };
       if (formData.cif) payload.cif = formData.cif;
       if (formData.tipoEmpresa)
@@ -132,12 +218,22 @@ function DetalleEmpresa() {
         payload.observaciones = formData.observaciones;
       payload.mostrarSaldo = formData.mostrarSaldo ? 1 : 0;
       payload.porDefecto = formData.porDefecto ? 1 : 0;
-      payload.contactos = contactos.map((c) => c.id_contacto ?? c.id);
+      payload.contactos = todosIds;
 
       await empresaService.update(id, payload);
+
+      // 4. Refrescar estado local tras guardado exitoso
+      const resContactos = await apiClient.get(API_ENDPOINTS.CONTACTO, {
+        params: { idsEmpresa: id, mostrarBaja: 1 },
+      });
+      const contactosActualizados = resContactos.data.data ?? [];
+      setContactosList(contactosActualizados);
+      contactos.setSeleccionados(contactosActualizados);
+      setContactosNuevos([]);
+
       setFormOriginal({ ...formData });
       setEditando(false);
-    } catch (err) {
+    } catch {
       setError("Error al guardar los cambios");
     } finally {
       setSaving(false);
@@ -150,7 +246,7 @@ function DetalleEmpresa() {
     try {
       await empresaService.delete([Number(id)]);
       navigate("/home/gestion-empresas");
-    } catch (err) {
+    } catch {
       setError("Error al dar de baja la empresa");
     }
   };
@@ -194,18 +290,53 @@ function DetalleEmpresa() {
           readOnly={!editando}
           tiposFactura={tiposFactura}
         >
-          {/* TODO: Contactos solo de lectura. Dar la posibilidad de añadir o quitar*/}
+          {/* Contactos de la empresa */}
           <div className="mb-3">
-            <label className="form-label">Contactos de la Empresa</label>
-            {contactos.length === 0 ? (
+            <div className="d-flex align-items-center mb-2">
+              <label className="form-label mb-0 me-auto">
+                Contactos de la Empresa *
+              </label>
+              {editando && (
+                <Button
+                  size="sm"
+                  variant="outline-primary"
+                  onClick={modalContacto.handleOpen}
+                >
+                  Nuevo Contacto
+                </Button>
+              )}
+            </div>
+            {editando ? (
+              <SearchableMultiSelect
+                placeholder="Buscar contacto por nombre..."
+                value={contactos.busqueda}
+                onChange={contactos.handleBuscar}
+                suggestions={contactos.sugerencias}
+                onSelect={contactos.seleccionar}
+                renderSuggestion={(c) =>
+                  `${c.nombre} ${c.apellido1 ?? ""} ${c.nombreEmpresas ? `(${c.nombreEmpresas})` : ""}`.trim()
+                }
+                keyField="id"
+                selectedItems={todosContactos}
+                renderSelected={(c) => (
+                  <span>
+                    {c.nombre} {c.apellido1 ?? ""} {c.apellido2 ?? ""}
+                    {c._tempId && (
+                      <Badge bg="info" className="ms-1">
+                        nuevo
+                      </Badge>
+                    )}
+                  </span>
+                )}
+                onRemove={handleRemoverContacto}
+              />
+            ) : contactosList.length === 0 ? (
               <p className="text-muted">Sin contactos asignados</p>
             ) : (
               <ListGroup>
-                {contactos.map((c) => (
+                {contactosList.map((c) => (
                   <ListGroup.Item key={c.id_contacto ?? c.id}>
                     {c.nombre} {c.apellido1 ?? ""} {c.apellido2 ?? ""}
-                    {c.telefono && ` — ${c.telefono}`}
-                    {c.email && ` — ${c.email}`}
                   </ListGroup.Item>
                 ))}
               </ListGroup>
@@ -241,6 +372,12 @@ function DetalleEmpresa() {
             {editando ? "Cancelar" : "Baja Empresa"}
           </Button>
         </div>
+
+        <ModalNuevoContacto
+          show={modalContacto.show}
+          onHide={modalContacto.handleClose}
+          onGuardar={handleNuevoContactoGuardar}
+        />
       </div>
     </Card>
   );

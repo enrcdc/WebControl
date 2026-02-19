@@ -29,6 +29,8 @@ const mapComplejoToForm = (c) => ({
   porDefecto: !!c.porDefecto,
 });
 
+// TODO: Si ves los detalles de un complejo dado de baja sale un 404 Not Found (Esperable).
+// Darle una vuelta a eso.
 function DetalleComplejo() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -58,28 +60,26 @@ function DetalleComplejo() {
       setLoading(true);
       setError(null);
       try {
-        const [resComplejo, resContactos] = await Promise.all([
-          complejoService.getAll({ idEdificio: id }),
-          apiClient.get(API_ENDPOINTS.CONTACTO, {
-            params: { idEdificio: id, limit: 100, mostrarBaja: 1 },
-          }),
-        ]);
+        const resComplejo = await complejoService.getById(id);
 
-        const complejo = resComplejo.data.data?.[0];
+        const complejo = resComplejo.data?.data;
         if (!complejo) throw new Error("not_found");
 
         const mapped = mapComplejoToForm(complejo);
         setFormData(mapped);
         setFormOriginal(mapped);
 
-        const contactosData = resContactos.data.data ?? [];
-        setContactosList(contactosData);
-        contactos.setSeleccionados(contactosData);
+        setContactosList(
+          complejo.contactos.map((c) => ({
+            id: c.id,
+            nombre: c.nombre,
+            apellido1: c.apellido1,
+            apellido2: c.apellido2,
+          })),
+        );
+        contactos.setSeleccionados(complejo.contactos);
       } catch (err) {
-        if (
-          err.message === "not_found" ||
-          err.response?.status === 404
-        ) {
+        if (err.message === "not_found" || err.response?.status === 404) {
           setError("Complejo no encontrado");
         } else {
           setError("Error al cargar el complejo");
@@ -114,7 +114,8 @@ function DetalleComplejo() {
       if (formData.telefono1) payload.telefono1 = formData.telefono1;
       if (formData.telefono2) payload.telefono2 = formData.telefono2;
       if (formData.email) payload.email = formData.email;
-      if (formData.observaciones) payload.observaciones = formData.observaciones;
+      if (formData.observaciones)
+        payload.observaciones = formData.observaciones;
       payload.porDefecto = formData.porDefecto ? 1 : 0;
 
       await complejoService.update(id, payload);
@@ -159,7 +160,9 @@ function DetalleComplejo() {
 
   return (
     <Card className="p-3 mb-3">
-      <h2 style={{ color: "white" }}>Detalle de Complejo — {formData.nombre}</h2>
+      <h2 style={{ color: "white" }}>
+        Detalle de Complejo — {formData.nombre}
+      </h2>
 
       {error && (
         <Alert variant="danger" dismissible onClose={() => setError(null)}>
@@ -183,12 +186,12 @@ function DetalleComplejo() {
               suggestions={contactos.sugerencias}
               onSelect={contactos.seleccionar}
               renderSuggestion={(c) =>
-                `${c.nombre} ${c.apellido1 ?? ""} ${c.nombre_empresa ? `(${c.nombre_empresa})` : ""}`.trim()
+                `${c.nombre} ${c.apellido1 ?? ""} ${c.nombreEmpresas ? `(${c.nombreEmpresas})` : ""}`.trim()
               }
               keyField="id"
               selectedItems={contactos.seleccionados}
               renderSelected={(c) =>
-                `${c.nombre} ${c.apellido1 ?? ""}`.trim()
+                `${c.nombre} ${c.apellido1 ?? ""}  ${c.apellido2 ?? ""}`.trim()
               }
               onRemove={contactos.remover}
             />
@@ -199,8 +202,6 @@ function DetalleComplejo() {
               {contactosList.map((c) => (
                 <ListGroup.Item key={c.id}>
                   {c.nombre} {c.apellido1 ?? ""} {c.apellido2 ?? ""}
-                  {c.telefono && ` — ${c.telefono}`}
-                  {c.email && ` — ${c.email}`}
                 </ListGroup.Item>
               ))}
             </ListGroup>

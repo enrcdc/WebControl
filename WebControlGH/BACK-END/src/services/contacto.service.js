@@ -12,6 +12,22 @@ export class ContactoService {
     return { data, pagination };
   }
 
+  static async getById(id) {
+    const validId = validateId(id, "ID de contacto");
+
+    const contacto = await ContactoModel.getById({ idContacto: validId });
+
+    if (!contacto) {
+      throw new NotFoundError("Contacto", id);
+    }
+
+    if (contacto.fecha_baja) {
+      throw new AlreadyDeletedError("Contacto", id);
+    }
+
+    return contacto;
+  }
+
   static async create(contactoData) {
     this._validateContactoData(contactoData);
 

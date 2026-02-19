@@ -8,6 +8,9 @@ export const empresaService = {
   getById: (idEmpresa) =>
     apiClient.get(`${API_ENDPOINTS.EMPRESA}/${idEmpresa}`),
 
+  filtrar: (filters = {}) =>
+    apiClient.post(`${API_ENDPOINTS.EMPRESA}/filtrar`, filters),
+
   create: (data) => apiClient.post(API_ENDPOINTS.EMPRESA, data),
 
   update: (idEmpresa, data) =>

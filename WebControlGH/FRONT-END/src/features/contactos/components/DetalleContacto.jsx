@@ -47,8 +47,8 @@ function DetalleContacto() {
   const { formData, handleChange, setFormData } = useFormulario(INITIAL_FORM);
   const [formOriginal, setFormOriginal] = useState(INITIAL_FORM);
 
-  // Empresa del contacto (inmutable, solo lectura)
-  const [empresa, setEmpresa] = useState(null);
+  // Empresa(s) del contacto (inmutable, solo lectura)
+  const [empresasList, setEmpresasList] = useState(null);
 
   // Complejos actuales del contacto (para vista lectura)
   const [complejosList, setComplejosList] = useState([]);
@@ -67,34 +67,27 @@ function DetalleContacto() {
       setLoading(true);
       setError(null);
       try {
-        const [resContacto, resComplejos] = await Promise.all([
-          // getAll con idContacto retorna empresa via join
-          contactoService.getAll({ idContacto: id }),
-          apiClient.get(API_ENDPOINTS.EDIFICIO, {
-            params: { idContacto: id, limit: 100, mostrarBaja: 1 },
-          }),
-        ]);
+        const resContacto = await contactoService.getById(id);
 
-        const contacto = resContacto.data.data?.[0];
+        const contacto = resContacto.data?.data;
         if (!contacto) throw new Error("not_found");
 
         const mapped = mapContactoToForm(contacto);
         setFormData(mapped);
         setFormOriginal(mapped);
-        setEmpresa(
-          contacto.idEmpresa
-            ? { id: contacto.idEmpresa, nombre: contacto.nombre_empresa }
-            : null,
+        setEmpresasList(
+          contacto.empresas.map((e) => ({
+            id: e.id,
+            nombre: e.nombre,
+          })),
         );
 
-        const complejosData = resComplejos.data.data ?? [];
-        setComplejosList(complejosData);
-        complejos.setSeleccionados(complejosData);
+        setComplejosList(
+          contacto.complejos.map((c) => ({ id: c.id, nombre: c.nombre })),
+        );
+        complejos.setSeleccionados(contacto.complejos);
       } catch (err) {
-        if (
-          err.message === "not_found" ||
-          err.response?.status === 404
-        ) {
+        if (err.message === "not_found" || err.response?.status === 404) {
           setError("Contacto no encontrado");
         } else {
           setError("Error al cargar el contacto");
@@ -128,7 +121,8 @@ function DetalleContacto() {
       if (formData.email) payload.email = formData.email;
       if (formData.email2) payload.email2 = formData.email2;
       if (formData.direccion) payload.direccion = formData.direccion;
-      if (formData.observaciones) payload.observaciones = formData.observaciones;
+      if (formData.observaciones)
+        payload.observaciones = formData.observaciones;
       payload.complejos = complejos.seleccionados.map((c) => ({ id: c.id }));
 
       await contactoService.update(id, payload);
@@ -192,7 +186,11 @@ function DetalleContacto() {
         <div className="mb-3">
           <label className="form-label">Empresa</label>
           <p className="form-control-plaintext">
-            {empresa?.nombre ?? <span className="text-muted">Sin empresa</span>}
+            {empresasList.length > 0 ? (
+              empresasList.map((e) => `${e.nombre} `)
+            ) : (
+              <span className="text-muted">Sin empresa</span>
+            )}
           </p>
         </div>
 
@@ -217,10 +215,7 @@ function DetalleContacto() {
           ) : (
             <ListGroup>
               {complejosList.map((c) => (
-                <ListGroup.Item key={c.id}>
-                  {c.nombre}
-                  {c.direccion && ` — ${c.direccion}`}
-                </ListGroup.Item>
+                <ListGroup.Item key={c.id}>{c.nombre}</ListGroup.Item>
               ))}
             </ListGroup>
           )}

@@ -9,6 +9,7 @@ import {
 export const edificioRouter = Router();
 
 edificioRouter.get("/", EdificioController.getAll);
+edificioRouter.get("/:idEdificio", EdificioController.getById)
 edificioRouter.post(
   "/",
   validate(createEdificioSchema),

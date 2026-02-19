@@ -23,6 +23,16 @@ export class EmpresaController {
     }
   }
 
+  static async filtrar(req, res, next) {
+    try {
+      const filters = req.body;
+      const result = await EmpresaService.getAll(filters);
+      res.json({ success: true, ...result });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   static async create(req, res, next) {
     try {
       const empresa = await EmpresaService.create(req.body);

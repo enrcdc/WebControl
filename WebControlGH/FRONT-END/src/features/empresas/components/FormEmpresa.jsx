@@ -1,7 +1,7 @@
 import { Form, Row, Col } from "react-bootstrap";
 
 // TODO: Mover a catálogo de BBDD en el futuro si es que aumenta
-const TIPOS_EMPRESA = [
+export const TIPOS_EMPRESA = [
   { id: 1, descripcion: "Sin Especificar" },
   { id: 3, descripcion: "Cliente" },
 ];

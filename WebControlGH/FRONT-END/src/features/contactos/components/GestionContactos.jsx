@@ -24,14 +24,13 @@ function GestionContactos() {
 
   // Filtro multi-empresa
   const empresasFiltro = useBusquedaMultiple(
-    (nombre) =>
-      empresaService.getAll({ nombre, limit: 10 }),
+    (nombre) => empresaService.getAll({ nombre, limit: 10 }),
     { minLength: 2 },
   );
 
   const fetchContactos = useCallback(
     ({ limit, offset }) =>
-      contactoService.getAll({
+      contactoService.filtrar({
         limit,
         offset,
         ...(searchTerm && { nombre: searchTerm }),
@@ -43,8 +42,14 @@ function GestionContactos() {
     [searchTerm, empresasFiltro.seleccionados, mostrarBaja],
   );
 
-  const { items: contactos, loading, error, setError, pagination, refreshData } =
-    useGestionEntidad(fetchContactos, 20);
+  const {
+    items: contactos,
+    loading,
+    error,
+    setError,
+    pagination,
+    refreshData,
+  } = useGestionEntidad(fetchContactos, 20);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -134,7 +139,9 @@ function GestionContactos() {
 
         {/* Filtro multi-empresa */}
         <div style={{ maxWidth: "500px" }}>
-          <Form.Label className="mb-1 text-white">Filtrar por empresa</Form.Label>
+          <Form.Label className="mb-1 text-white">
+            Filtrar por empresa
+          </Form.Label>
           <SearchableMultiSelect
             placeholder="Buscar empresa..."
             value={empresasFiltro.busqueda}
@@ -199,7 +206,9 @@ function GestionContactos() {
                       {[c.apellido1, c.apellido2].filter(Boolean).join(" ") ||
                         "—"}
                     </td>
-                    <td>{c.nombre_empresa ?? "—"}</td>
+                    <td>
+                      {c.nombreEmpresas ?? "—"}
+                    </td>
                     <td>{c.telefono ?? "—"}</td>
                     <td>
                       {c.fecha_baja ? (
@@ -213,9 +222,7 @@ function GestionContactos() {
                         size="sm"
                         variant="info"
                         onClick={() =>
-                          navigate(
-                            `/home/gestion-contactos/detalle/${c.id}`,
-                          )
+                          navigate(`/home/gestion-contactos/detalle/${c.id}`)
                         }
                       >
                         Ver Detalle

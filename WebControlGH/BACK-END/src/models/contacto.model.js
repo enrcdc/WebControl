@@ -1,19 +1,33 @@
 import { db } from "../config/database.js";
 import { applyPagination } from "../utils/index.js";
 
-// TODO: Faltan más operaciones CRUD
+/* TODO: Cuando se trabaje con la BBDD de producción mirar cómo están establecidos 
+ * los índices de las tablas de relaciones en general (edificios_contactos, etc). 
+ * Lo ideal es que los índices sean compuestos, no individuales, 
+ * por razones de optimización. 
+ * 
+ * Habría que ejecutar:
+ * 
+ * CREATE INDEX idx_edc_contacto_edificio
+ * ON edificios_contactos (id_contacto, id_edificio);
+ * 
+ * Así estableces un índice dual. Borrarías los índices individuales sólo si no 
+ * se usan en otra consulta.
+// 
 
+*/
 export class ContactoModel {
   /**
    *
    * getAll recupera todos los registros según los filtros proporcionados.
    * Si no se especifica un filtro, devuelve todos los registros.
    * @param {Object} filters - El objeto de filtros.
-   * @param {string} [filters.idContacto] - filtrar por id
+   * @param {string} [filters.idsContacto] - filtrar por ids
    * @param {string} [filters.nombre] - filtrar por nombre
    * @param {string} [filters.apellido] - filtrar por apellido
    * @param {string} [filters.empresa] - filtrar por nombre de empresa
-   * @param {string} [filters.idEmpresa] - filtrar por id de empresa
+   * @param {string} [filters.idsEmpresa] - filtrar por ids de empresas
+   * @param {string} [filters.idsEdificio] - filtrar por ids de edificios
    * @returns {Promise<Array>} Array de resultados de filtrado
    */
   static async getAll(filters = {}) {
@@ -31,15 +45,21 @@ export class ContactoModel {
         "c.direccion",
         "c.observaciones",
         "c.fecha_baja",
-        db.ref("e.nombre").as("nombre_empresa"),
-        db.ref("ec.id_empresa").as("idEmpresa"),
+        db.raw(`
+          (SELECT GROUP_CONCAT(DISTINCT e.nombre SEPARATOR ', ')
+           FROM empresas_contactos ec
+           JOIN empresas e ON e.id_empresa = ec.id_empresa
+           WHERE ec.id_contacto = c.id_contacto
+          ) as nombreEmpresas
+        `),
       )
-      .leftJoin("empresas_contactos as ec", "c.id_contacto", "ec.id_contacto")
-      .leftJoin("empresas as e", "ec.id_empresa", "e.id_empresa")
       .orderBy("c.nombre_contacto");
 
-    if (filters.idContacto) {
-      query.where("c.id_contacto", filters.idContacto);
+    if (filters.idsContacto) {
+      const ids = Array.isArray(filters.idsContacto)
+        ? filters.idsContacto
+        : [filters.idsContacto];
+      query.whereIn("c.id_contacto", filters.idsContacto);
     }
 
     if (filters.nombre) {
@@ -50,33 +70,32 @@ export class ContactoModel {
       query.where("c.apellido1", "like", `%${filters.apellido}%`);
     }
 
-    if (filters.empresa) {
-      query.where("e.nombre", "like", `%${filters.empresa}%`);
-    }
-
-    if (filters.idEmpresa) {
-      query.where("ec.id_empresa", filters.idEmpresa);
-    }
-
-    // Filtro por múltiples empresas (array)
     if (filters.idsEmpresa) {
       const ids = Array.isArray(filters.idsEmpresa)
         ? filters.idsEmpresa
         : [filters.idsEmpresa];
-      query.whereIn("ec.id_empresa", ids);
+
+      query.whereExists(function () {
+        this.select(db.raw("1"))
+          .from("empresas_contactos as ec")
+          .whereRaw("ec.id_contacto = c.id_contacto")
+          .whereIn("ec.id_empresa", ids);
+      });
     }
 
-    // Filtro por complejo asociado (via edificios_contactos)
-    if (filters.idEdificio) {
-      query.whereExists(
-        db("edificios_contactos")
-          .select(db.raw("1"))
-          .whereRaw("edificios_contactos.id_contacto = c.id_contacto")
-          .where("edificios_contactos.id_edificio", filters.idEdificio),
-      );
+    if (filters.idsEdificio) {
+      const ids = Array.isArray(filters.idsEdificio)
+        ? filters.idsEdificio
+        : [filters.idsEdificio];
+
+      query.whereExists(function () {
+        this.select(db.raw("1"))
+          .from("edificios_contactos as edc")
+          .whereRaw("edc.id_contacto = c.id_contacto")
+          .whereIn("edc.id_edificio", ids);
+      });
     }
 
-    // Por defecto solo muestra activos; mostrarBaja=1 muestra todos
     if (!filters.mostrarBaja || filters.mostrarBaja === "0") {
       query.whereNull("c.fecha_baja");
     }
@@ -86,8 +105,69 @@ export class ContactoModel {
 
   static async getById({ idContacto }) {
     return (
-      db("contactos").select("*").where("id_contacto", idContacto).first() ??
-      null
+      db("contactos as c")
+        .select(
+          db.ref("c.id_contacto").as("id"),
+          db.ref("c.nombre_contacto").as("nombre"),
+          "c.apellido1",
+          "c.apellido2",
+          db.ref("c.num_identificativo").as("dni"),
+          "c.telefono",
+          "c.telefono2",
+          "c.email",
+          "c.email2",
+          "c.direccion",
+          "c.observaciones",
+          "c.fecha_baja",
+
+          // Empresas como array
+          db.raw(`
+          (
+          SELECT COALESCE (
+            JSON_ARRAYAGG(
+              JSON_OBJECT(
+                'id', t.id_empresa,
+                'nombre', t.nombre
+              )
+            ), JSON_ARRAY() )
+          FROM (
+            SELECT DISTINCT 
+              e.id_empresa,
+              e.nombre
+            FROM empresas_contactos ec
+            JOIN empresas e 
+            ON e.id_empresa = ec.id_empresa
+            WHERE ec.id_contacto = c.id_contacto
+          ) t
+          ) as empresas
+        `),
+
+          // Complejos como array
+          db.raw(`
+          (
+          SELECT COALESCE(
+            JSON_ARRAYAGG(
+              JSON_OBJECT(
+                'id', t.id_edificio,
+                'nombre', t.nombre
+              )
+            ),
+          JSON_ARRAY() )
+        
+          FROM (
+            SELECT DISTINCT 
+              ed.id_edificio,
+              ed.nombre
+            FROM edificios_contactos edc
+            JOIN edificios ed 
+            ON ed.id_edificio = edc.id_edificio
+            WHERE edc.id_contacto = c.id_contacto
+          ) t
+          ) as complejos
+        `),
+        )
+        .where("id_contacto", idContacto)
+        .first() ?? null
     );
   }
 
