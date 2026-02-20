@@ -4,6 +4,20 @@ import {
   validateNotEmpty,
   validateId,
 } from "../utils/index.js";
+import { FDContactoSyncService } from "../integrations/FacturaDirecta/Contactos/FDContactoSyncService.js";
+
+// JSON_ARRAYAGG puede devolver string o array dependiendo del driver/versión
+const parseContactos = (val) => {
+  if (!val) return [];
+  if (typeof val === "string") {
+    try {
+      return JSON.parse(val);
+    } catch {
+      return [];
+    }
+  }
+  return Array.isArray(val) ? val : [];
+};
 
 export class EmpresaService {
   static async getAll(filters = {}) {
@@ -45,21 +59,47 @@ export class EmpresaService {
       throw new Error("Error al crear la empresa");
     }
 
-    return nuevaEmpresa;
+    // FD Sync — obtener empresa con contactos completos para el mapper
+    const empresaCompleta = await EmpresaModel.getById({
+      idEmpresa: nuevaEmpresa.id_empresa,
+    });
+    const contactos = parseContactos(empresaCompleta?.contactos);
+    const fdSync = await FDContactoSyncService.syncEmpresa(
+      empresaData,
+      contactos,
+      null,
+    );
+    if (fdSync.ok && fdSync.fdContactId) {
+      await EmpresaModel.saveFdContactId(nuevaEmpresa.id_empresa, fdSync.fdContactId);
+    }
+
+    return { ...nuevaEmpresa, fdSync };
   }
 
   static async update(idEmpresa, updateData) {
     const validID = validateId(idEmpresa, "ID de empresa");
     validateNotEmpty(updateData, "datos de actualización");
 
-    await this._getEmpresaOrFail(validID, false);
+    const empresaExistente = await this._getEmpresaOrFail(validID, false);
 
     const empresaActualizada = await EmpresaModel.update({
       idEmpresa: validID,
       input: updateData,
     });
 
-    return empresaActualizada;
+    // FD Sync — refetch para obtener contactos actualizados
+    const empresaCompleta = await EmpresaModel.getById({ idEmpresa: validID });
+    const contactos = parseContactos(empresaCompleta?.contactos);
+    const fdSync = await FDContactoSyncService.syncEmpresa(
+      updateData,
+      contactos,
+      empresaExistente.fd_contact_id ?? null,
+    );
+    if (fdSync.ok && fdSync.fdContactId) {
+      await EmpresaModel.saveFdContactId(validID, fdSync.fdContactId);
+    }
+
+    return { ...empresaActualizada, fdSync };
   }
 
   static async delete(idEmpresas) {

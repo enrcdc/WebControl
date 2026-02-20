@@ -4,6 +4,7 @@ import {
   validateNotEmpty,
   validateId,
 } from "../utils/index.js";
+import { FDContactoSyncService } from "../integrations/FacturaDirecta/Contactos/FDContactoSyncService.js";
 
 export class ProveedorService {
   static async getAll(filters = {}) {
@@ -46,21 +47,41 @@ export class ProveedorService {
       throw new Error("Error al crear el proveedor");
     }
 
-    return nuevoProveedor;
+    // FD Sync — entityId del proveedor recién creado como id de persons
+    const fdSync = await FDContactoSyncService.syncProveedor(
+      proveedorData,
+      nuevoProveedor.id,
+      null,
+    );
+    if (fdSync.ok && fdSync.fdContactId) {
+      await ProveedorModel.saveFdContactId(nuevoProveedor.id, fdSync.fdContactId);
+    }
+
+    return { ...nuevoProveedor, fdSync };
   }
 
   static async update(idProveedor, updateData) {
     const validID = validateId(idProveedor, "ID de proveedor");
     validateNotEmpty(updateData, "datos de actualización");
 
-    await this._getProveedorOrFail(validID);
+    const proveedorExistente = await this._getProveedorOrFail(validID);
 
     const proveedorActualizado = await ProveedorModel.update({
       idProveedor: validID,
       input: updateData,
     });
 
-    return proveedorActualizado;
+    // FD Sync
+    const fdSync = await FDContactoSyncService.syncProveedor(
+      updateData,
+      validID,
+      proveedorExistente.fd_contact_id ?? null,
+    );
+    if (fdSync.ok && fdSync.fdContactId) {
+      await ProveedorModel.saveFdContactId(validID, fdSync.fdContactId);
+    }
+
+    return { ...proveedorActualizado, fdSync };
   }
 
   static async delete(idProveedores) {

@@ -64,6 +64,7 @@ function DetalleEmpresa() {
   const [error, setError] = useState(null);
   const [saving, setSaving] = useState(false);
   const [editando, setEditando] = useState(false);
+  const [fdSyncWarning, setFdSyncWarning] = useState(null);
 
   // Form
   const { formData, handleChange, setFormData } = useFormulario(INITIAL_FORM);
@@ -220,7 +221,13 @@ function DetalleEmpresa() {
       payload.porDefecto = formData.porDefecto ? 1 : 0;
       payload.contactos = todosIds;
 
-      await empresaService.update(id, payload);
+      const resUpdate = await empresaService.update(id, payload);
+      const fdSync = resUpdate.data?.data?.fdSync;
+      if (fdSync && !fdSync.ok) {
+        setFdSyncWarning(fdSync.error ?? "Error desconocido en FacturaDirecta");
+      } else {
+        setFdSyncWarning(null);
+      }
 
       // 4. Refrescar estado local tras guardado exitoso
       const resContactos = await apiClient.get(API_ENDPOINTS.CONTACTO, {
@@ -281,6 +288,17 @@ function DetalleEmpresa() {
         {error && (
           <Alert variant="danger" dismissible onClose={() => setError(null)}>
             {error}
+          </Alert>
+        )}
+
+        {fdSyncWarning && (
+          <Alert
+            variant="warning"
+            dismissible
+            onClose={() => setFdSyncWarning(null)}
+          >
+            Los cambios se guardaron correctamente, pero no se pudo sincronizar
+            con FacturaDirecta: {fdSyncWarning}.
           </Alert>
         )}
 

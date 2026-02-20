@@ -29,6 +29,7 @@ function CrearProveedor() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [fdSyncWarning, setFdSyncWarning] = useState(null);
 
   const { formData, handleChange, setFormData } = useFormulario(INITIAL_FORM);
 
@@ -81,8 +82,13 @@ function CrearProveedor() {
       if (formData.observaciones)
         payload.observaciones = formData.observaciones;
 
-      await proveedorService.create(payload);
-      navigate("/home/gestion-proveedores");
+      const res = await proveedorService.create(payload);
+      const fdSync = res.data?.data?.fdSync;
+      if (fdSync && !fdSync.ok) {
+        setFdSyncWarning(fdSync.error ?? "Error desconocido en FacturaDirecta");
+      } else {
+        navigate("/home/gestion-proveedores");
+      }
     } catch {
       setError("Error al crear el proveedor");
     } finally {
@@ -99,6 +105,17 @@ function CrearProveedor() {
         {error && (
           <Alert variant="danger" dismissible onClose={() => setError(null)}>
             {error}
+          </Alert>
+        )}
+
+        {fdSyncWarning && (
+          <Alert
+            variant="warning"
+            dismissible
+            onClose={() => navigate("/home/gestion-proveedores")}
+          >
+            El proveedor se guardó correctamente, pero no se pudo sincronizar con
+            FacturaDirecta: {fdSyncWarning}. Cierra este aviso para continuar.
           </Alert>
         )}
 

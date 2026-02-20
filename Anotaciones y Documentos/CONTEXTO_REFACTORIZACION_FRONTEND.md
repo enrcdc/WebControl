@@ -801,19 +801,21 @@ Relaciones 1:N con muchos elementos que tienen sus propios endpoints paginados. 
 ## TODO: Punto de continuación para el próximo chat
 
 **Última sesión:** 20/02/2026
-**Estado:** Feature proveedores completa (backend + frontend). Ola 2 completada (GestionPedidos + GestionCompras migradas a useGestionEntidad + bulk delete backend). Convención async/await documentada (sección 15).
+**Estado:** Integración FacturaDirecta — Primera Iteración completada. Feature proveedores completa. Ola 2 completada.
 
 ### Tareas completadas esta sesión (20/02/2026):
 - **Ola 2**: `GestionPedidos.js` + `GestionCompras.js` migradas a `useGestionEntidad` + server-side filters + `deleteMany` en backend
-- **Feature proveedores** (backend + frontend): `GestionProveedores`, `CrearProveedor`, `DetalleProveedor`, `FormProveedor`, `proveedor.service.js` (frontend). Backend: `getLastCodigo` + `GET /ultimo-codigo`, `getById`, `mostrarBaja` filter
-- **tipoFactura en proveedores**: `proveedor.model.js` (getById + update), `FormProveedor.jsx` (select), `CrearProveedor.jsx` + `DetalleProveedor.jsx` (fetch + payload)
-- **Refactor async/await**: `CrearProveedor.jsx`, `DetalleProveedor.jsx`, `CrearEmpresa.jsx` — eliminado `.then().catch()`, documentado en sección 15
+- **Feature proveedores**: completa (backend + frontend)
+- **tipoFactura en proveedores + refactor async/await**: ver sesión anterior
+- **Integración FacturaDirecta — Primera Iteración** (sección 16): sync empresa→FD cliente + proveedor→FD proveedor en create/update
 
 ### Próximos pasos:
 
-1. **Probar** en navegador la feature proveedores (creación, detalle, edición, baja, tipoFactura)
-2. **ImprimirEmpresa.jsx**: Placeholder/TODO. Pendiente requisitos.
-3. **Features compras/pedidos**: Completar detalle + crear si aplica
+1. **⚠️ EJECUTAR MIGRACIÓN DB**: `BACK-END/src/migrations/001_add_fd_contact_id.sql` antes de arrancar el servidor
+2. **Probar** en navegador la sincronización FD (crear empresa/proveedor con CIF)
+3. **ImprimirEmpresa.jsx**: Placeholder/TODO. Pendiente requisitos.
+4. **Baja FD**: Pendiente decisión del cliente (soft delete ERP vs delete permanente FD) — TODO en FDContactoSyncService
+5. **Iteración FD siguiente**: A definir con el cliente (facturas, presupuestos, etc.)
 
 ### Contexto importante:
 - **Estructura definitiva**: Sección 8 — nombres con entidad, `.jsx` componentes / `.js` lógica, hooks por necesidad
@@ -895,3 +897,118 @@ useEffect(() => {
 - `CrearProveedor.jsx` — useEffect con `getUltimoCodigo` + `TIPO_FACTURA` (Promise.all)
 - `DetalleProveedor.jsx` — useEffect con `TIPO_FACTURA`
 - `CrearEmpresa.jsx` — useEffect con `TIPO_FACTURA`
+
+---
+
+## Sección 16 — Integración FacturaDirecta
+
+**Decisión (20/02/2026):** Nueva dimensión del proyecto. La empresa trabaja en paralelo con el ERP propio y FacturaDirecta (contabilidad, Verifactu). Objetivo: mantener ambas plataformas sincronizadas.
+
+### Arquitectura de la capa de integración
+
+```
+BACK-END/src/integrations/FacturaDirecta/
+├── client.js                          ← axios instance centralizada (baseURL + interceptor API key)
+├── index.js                           ← barrel export de todos los services FD
+├── Contactos/
+│   ├── ContactoService.js             ← CRUD contactos FD (usa client.js)
+│   ├── contacto.mapper.js             ← mapeo ERP camelCase → payload FD
+│   ├── FDContactoSyncService.js       ← orquestación sync (nunca lanza, siempre devuelve {ok, ...})
+│   └── plantillas.js                  ← ejemplos de referencia (sin modificar)
+├── Albaranes/AlbaranesService.js      ← usa client.js
+├── Presupuestos/PresupuestoService.js ← usa client.js
+├── Productos/ProductoService.js       ← usa client.js
+└── MetodosPago/MetodosPagoService.js  ← usa client.js
+```
+
+### Primera Iteración — Sincronización de contactos
+
+**Disparador**: creación o actualización de empresa/proveedor **si tiene CIF**.
+
+**Flujo**:
+1. ERP persiste en DB (empresa o proveedor)
+2. ERP llama a `FDContactoSyncService.syncEmpresa` / `syncProveedor`
+3. Si FD tiene `fd_contact_id` → PUT /contacts/{id}, si no → POST /contacts
+4. Si OK → guardar `fd_contact_id` en DB via `saveFdContactId`
+5. Service devuelve `{ ...entidad, fdSync: { ok, fdContactId?, skipped?, error? } }`
+6. Frontend muestra Alert warning si `fdSync.ok === false` (no bloquea el flujo)
+
+**Sin CIF** → `fdSync = { ok: true, skipped: true }` → no se hace nada, sin warning.
+
+**Mapeo empresa → FD (contacto cliente)**:
+| ERP | FD | Notas |
+|---|---|---|
+| nombre | main.name | |
+| cif | main.fiscalId | trigger de sync |
+| email | main.email | |
+| telefono1 | main.phone | |
+| direccion | main.address | |
+| cp | main.zipcode | |
+| poblacion | main.city | |
+| provincia | main.region | |
+| *(hardcoded)* | main.country = "ES" | |
+| *(hardcoded)* | main.currency = "EUR" | |
+| *(hardcoded)* | accounts.client = "430000" | PGC España |
+| contactos[].id | persons[].id | ID del contacto en la DB |
+| contactos[].nombre + apellido1 | persons[].name | |
+
+**Mapeo proveedor → FD (contacto proveedor)**:
+| ERP | FD | Notas |
+|---|---|---|
+| nombre | main.name | |
+| cif | main.fiscalId | trigger de sync |
+| codigo | main.providerCode | |
+| ... (igual que empresa) | | |
+| *(hardcoded)* | accounts.provider = "400000" | PGC España |
+| proveedor.id | persons[].id | ID del proveedor como person ID |
+| contacto (PersonaContacto) | persons[].name | texto libre |
+
+### Gestión de errores
+
+`FDContactoSyncService` nunca lanza excepción. Siempre devuelve `{ ok: bool }`.
+- ERP no falla si FD está caído.
+- Frontend muestra `Alert variant="warning"` dismissible si `fdSync.ok === false`.
+- En componentes Crear: al cerrar el warning, navega a la lista.
+- En componentes Detalle: el warning se cierra sin navegar.
+
+### DB: migración requerida
+
+```sql
+-- BACK-END/src/migrations/001_add_fd_contact_id.sql
+ALTER TABLE empresas   ADD COLUMN fd_contact_id VARCHAR(50) NULL;
+ALTER TABLE proveedores ADD COLUMN fd_contact_id VARCHAR(50) NULL;
+```
+**⚠️ EJECUTAR antes de arrancar el servidor con estos cambios.**
+
+### Variables de entorno (ya en .env)
+
+```
+FACTURADIRECTA_API_KEY=...
+FACTURADIRECTA_COMPANY_ID=com_sandbox_...
+```
+
+### TODO pendiente
+
+- **Baja FD**: `FDContactoSyncService` tiene un TODO marcado. Pendiente de decisión del cliente sobre cómo compatibilizar soft delete ERP con delete permanente FD.
+- **Iteraciones siguientes**: definir con el cliente qué otras entidades sincronizar (facturas, presupuestos, productos…)
+
+### Archivos modificados en esta iteración
+
+**Backend:**
+- `integrations/FacturaDirecta/client.js` (NUEVO)
+- `integrations/FacturaDirecta/index.js` (NUEVO)
+- `integrations/FacturaDirecta/Contactos/ContactoService.js` (refactorizado)
+- `integrations/FacturaDirecta/Contactos/contacto.mapper.js` (NUEVO)
+- `integrations/FacturaDirecta/Contactos/FDContactoSyncService.js` (NUEVO)
+- `integrations/FacturaDirecta/Albaranes|Presupuestos|Productos|MetodosPago/*.js` (refactorizados)
+- `migrations/001_add_fd_contact_id.sql` (NUEVO — requiere ejecución manual)
+- `models/empresa.model.js` — `fd_contact_id` en getById + `saveFdContactId`
+- `models/proveedor.model.js` — ídem
+- `services/empresa.service.js` — sync en create/update
+- `services/proveedor.service.js` — ídem
+
+**Frontend:**
+- `features/empresas/components/CrearEmpresa.jsx` — fdSyncWarning
+- `features/empresas/components/DetalleEmpresa.jsx` — fdSyncWarning
+- `features/proveedores/components/CrearProveedor.jsx` — fdSyncWarning
+- `features/proveedores/components/DetalleProveedor.jsx` — fdSyncWarning

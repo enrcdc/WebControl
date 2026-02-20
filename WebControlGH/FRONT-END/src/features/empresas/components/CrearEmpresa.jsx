@@ -34,6 +34,7 @@ function CrearEmpresa() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [fdSyncWarning, setFdSyncWarning] = useState(null);
 
   // Form (useFormulario)
   const { formData, handleChange } = useFormulario(INITIAL_FORM);
@@ -135,7 +136,10 @@ function CrearEmpresa() {
 
       // 1. Crear empresa con contactos existentes
       const res = await empresaService.create(payload);
-      const empresaId = res.data.data.id_empresa;
+      const { id_empresa: empresaId, fdSync } = res.data.data;
+      if (fdSync && !fdSync.ok) {
+        setFdSyncWarning(fdSync.error ?? "Error desconocido en FacturaDirecta");
+      }
 
       // 2. Crear contactos nuevos (diferidos) asociados a la nueva empresa
       for (const contacto of contactosNuevos) {
@@ -149,7 +153,10 @@ function CrearEmpresa() {
         });
       }
 
-      navigate("/home/gestion-empresas");
+      if (!fdSync || fdSync.ok) {
+        navigate("/home/gestion-empresas");
+      }
+      // Si fdSync falló, el warning se muestra y el usuario cierra para navegar
     } catch (err) {
       setError("Error al crear la empresa");
     } finally {
@@ -167,6 +174,17 @@ function CrearEmpresa() {
         {error && (
           <Alert variant="danger" dismissible onClose={() => setError(null)}>
             {error}
+          </Alert>
+        )}
+
+        {fdSyncWarning && (
+          <Alert
+            variant="warning"
+            dismissible
+            onClose={() => navigate("/home/gestion-empresas")}
+          >
+            La empresa se guardó correctamente, pero no se pudo sincronizar con
+            FacturaDirecta: {fdSyncWarning}. Cierra este aviso para continuar.
           </Alert>
         )}
 

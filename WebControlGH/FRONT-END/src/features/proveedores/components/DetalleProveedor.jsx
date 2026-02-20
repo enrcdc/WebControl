@@ -51,6 +51,7 @@ function DetalleProveedor() {
   const [error, setError] = useState(null);
   const [saving, setSaving] = useState(false);
   const [editando, setEditando] = useState(false);
+  const [fdSyncWarning, setFdSyncWarning] = useState(null);
 
   const { formData, handleChange, setFormData } = useFormulario(INITIAL_FORM);
   const [formOriginal, setFormOriginal] = useState(INITIAL_FORM);
@@ -118,12 +119,20 @@ function DetalleProveedor() {
       if (formData.telefono2) payload.telefono2 = formData.telefono2;
       if (formData.fax) payload.fax = formData.fax;
       if (formData.email) payload.email = formData.email;
-      if (formData.tipoFactura) payload.tipoFactura = Number(formData.tipoFactura);
+      if (formData.tipoFactura)
+        payload.tipoFactura = Number(formData.tipoFactura);
       if (formData.evaluacion !== "")
         payload.evaluacion = Number(formData.evaluacion);
-      if (formData.observaciones) payload.observaciones = formData.observaciones;
+      if (formData.observaciones)
+        payload.observaciones = formData.observaciones;
 
-      await proveedorService.update(id, payload);
+      const resUpdate = await proveedorService.update(id, payload);
+      const fdSync = resUpdate.data?.data?.fdSync;
+      if (fdSync && !fdSync.ok) {
+        setFdSyncWarning(fdSync.error ?? "Error desconocido en FacturaDirecta");
+      } else {
+        setFdSyncWarning(null);
+      }
       setFormOriginal({ ...formData });
       setEditando(false);
     } catch {
@@ -174,6 +183,17 @@ function DetalleProveedor() {
         {error && (
           <Alert variant="danger" dismissible onClose={() => setError(null)}>
             {error}
+          </Alert>
+        )}
+
+        {fdSyncWarning && (
+          <Alert
+            variant="warning"
+            dismissible
+            onClose={() => setFdSyncWarning(null)}
+          >
+            Los cambios se guardaron correctamente, pero no se pudo sincronizar
+            con FacturaDirecta: {fdSyncWarning}.
           </Alert>
         )}
 

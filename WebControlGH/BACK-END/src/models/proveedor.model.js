@@ -72,9 +72,10 @@ export class ProveedorModel {
           "CIF",
           "DireccionCorreoEl",
           "Evaluacion",
-          "TipoFactura",
+          db.ref("id_tipofactura").as("TipoFactura"),
           "observaciones",
           "fecha_baja",
+          "fd_contact_id",
         )
         .where("id", idProveedor)
         .first() ?? null
@@ -139,6 +140,12 @@ export class ProveedorModel {
     });
 
     return db("proveedores").where("id", idProveedor).first() ?? null;
+  }
+
+  static async saveFdContactId(idProveedor, fdContactId) {
+    return db("proveedores")
+      .where("id", idProveedor)
+      .update({ fd_contact_id: fdContactId });
   }
 
   // SOFT DELETE. DAR DE BAJA Proveedor

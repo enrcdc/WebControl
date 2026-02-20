@@ -63,6 +63,7 @@ export class EmpresaModel {
           "email",
           db.ref("pordefecto").as("porDefecto"),
           "fecha_baja",
+          "fd_contact_id",
           // Contactos como array
           db.raw(`
         (
@@ -168,6 +169,12 @@ export class EmpresaModel {
 
     // Añadir las nuevas entradas
     return db("empresas_contactos").insert(rows);
+  }
+
+  static async saveFdContactId(idEmpresa, fdContactId) {
+    return db("empresas")
+      .where("id_empresa", idEmpresa)
+      .update({ fd_contact_id: fdContactId });
   }
 
   // SOFT DELETE. DAR DE BAJA EMPRESAS
