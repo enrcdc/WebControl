@@ -20,6 +20,23 @@ export class ProveedorService {
     return { data, pagination };
   }
 
+  static async getById(idProveedor) {
+    const validID = validateId(idProveedor, "ID de proveedor");
+    const proveedor = await ProveedorModel.getById({ idProveedor: validID });
+
+    if (!proveedor) {
+      throw new NotFoundError("Proveedor", idProveedor);
+    }
+
+    return proveedor;
+  }
+
+  static async getUltimoCodigo() {
+    const [row] = await ProveedorModel.getLastCodigo();
+    const ultimo = row?.ultimo_codigo ?? 0;
+    return { siguienteCodigo: ultimo + 1 };
+  }
+
   static async create(proveedorData) {
     this._validateProveedorData(proveedorData);
 

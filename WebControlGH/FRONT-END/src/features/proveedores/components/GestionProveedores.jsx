@@ -1,0 +1,230 @@
+import { useState, useCallback } from "react";
+import { Table, Button, Form, Alert, Spinner } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
+import { proveedorService } from "../services/proveedor.service";
+import { useGestionEntidad } from "hooks/useGestionEntidad";
+import { useSeleccionMultiple } from "hooks/useSeleccionMultiple";
+import { PaginationControl } from "Components/ui";
+
+function GestionProveedores() {
+  const navigate = useNavigate();
+  const [searchInput, setSearchInput] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [mostrarBaja, setMostrarBaja] = useState(false);
+
+  const {
+    selected,
+    handleSelect,
+    handleSelectAll,
+    clearSelections,
+    isSelected,
+  } = useSeleccionMultiple();
+
+  const fetchProveedores = useCallback(
+    ({ limit, offset }) =>
+      proveedorService.getAll({
+        limit,
+        offset,
+        ...(searchTerm && { nombre: searchTerm }),
+        ...(mostrarBaja && { mostrarBaja: 1 }),
+      }),
+    [searchTerm, mostrarBaja],
+  );
+
+  const {
+    items: proveedores,
+    loading,
+    error,
+    setError,
+    pagination,
+    refreshData,
+  } = useGestionEntidad(fetchProveedores, 20);
+
+  // -- Búsqueda --
+  const handleSearch = (e) => {
+    e.preventDefault();
+    setSearchTerm(searchInput);
+    pagination.resetToFirstPage();
+  };
+
+  const handleClearSearch = () => {
+    setSearchInput("");
+    setSearchTerm("");
+    pagination.resetToFirstPage();
+  };
+
+  // -- Filtros --
+  const handleMostrarBajaChange = (e) => {
+    setMostrarBaja(e.target.checked);
+    pagination.resetToFirstPage();
+  };
+
+  // -- Acciones --
+  const handleBajaProveedores = async () => {
+    if (selected.length === 0)
+      return alert("Selecciona al menos un proveedor");
+    if (!window.confirm(`¿Dar de baja ${selected.length} proveedor(es)?`))
+      return;
+    try {
+      await proveedorService.delete(selected);
+      clearSelections();
+      refreshData();
+    } catch {
+      setError("Error al dar de baja los proveedores");
+    }
+  };
+
+  // -- Render --
+  return (
+    <div>
+      <h2 style={{ color: "white" }}>Gestión de Proveedores</h2>
+
+      {error && (
+        <Alert variant="danger" dismissible onClose={() => setError(null)}>
+          {error}
+        </Alert>
+      )}
+
+      {/* Barra de acciones */}
+      <div className="d-flex mb-3 gap-2">
+        <Button onClick={() => navigate("/home/nuevo-proveedor")}>
+          Nuevo Proveedor
+        </Button>
+        <Button variant="danger" onClick={handleBajaProveedores}>
+          Baja Proveedor
+        </Button>
+      </div>
+
+      {/* Búsqueda + Filtros */}
+      <Form
+        onSubmit={handleSearch}
+        className="d-flex mb-3 gap-2 align-items-center flex-wrap"
+      >
+        <Form.Control
+          type="text"
+          placeholder="Buscar por nombre..."
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+          style={{ maxWidth: "300px" }}
+        />
+        <Button type="submit" variant="primary">
+          Buscar
+        </Button>
+        {searchTerm && (
+          <Button variant="outline-secondary" onClick={handleClearSearch}>
+            Limpiar
+          </Button>
+        )}
+        <Form.Check
+          type="checkbox"
+          label="Mostrar dados de Baja"
+          checked={mostrarBaja}
+          onChange={handleMostrarBajaChange}
+          className="ms-2"
+        />
+      </Form>
+
+      {/* Tabla */}
+      {loading ? (
+        <div className="text-center my-4">
+          <Spinner animation="border" />
+        </div>
+      ) : (
+        <>
+          <Table striped bordered hover>
+            <thead>
+              <tr>
+                <th style={{ width: "40px" }}>
+                  <Form.Check
+                    type="checkbox"
+                    checked={
+                      selected.length === proveedores.length &&
+                      proveedores.length > 0
+                    }
+                    onChange={() => handleSelectAll(proveedores)}
+                  />
+                </th>
+                <th>Nombre</th>
+                <th>Código</th>
+                <th>Contacto</th>
+                <th>Teléfono</th>
+                <th>Email</th>
+                <th>Estado</th>
+                <th>Acción</th>
+              </tr>
+            </thead>
+            <tbody>
+              {proveedores.length === 0 ? (
+                <tr>
+                  <td colSpan="8" className="text-center">
+                    No se encontraron proveedores
+                  </td>
+                </tr>
+              ) : (
+                proveedores.map((prov) => (
+                  <tr key={prov.id}>
+                    <td>
+                      <Form.Check
+                        type="checkbox"
+                        checked={isSelected(prov.id)}
+                        onChange={() => handleSelect(prov.id)}
+                      />
+                    </td>
+                    <td
+                      className="text-truncate"
+                      style={{ maxWidth: "220px" }}
+                      title={prov.NombreProveedor}
+                    >
+                      {prov.NombreProveedor}
+                    </td>
+                    <td>{prov.Codigo ?? "—"}</td>
+                    <td>{prov.PersonaContacto ?? "—"}</td>
+                    <td>{prov.Tel ?? "—"}</td>
+                    <td
+                      className="text-truncate"
+                      style={{ maxWidth: "180px" }}
+                      title={prov.DireccionCorreoEl}
+                    >
+                      {prov.DireccionCorreoEl ?? "—"}
+                    </td>
+                    <td>
+                      {prov.fecha_baja ? (
+                        <span className="text-danger">Baja</span>
+                      ) : (
+                        <span className="text-success">Activo</span>
+                      )}
+                    </td>
+                    <td>
+                      <Button
+                        size="sm"
+                        variant="info"
+                        onClick={() =>
+                          navigate(
+                            `/home/gestion-proveedores/detalle/${prov.id}`,
+                          )
+                        }
+                      >
+                        Ver Detalle
+                      </Button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </Table>
+
+          <PaginationControl
+            currentPage={pagination.currentPage}
+            totalPaginas={pagination.totalPaginas}
+            paginasVisibles={pagination.paginasVisibles}
+            startPage={pagination.startPage}
+            endPage={pagination.endPage}
+            onPageChange={pagination.handlePageChange}
+          />
+        </>
+      )}
+    </div>
+  );
+}
+
+export default GestionProveedores;

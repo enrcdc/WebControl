@@ -12,7 +12,7 @@ export class ProveedorModel {
    * @param {Object} filters - El objeto de filtros.
    * @param {string} [filters.idProveedor] - filtrar por id
    * @param {string} [filters.codigo] - filtrar por codigo de proveedor
-   * @param {string} [filters.nombre] - filtrar por nombre de empresa
+   * @param {string} [filters.nombre] - filtrar por nombre de proveedor
    * @returns {Promise<Array>} Array de resultados de filtrado
    */
   static async getAll(filters = {}) {
@@ -47,6 +47,10 @@ export class ProveedorModel {
       query.where("Codigo", "like", `%${filters.codigo}%`);
     }
 
+    if (!filters.mostrarBaja) {
+      query.whereNull("fecha_baja");
+    }
+
     return applyPagination(query, filters);
   }
 
@@ -63,8 +67,11 @@ export class ProveedorModel {
           "Provincia",
           "CP",
           "Tel",
+          "Telefono2",
+          "Fax",
           "CIF",
           "DireccionCorreoEl",
+          "Evaluacion",
           "observaciones",
           "fecha_baja",
         )
@@ -73,9 +80,19 @@ export class ProveedorModel {
     );
   }
 
+  static async getLastCodigo() {
+    return db("proveedores")
+      .select(db.raw(`MAX(CAST(Codigo AS UNSIGNED)) AS ultimo_codigo`))
+      .where(
+        db.raw(`
+        Codigo REGEXP '^[0-9]+$' AND CodEmp="00004"
+        `),
+      );
+  }
+
   static async create(input) {
     const [idProveedor] = await db("proveedores").insert({
-      CodEmp: "00004", // --> Código de empresa de CC
+      CodEmp: "00004", // --> "00004" es el código de empresa de CC en la BBDD y debe estar fijado
       Codigo: input.codigo,
       NombreProveedor: input.nombre,
       CIF: input.cif,

@@ -32,6 +32,13 @@ import {
   DetalleContacto,
 } from "../features/contactos";
 
+// -- PROVEEDORES -- \\
+import {
+  GestionProveedores,
+  CrearProveedor,
+  DetalleProveedor,
+} from "../features/proveedores";
+
 // -- ALMACEN -- \\
 import { GestionAlmacen } from "../features/almacen";
 
@@ -144,6 +151,12 @@ function MainLayout() {
           <Route
             path="gestion-contactos/detalle/:id"
             element={<DetalleContacto />}
+          />
+          <Route path="gestion-proveedores" element={<GestionProveedores />} />
+          <Route path="nuevo-proveedor" element={<CrearProveedor />} />
+          <Route
+            path="gestion-proveedores/detalle/:id"
+            element={<DetalleProveedor />}
           />
           <Route path="gestion-almacen" element={<GestionAlmacen />} />
           <Route path="gestion-pedidos" element={<GestionPedidos />} />

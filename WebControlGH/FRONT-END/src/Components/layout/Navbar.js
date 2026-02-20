@@ -119,7 +119,7 @@ function Navbar() {
               <div className="submenu">
                 <a href="#usuarios">Gestión de Usuarios</a>
                 <Link to="/home/gestion-empresas">Gestión de Empresas</Link>
-                <a href="#permisos">Gestión de Proveedores</a>
+                <Link to="/home/gestion-proveedores">Gestión de Proveedores</Link>
                 <Link to="/home/gestion-complejos">Gestión de Complejos</Link>
                 <Link to="/home/gestion-contactos">Gestión de Contactos</Link>
                 <a href="#seguridad">Gestión de Tipos de gasto</a>

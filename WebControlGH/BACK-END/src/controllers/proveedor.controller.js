@@ -13,6 +13,25 @@ export class ProveedorController {
     }
   }
 
+  static async getById(req, res, next) {
+    try {
+      const { idProveedor } = req.params;
+      const proveedor = await ProveedorService.getById(idProveedor);
+      res.json({ success: true, data: proveedor });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async getUltimoCodigo(req, res, next) {
+    try {
+      const resultado = await ProveedorService.getUltimoCodigo();
+      res.json({ success: true, data: resultado });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   static async create(req, res, next) {
     try {
       const proveedor = await ProveedorService.create(req.body);

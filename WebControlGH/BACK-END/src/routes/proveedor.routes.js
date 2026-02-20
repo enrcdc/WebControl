@@ -9,6 +9,8 @@ import {
 export const proveedorRouter = Router();
 
 proveedorRouter.get("/", ProveedorController.getAll);
+proveedorRouter.get("/ultimo-codigo", ProveedorController.getUltimoCodigo);
+proveedorRouter.get("/:idProveedor", ProveedorController.getById);
 proveedorRouter.post(
   "/",
   validate(createProveedorSchema),
