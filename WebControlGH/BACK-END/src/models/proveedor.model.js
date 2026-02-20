@@ -72,6 +72,7 @@ export class ProveedorModel {
           "CIF",
           "DireccionCorreoEl",
           "Evaluacion",
+          "TipoFactura",
           "observaciones",
           "fecha_baja",
         )
@@ -104,6 +105,7 @@ export class ProveedorModel {
       Tel: input.telefono1,
       Telefono2: input.telefono2,
       Fax: input.fax,
+      id_tipofactura: input.tipoFactura,
       DireccionCorreoEl: input.email,
       Evaluacion: input.evaluacion,
       Observaciones: input.observaciones,
@@ -132,6 +134,7 @@ export class ProveedorModel {
       Fax: input.fax,
       DireccionCorreoEl: input.email,
       Evaluacion: input.evaluacion,
+      id_tipofactura: input.tipoFactura,
       Observaciones: input.observaciones,
     });
 

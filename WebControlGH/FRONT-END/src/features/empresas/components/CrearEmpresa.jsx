@@ -56,10 +56,13 @@ function CrearEmpresa() {
 
   // Fetch catálogo tipo factura
   useEffect(() => {
-    apiClient
-      .get(API_ENDPOINTS.TIPO_FACTURA)
-      .then((res) => setTiposFactura(res.data.data ?? []))
-      .catch(() => {});
+    const fetchTiposFactura = async () => {
+      try {
+        const res = await apiClient.get(API_ENDPOINTS.TIPO_FACTURA);
+        setTiposFactura(res.data.data ?? []);
+      } catch {}
+    };
+    fetchTiposFactura();
   }, []);
 
   // -- Contactos: lista combinada (existentes + nuevos) --

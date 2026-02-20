@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Button, Alert, Spinner, Card } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
 import { proveedorService } from "../services/proveedor.service";
+import { apiClient } from "Services/api/client";
+import { API_ENDPOINTS } from "constants/api";
 import { useFormulario } from "hooks/useFormulario";
 import FormProveedor from "./FormProveedor";
 
@@ -18,6 +20,7 @@ const INITIAL_FORM = {
   telefono2: "",
   fax: "",
   email: "",
+  tipoFactura: "",
   evaluacion: "",
   observaciones: "",
 };
@@ -35,6 +38,7 @@ const mapProveedorToForm = (proveedor) => ({
   telefono2: proveedor.Telefono2 ?? "",
   fax: proveedor.Fax ?? "",
   email: proveedor.DireccionCorreoEl ?? "",
+  tipoFactura: proveedor.TipoFactura ?? "",
   evaluacion: proveedor.Evaluacion ?? "",
   observaciones: proveedor.observaciones ?? "",
 });
@@ -50,6 +54,18 @@ function DetalleProveedor() {
 
   const { formData, handleChange, setFormData } = useFormulario(INITIAL_FORM);
   const [formOriginal, setFormOriginal] = useState(INITIAL_FORM);
+  const [tiposFactura, setTiposFactura] = useState([]);
+
+  // Fetch catálogo tipo factura
+  useEffect(() => {
+    const fetchTiposFactura = async () => {
+      try {
+        const res = await apiClient.get(API_ENDPOINTS.TIPO_FACTURA);
+        setTiposFactura(res.data.data ?? []);
+      } catch {}
+    };
+    fetchTiposFactura();
+  }, []);
 
   // Fetch proveedor
   useEffect(() => {
@@ -102,6 +118,7 @@ function DetalleProveedor() {
       if (formData.telefono2) payload.telefono2 = formData.telefono2;
       if (formData.fax) payload.fax = formData.fax;
       if (formData.email) payload.email = formData.email;
+      if (formData.tipoFactura) payload.tipoFactura = Number(formData.tipoFactura);
       if (formData.evaluacion !== "")
         payload.evaluacion = Number(formData.evaluacion);
       if (formData.observaciones) payload.observaciones = formData.observaciones;
@@ -164,6 +181,7 @@ function DetalleProveedor() {
           formData={formData}
           handleChange={handleChange}
           readOnly={!editando}
+          tiposFactura={tiposFactura}
         />
 
         {/* Acciones */}

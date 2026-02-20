@@ -7,8 +7,9 @@ import { Form, Row, Col } from "react-bootstrap";
  * @param {Object} props.formData - Estado del formulario (useFormulario)
  * @param {Function} props.handleChange - Handler de cambio (useFormulario)
  * @param {boolean} props.readOnly - Si true, todos los campos son read-only
+ * @param {Array} props.tiposFactura - Catálogo de tipos de factura
  */
-function FormProveedor({ formData, handleChange, readOnly = false }) {
+function FormProveedor({ formData, handleChange, readOnly = false, tiposFactura = [] }) {
   return (
     <Form>
       {/* Código + Nombre + CIF */}
@@ -169,18 +170,41 @@ function FormProveedor({ formData, handleChange, readOnly = false }) {
         />
       </Form.Group>
 
-      {/* Evaluación */}
-      <Form.Group className="mb-2">
-        <Form.Label>Evaluación</Form.Label>
-        <Form.Control
-          name="evaluacion"
-          type="number"
-          style={{ border: "2px solid #3498db" }}
-          value={formData.evaluacion}
-          onChange={handleChange}
-          readOnly={readOnly}
-        />
-      </Form.Group>
+      {/* Tipo de Factura + Evaluación */}
+      <Row>
+        <Col md={6}>
+          <Form.Group className="mb-2">
+            <Form.Label>Tipo de Factura</Form.Label>
+            <Form.Select
+              name="tipoFactura"
+              style={{ border: "2px solid #3498db" }}
+              value={formData.tipoFactura}
+              onChange={handleChange}
+              disabled={readOnly}
+            >
+              <option value="">Seleccionar...</option>
+              {tiposFactura.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.Descripcion}
+                </option>
+              ))}
+            </Form.Select>
+          </Form.Group>
+        </Col>
+        <Col md={6}>
+          <Form.Group className="mb-2">
+            <Form.Label>Evaluación</Form.Label>
+            <Form.Control
+              name="evaluacion"
+              type="number"
+              style={{ border: "2px solid #3498db" }}
+              value={formData.evaluacion}
+              onChange={handleChange}
+              readOnly={readOnly}
+            />
+          </Form.Group>
+        </Col>
+      </Row>
 
       {/* Observaciones */}
       <Form.Group className="mb-3">

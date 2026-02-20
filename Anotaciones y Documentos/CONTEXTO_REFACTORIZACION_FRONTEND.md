@@ -800,22 +800,20 @@ Relaciones 1:N con muchos elementos que tienen sus propios endpoints paginados. 
 
 ## TODO: Punto de continuación para el próximo chat
 
-**Última sesión:** 19/02/2026
-**Estado:** Feature empresas completada (excepto ImprimirEmpresa). GestionEmpresas migrada a `useGestionEntidad`. DetalleEmpresa con contactos editables + creación inline. Backend con filtro `mostrarBaja` en empresa.
+**Última sesión:** 20/02/2026
+**Estado:** Feature proveedores completa (backend + frontend). Ola 2 completada (GestionPedidos + GestionCompras migradas a useGestionEntidad + bulk delete backend). Convención async/await documentada (sección 15).
 
-### Tareas completadas esta sesión (19/02/2026):
-- `empresa.model.js`: añadido filtro `mostrarBaja` (por defecto `whereNull("fecha_baja")`)
-- `GestionEmpresas.jsx`: refactorizado a `useGestionEntidad` + checkbox "Mostrar dadas de Baja" + columna "Estado"
-- `FormEmpresa.jsx`: `TIPOS_EMPRESA` exportado como `export const` (eliminada duplicación con GestionEmpresas)
-- `DetalleEmpresa.jsx`: contactos editables con `useBusquedaMultiple` + `SearchableMultiSelect` + creación inline con `ModalNuevoContacto` + guardado orquestado (crear nuevos → combinar IDs → update empresa → refetch contactos)
-- **Especificación JSON_ARRAYAGG** (sección 14): `getAll` usa escalares (COUNT/GROUP_CONCAT), `getById` usa arrays JSON. Aplicado en empresa, edificio, contacto. Frontend actualizado (6 archivos)
+### Tareas completadas esta sesión (20/02/2026):
+- **Ola 2**: `GestionPedidos.js` + `GestionCompras.js` migradas a `useGestionEntidad` + server-side filters + `deleteMany` en backend
+- **Feature proveedores** (backend + frontend): `GestionProveedores`, `CrearProveedor`, `DetalleProveedor`, `FormProveedor`, `proveedor.service.js` (frontend). Backend: `getLastCodigo` + `GET /ultimo-codigo`, `getById`, `mostrarBaja` filter
+- **tipoFactura en proveedores**: `proveedor.model.js` (getById + update), `FormProveedor.jsx` (select), `CrearProveedor.jsx` + `DetalleProveedor.jsx` (fetch + payload)
+- **Refactor async/await**: `CrearProveedor.jsx`, `DetalleProveedor.jsx`, `CrearEmpresa.jsx` — eliminado `.then().catch()`, documentado en sección 15
 
 ### Próximos pasos:
 
-1. **Probar** en navegador los cambios (GestionEmpresas mostrarBaja, DetalleEmpresa contactos editables, renderSuggestion con `nombreEmpresas`)
-2. **Navbar**: Añadir enlaces a gestion-complejos y gestion-contactos
-3. **ImprimirEmpresa.jsx**: Placeholder/TODO. Pendiente requisitos.
-4. **Ola 2** — compras + pedidos en estructura definitiva (sección 8)
+1. **Probar** en navegador la feature proveedores (creación, detalle, edición, baja, tipoFactura)
+2. **ImprimirEmpresa.jsx**: Placeholder/TODO. Pendiente requisitos.
+3. **Features compras/pedidos**: Completar detalle + crear si aplica
 
 ### Contexto importante:
 - **Estructura definitiva**: Sección 8 — nombres con entidad, `.jsx` componentes / `.js` lógica, hooks por necesidad
@@ -836,4 +834,64 @@ Relaciones 1:N con muchos elementos que tienen sus propios endpoints paginados. 
 - `useGestionEntidad` > patrón manual useState+useEffect+refreshKey
 - `useBusquedaMultiple` para cualquier `SearchableMultiSelect` con búsqueda asíncrona
 - `useModal` para controlar visibilidad de modales
-- `FormComplejo`/`FormContacto`/`FormEmpresa` son la referencia del patrón `Form[Entidad].jsx` — compartir entre Crear y Detalle
+- `FormComplejo`/`FormContacto`/`FormEmpresa`/`FormProveedor` son la referencia del patrón `Form[Entidad].jsx` — compartir entre Crear y Detalle
+
+---
+
+## Sección 15 — Convención async/await en useEffect
+
+**Decisión (20/02/2026):** Todo fetch asíncrono en `useEffect` usa **async/await**, nunca `.then().catch()`.
+
+### Por qué no se puede hacer el callback de useEffect directamente async
+
+```js
+// ❌ MAL — useEffect espera una función que retorne undefined o una cleanup function.
+//    Una función async retorna una Promise, lo que provoca un warning de React.
+useEffect(async () => {
+  const res = await apiClient.get(url);
+  setState(res.data);
+}, []);
+```
+
+### Patrón correcto
+
+```js
+// ✅ BIEN — función interna async + llamada inmediata
+useEffect(() => {
+  const fetchData = async () => {
+    try {
+      const res = await apiClient.get(url);
+      setState(res.data ?? []);
+    } catch {}          // errores silenciados salvo que necesiten UI feedback
+  };
+  fetchData();
+}, [deps]);
+```
+
+### Si hay múltiples peticiones independientes, usar Promise.all
+
+```js
+useEffect(() => {
+  const fetchData = async () => {
+    try {
+      const [resA, resB] = await Promise.all([
+        apiClient.get(API_ENDPOINTS.TIPO_FACTURA),
+        servicioX.getUltimoCodigo(),
+      ]);
+      setTiposFactura(resA.data.data ?? []);
+      setCodigo(resB.data.data.siguienteCodigo);
+    } catch {}
+  };
+  fetchData();
+}, []);
+```
+
+### Excepción conocida
+
+`reportWebVitals.js` usa `import().then()` — es un dynamic import de CRA, no una llamada de API. No aplica esta convención.
+
+### Archivos ya refactorizados
+
+- `CrearProveedor.jsx` — useEffect con `getUltimoCodigo` + `TIPO_FACTURA` (Promise.all)
+- `DetalleProveedor.jsx` — useEffect con `TIPO_FACTURA`
+- `CrearEmpresa.jsx` — useEffect con `TIPO_FACTURA`
