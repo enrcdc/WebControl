@@ -2,7 +2,7 @@ import { contactoFDService } from "./ContactoService.js";
 import { mapEmpresaToFD, mapProveedorToFD } from "./contacto.mapper.js";
 
 /**
- * Servicio de sincronización ERP ↔ FacturaDirecta para contactos.
+ * Servicio de sincronización ERP <-> FacturaDirecta para contactos.
  *
  * Siempre devuelve un objeto de resultado — nunca lanza excepción —
  * para que el ERP no falle si FD no está disponible:
@@ -12,7 +12,7 @@ import { mapEmpresaToFD, mapProveedorToFD } from "./contacto.mapper.js";
  *
  * El fdContactId se persiste en la DB para hacer PUT en futuros updates.
  *
- * TODO: Sincronización de baja (soft delete ERP ↔ delete FD). Pendiente de
+ * TODO: Sincronización de baja (soft delete ERP <-> delete FD). Pendiente de
  *       decisión del cliente sobre cómo compatibilizar ambas plataformas.
  */
 export class FDContactoSyncService {
@@ -33,9 +33,8 @@ export class FDContactoSyncService {
         ? await contactoFDService.updateContacto(fdContactId, payload)
         : await contactoFDService.createContacto(payload);
 
-      // FD devuelve el id en result.data.id o result.data.content.id
-      const newFdContactId =
-        result.data?.id ?? result.data?.content?.id ?? fdContactId;
+      // FD devuelve el id en result.data.content.uuid
+      const newFdContactId = result.data?.content?.uuid ?? fdContactId;
 
       return { ok: true, fdContactId: newFdContactId };
     } catch (err) {
@@ -63,8 +62,7 @@ export class FDContactoSyncService {
         ? await contactoFDService.updateContacto(fdContactId, payload)
         : await contactoFDService.createContacto(payload);
 
-      const newFdContactId =
-        result.data?.id ?? result.data?.content?.id ?? fdContactId;
+      const newFdContactId = result.data?.content?.uuid ?? fdContactId;
 
       return { ok: true, fdContactId: newFdContactId };
     } catch (err) {

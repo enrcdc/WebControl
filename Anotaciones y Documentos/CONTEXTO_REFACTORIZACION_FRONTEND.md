@@ -801,21 +801,23 @@ Relaciones 1:N con muchos elementos que tienen sus propios endpoints paginados. 
 ## TODO: Punto de continuación para el próximo chat
 
 **Última sesión:** 20/02/2026
-**Estado:** Integración FacturaDirecta — Primera Iteración completada. Feature proveedores completa. Ola 2 completada.
+**Estado:** Integración FacturaDirecta — Primera Iteración **probada y funcionando**. Feature proveedores completa. Ola 2 completada.
 
 ### Tareas completadas esta sesión (20/02/2026):
 - **Ola 2**: `GestionPedidos.js` + `GestionCompras.js` migradas a `useGestionEntidad` + server-side filters + `deleteMany` en backend
 - **Feature proveedores**: completa (backend + frontend)
-- **tipoFactura en proveedores + refactor async/await**: ver sesión anterior
-- **Integración FacturaDirecta — Primera Iteración** (sección 16): sync empresa→FD cliente + proveedor→FD proveedor en create/update
+- **tipoFactura en proveedores + refactor async/await**: ver secciones 15 y anteriores
+- **Integración FacturaDirecta — Primera Iteración** (sección 16): sync empresa→FD cliente + proveedor→FD proveedor en create/update. **Probado y funcionando en sandbox.**
+  - Fix aplicado: el UUID del contacto FD se extrae de `result.data.content.uuid` (no de `result.data.id`)
+  - `client.js` refactorizado para usar `config/env.js` en lugar de `process.env` directo
+  - ✅ Migración DB ya ejecutada en MySQL Workbench: columnas `fd_contact_id` añadidas a `empresas` y `proveedores` (script en `BACK-END/src/migrations/001_add_fd_contact_id.sql`)
 
 ### Próximos pasos:
 
-1. **⚠️ EJECUTAR MIGRACIÓN DB**: `BACK-END/src/migrations/001_add_fd_contact_id.sql` antes de arrancar el servidor
-2. **Probar** en navegador la sincronización FD (crear empresa/proveedor con CIF)
-3. **ImprimirEmpresa.jsx**: Placeholder/TODO. Pendiente requisitos.
-4. **Baja FD**: Pendiente decisión del cliente (soft delete ERP vs delete permanente FD) — TODO en FDContactoSyncService
-5. **Iteración FD siguiente**: A definir con el cliente (facturas, presupuestos, etc.)
+1. **ImprimirEmpresa.jsx**: Placeholder/TODO. Pendiente requisitos.
+2. **Baja FD**: Pendiente decisión del cliente (soft delete ERP vs delete permanente FD) — TODO en `FDContactoSyncService.js`
+3. **Iteración FD siguiente**: A definir con el cliente (facturas, presupuestos, otros contactos…)
+4. **TODO pendiente en empresa.service.js**: Establecer convenio para ids de entidades (`id` vs `id_entidad`) — ver nota en sección 16
 
 ### Contexto importante:
 - **Estructura definitiva**: Sección 8 — nombres con entidad, `.jsx` componentes / `.js` lógica, hooks por necesidad
@@ -913,8 +915,7 @@ BACK-END/src/integrations/FacturaDirecta/
 ├── Contactos/
 │   ├── ContactoService.js             ← CRUD contactos FD (usa client.js)
 │   ├── contacto.mapper.js             ← mapeo ERP camelCase → payload FD
-│   ├── FDContactoSyncService.js       ← orquestación sync (nunca lanza, siempre devuelve {ok, ...})
-│   └── plantillas.js                  ← ejemplos de referencia (sin modificar)
+│   └── FDContactoSyncService.js       ← orquestación sync (nunca lanza, siempre devuelve {ok, ...})
 ├── Albaranes/AlbaranesService.js      ← usa client.js
 ├── Presupuestos/PresupuestoService.js ← usa client.js
 ├── Productos/ProductoService.js       ← usa client.js
@@ -978,30 +979,39 @@ BACK-END/src/integrations/FacturaDirecta/
 ALTER TABLE empresas   ADD COLUMN fd_contact_id VARCHAR(50) NULL;
 ALTER TABLE proveedores ADD COLUMN fd_contact_id VARCHAR(50) NULL;
 ```
-**⚠️ EJECUTAR antes de arrancar el servidor con estos cambios.**
+✅ **Ya ejecutado en MySQL Workbench** (20/02/2026).
 
-### Variables de entorno (ya en .env)
+### Variables de entorno (ya en .env y env.example)
 
 ```
 FACTURADIRECTA_API_KEY=...
 FACTURADIRECTA_COMPANY_ID=com_sandbox_...
 ```
+El `client.js` las consume a través de `config/env.js` (no accede a `process.env` directamente).
+
+### ⚠️ Dato crítico de la API de FacturaDirecta
+
+El UUID del contacto creado/actualizado se devuelve en **`result.data.content.uuid`**.
+No está en `result.data.id` ni en `result.data.content.id`. Esta es la ruta correcta
+para persistir `fd_contact_id` en la DB del ERP.
 
 ### TODO pendiente
 
 - **Baja FD**: `FDContactoSyncService` tiene un TODO marcado. Pendiente de decisión del cliente sobre cómo compatibilizar soft delete ERP con delete permanente FD.
+- **Convenio de IDs de entidad**: En `empresa.service.js` hay un TODO sobre usar `id` vs `id_entidad` de forma consistente al acceder al resultado de `EmpresaModel.create`.
 - **Iteraciones siguientes**: definir con el cliente qué otras entidades sincronizar (facturas, presupuestos, productos…)
 
 ### Archivos modificados en esta iteración
 
 **Backend:**
-- `integrations/FacturaDirecta/client.js` (NUEVO)
+- `integrations/FacturaDirecta/client.js` (NUEVO → refactorizado para usar `config/env.js`)
 - `integrations/FacturaDirecta/index.js` (NUEVO)
 - `integrations/FacturaDirecta/Contactos/ContactoService.js` (refactorizado)
 - `integrations/FacturaDirecta/Contactos/contacto.mapper.js` (NUEVO)
-- `integrations/FacturaDirecta/Contactos/FDContactoSyncService.js` (NUEVO)
+- `integrations/FacturaDirecta/Contactos/FDContactoSyncService.js` (NUEVO — fix UUID: `result.data.content.uuid`)
 - `integrations/FacturaDirecta/Albaranes|Presupuestos|Productos|MetodosPago/*.js` (refactorizados)
-- `migrations/001_add_fd_contact_id.sql` (NUEVO — requiere ejecución manual)
+- `config/env.js` — añadidas variables `facturaDirecta.*`
+- `migrations/001_add_fd_contact_id.sql` (NUEVO — ya ejecutado)
 - `models/empresa.model.js` — `fd_contact_id` en getById + `saveFdContactId`
 - `models/proveedor.model.js` — ídem
 - `services/empresa.service.js` — sync en create/update

@@ -1,9 +1,6 @@
 import { EmpresaModel } from "../models/empresa.model.js";
 import { AlreadyDeletedError, NotFoundError } from "../errors/index.js";
-import {
-  validateNotEmpty,
-  validateId,
-} from "../utils/index.js";
+import { validateNotEmpty, validateId } from "../utils/index.js";
 import { FDContactoSyncService } from "../integrations/FacturaDirecta/Contactos/FDContactoSyncService.js";
 
 // JSON_ARRAYAGG puede devolver string o array dependiendo del driver/versión
@@ -69,8 +66,10 @@ export class EmpresaService {
       contactos,
       null,
     );
+    // TODO: Establecer un convenio para los ids de las entidades (id ó id_entidad)
     if (fdSync.ok && fdSync.fdContactId) {
-      await EmpresaModel.saveFdContactId(nuevaEmpresa.id_empresa, fdSync.fdContactId);
+      console.log("Creación de empresa satisfactoria");
+      await EmpresaModel.saveFdContactId(nuevaEmpresa.id, fdSync.fdContactId);
     }
 
     return { ...nuevaEmpresa, fdSync };

@@ -1,13 +1,13 @@
 import dotenv from "dotenv";
-import path from 'path';
-import { fileURLToPath } from 'url';
+import path from "path";
+import { fileURLToPath } from "url";
 
 // Obtener la ruta del directorio actual
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Subimos dos niveles para llegar de ./src/config/ a la raíz ./
-dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+dotenv.config({ path: path.resolve(__dirname, "../../.env") });
 
 // TODO: Añadir modo test y producción
 
@@ -38,5 +38,12 @@ export const config = {
   jwt: {
     secret: process.env.JWT_SECRET,
     expiresIn: process.env.JWT_EXPIRES_IN || "8h",
+  },
+  // TODO: Estos datos son del entorno de pruebas. Cambiar a las de producción cuando
+  // esté todo listo
+  facturaDirecta: {
+    apiKey: process.env.FACTURADIRECTA_API_KEY,
+    apiVersion: process.env.FACTURADIRECTA_API_VERSION,
+    baseURL: process.env.FACTURADIRECTA_BASE_URL,
   },
 };

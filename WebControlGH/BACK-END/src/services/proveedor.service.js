@@ -1,9 +1,6 @@
 import { ProveedorModel } from "../models/proveedor.model.js";
 import { AlreadyDeletedError, NotFoundError } from "../errors/index.js";
-import {
-  validateNotEmpty,
-  validateId,
-} from "../utils/index.js";
+import { validateNotEmpty, validateId } from "../utils/index.js";
 import { FDContactoSyncService } from "../integrations/FacturaDirecta/Contactos/FDContactoSyncService.js";
 
 export class ProveedorService {
@@ -54,7 +51,11 @@ export class ProveedorService {
       null,
     );
     if (fdSync.ok && fdSync.fdContactId) {
-      await ProveedorModel.saveFdContactId(nuevoProveedor.id, fdSync.fdContactId);
+      console.log("Creación de proveedor satisfactoria");
+      await ProveedorModel.saveFdContactId(
+        nuevoProveedor.id,
+        fdSync.fdContactId,
+      );
     }
 
     return { ...nuevoProveedor, fdSync };
