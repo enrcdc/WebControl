@@ -68,6 +68,10 @@ export class PedidoObraService {
     return pedidoEliminado;
   }
 
+  static async deleteMany(idPedidos) {
+    return PedidoObraModel.deleteMany({ idPedidos });
+  }
+
   // ============================================
   // MÉTODOS PRIVADOS
   // ============================================

@@ -71,4 +71,17 @@ export class FacturaCompraController {
       next(error);
     }
   }
+
+  static async deleteMany(req, res, next) {
+    try {
+      const { idFacturas } = req.body;
+      await FacturaCompraService.deleteMany(idFacturas);
+      res.json({
+        success: true,
+        message: "Factura(s) eliminada(s) exitosamente",
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 }

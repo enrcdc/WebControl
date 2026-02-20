@@ -22,6 +22,7 @@ facturaCompraRouter.patch(
   validate(updateFacturaSchema),
   FacturaCompraController.update,
 );
+facturaCompraRouter.delete("/", FacturaCompraController.deleteMany);
 facturaCompraRouter.delete("/:id", FacturaCompraController.delete);
 
 export default facturaCompraRouter;

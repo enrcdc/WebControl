@@ -28,5 +28,5 @@ export const pedidoService = {
     apiClient.patch(`${API_ENDPOINTS.PEDIDO_OBRA}/${id}`, data),
 
   delete: (ids) =>
-    apiClient.delete(API_ENDPOINTS.PEDIDO_OBRA, { data: { ids } }),
+    apiClient.delete(API_ENDPOINTS.PEDIDO_OBRA, { data: { idPedidos: ids } }),
 };

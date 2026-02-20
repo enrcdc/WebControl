@@ -70,4 +70,17 @@ export class PedidoObraController {
       next(error);
     }
   }
+
+  static async deleteMany(req, res, next) {
+    try {
+      const { idPedidos } = req.body;
+      await PedidoObraService.deleteMany(idPedidos);
+      res.json({
+        success: true,
+        message: "Pedido(s) eliminado(s) exitosamente",
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 }

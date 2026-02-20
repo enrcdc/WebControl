@@ -56,6 +56,14 @@ export class FacturaCompraModel {
       query.where("fc.numero", "like", `%${filters.numFactura}%`);
     }
 
+    if (filters.fechaInicio) {
+      query.where("f.fecha_alta", ">=", filters.fechaInicio);
+    }
+
+    if (filters.fechaFin) {
+      query.where("f.fecha_alta", "<=", filters.fechaFin);
+    }
+
     if (filters.mostrarBaja !== undefined) {
       if (filters.mostrarBaja === "true" || filters.mostrarBaja === true) {
         query.whereNotNull("f.fecha_baja");
@@ -130,6 +138,15 @@ export class FacturaCompraModel {
     await db("facturascompras_obra").where("id", id).update(updateData);
 
     return db("facturascompras_obra").where("id", id).first() ?? null;
+  }
+
+  static async deleteMany({ idFacturas }) {
+    return db("facturascompras_obra")
+      .whereIn("id", idFacturas)
+      .update({
+        fecha_baja: db.fn.now(),
+        codigo_usuario_baja: 67, // TODO: extraer del usuario logueado
+      });
   }
 
   static async delete({ id, codigoUsuarioBaja = 67 } = {}) {

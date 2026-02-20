@@ -9,6 +9,7 @@ pedidoObraRouter.get("/", PedidoObraController.getAll);
 pedidoObraRouter.post("/filtrar", PedidoObraController.filtrar);
 pedidoObraRouter.post("/", validate(createPedidoObraSchema), PedidoObraController.create);
 pedidoObraRouter.patch("/:idPedido", validate(updatePedidoObraSchema), PedidoObraController.update);
+pedidoObraRouter.delete("/", PedidoObraController.deleteMany);
 pedidoObraRouter.delete("/:idPedido", PedidoObraController.delete);
 
 export default pedidoObraRouter;

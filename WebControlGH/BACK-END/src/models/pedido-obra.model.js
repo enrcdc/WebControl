@@ -37,6 +37,22 @@ export class PedidoObraModel {
       query.where("observaciones", "like", `%${filters.observaciones}%`);
     }
 
+    if (filters.estado) {
+      query.where("estado", filters.estado);
+    }
+
+    if (filters.referencia) {
+      query.where("referencia", "like", `%${filters.referencia}%`);
+    }
+
+    if (filters.fechaInicio) {
+      query.where("fecha", ">=", filters.fechaInicio);
+    }
+
+    if (filters.fechaFin) {
+      query.where("fecha", "<=", filters.fechaFin);
+    }
+
     if (filters.mostrarBaja !== undefined) {
       if (filters.mostrarBaja === "true" || filters.mostrarBaja === true) {
         query.whereNotNull("fecha_baja");
@@ -84,6 +100,15 @@ export class PedidoObraModel {
 
   // TODO: De momento el codigo de usuario que da de baja esta hardcodeado
   // Habría que extraer el usuario logeado y asignarle como el que lo da de baja
+  static async deleteMany({ idPedidos }) {
+    return db("ecopedido")
+      .whereIn("id_pedido", idPedidos)
+      .update({
+        fecha_baja: db.fn.now(),
+        codigo_usuario_baja: 67, // TODO: extraer del usuario logueado
+      });
+  }
+
   static async delete({ idPedido, codigoUsuarioBaja = 67 }) {
     const affectedRows = await db("ecopedido")
       .where("id_pedido", idPedido)

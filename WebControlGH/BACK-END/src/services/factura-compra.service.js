@@ -97,6 +97,10 @@ export class FacturaCompraService {
     return facturaEliminada;
   }
 
+  static async deleteMany(idFacturas) {
+    return FacturaCompraModel.deleteMany({ idFacturas });
+  }
+
   // ============================================
   // MÉTODOS PRIVADOS
   // ============================================

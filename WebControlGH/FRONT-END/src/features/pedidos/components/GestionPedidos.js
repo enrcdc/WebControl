@@ -1,352 +1,252 @@
-import React, { useState, useEffect } from "react";
-import {
-  Collapse,
-  Form,
-  Button,
-  Table,
-  Container,
-  Row,
-  Col,
-} from "react-bootstrap";
+import { useState, useCallback } from "react";
+import { Table, Button, Form, Alert, Spinner } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import "../../../styles/FacturaDetalle.css";
 import { pedidoService } from "../services/pedido.service";
-
-import { usePaginacion } from "hooks/usePaginacion";
-import { PaginationControl } from "Components/ui/index";
-
-
-let allPedidos = null;
+import { useGestionEntidad } from "hooks/useGestionEntidad";
+import { useSeleccionMultiple } from "hooks/useSeleccionMultiple";
+import { PaginationControl } from "Components/ui";
 
 function GestionPedidos() {
-  const [open, setOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    fechaInicio: "",
-    fechaFin: "",
-    estado: "",
-    cliente: "",
-    referencia: "",
-  });
-  const [filteredPedidos, setFilteredPedidos] = useState([]);
-  const [selectedPedidos, setSelectedPedidos] = useState([]);
-  const [selectAll, setSelectAll] = useState(false);
   const navigate = useNavigate();
+  const [searchInput, setSearchInput] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [fechaInicio, setFechaInicio] = useState("");
+  const [fechaFin, setFechaFin] = useState("");
+  const [mostrarBaja, setMostrarBaja] = useState(false);
 
-  // Hook de paginación
   const {
-    currentPage,
-    setCurrentPage,
-    itemsActuales: pedidosActuales,
-    totalPaginas,
-    startPage,
-    endPage,
-    paginasVisibles,
-    handlePageChange,
-  } = usePaginacion(filteredPedidos);
+    selected,
+    handleSelect,
+    handleSelectAll,
+    clearSelections,
+    isSelected,
+  } = useSeleccionMultiple("id_pedido");
 
-  // Funcion para recuperar los pedidos del endpoint
-  const fetchPedidos = async () => {
+  const fetchPedidos = useCallback(
+    ({ limit, offset }) =>
+      pedidoService.getAll({
+        limit,
+        offset,
+        ...(searchTerm && { codigoPedido: searchTerm }),
+        ...(fechaInicio && { fechaInicio }),
+        ...(fechaFin && { fechaFin }),
+        ...(mostrarBaja && { mostrarBaja: 1 }),
+      }),
+    [searchTerm, fechaInicio, fechaFin, mostrarBaja],
+  );
+
+  const {
+    items: pedidos,
+    loading,
+    error,
+    setError,
+    pagination,
+    refreshData,
+  } = useGestionEntidad(fetchPedidos, 20);
+
+  // -- Búsqueda --
+  const handleSearch = (e) => {
+    e.preventDefault();
+    setSearchTerm(searchInput);
+    pagination.resetToFirstPage();
+  };
+
+  const handleClearSearch = () => {
+    setSearchInput("");
+    setSearchTerm("");
+    pagination.resetToFirstPage();
+  };
+
+  // -- Filtros fecha --
+  const handleFechaInicioChange = (e) => {
+    setFechaInicio(e.target.value);
+    pagination.resetToFirstPage();
+  };
+
+  const handleFechaFinChange = (e) => {
+    setFechaFin(e.target.value);
+    pagination.resetToFirstPage();
+  };
+
+  const handleMostrarBajaChange = (e) => {
+    setMostrarBaja(e.target.checked);
+    pagination.resetToFirstPage();
+  };
+
+  // -- Acciones --
+  const handleBajaPedidos = async () => {
+    if (selected.length === 0) return alert("Selecciona al menos un pedido");
+    if (!window.confirm(`¿Dar de baja ${selected.length} pedido(s)?`)) return;
     try {
-      const res = await pedidoService.getAll();
-      const data = res.data?.data || res.data || [];
-      allPedidos = data;
-      setFilteredPedidos(data);
-    } catch (err) {
-      console.error(`Error al obtener los pedidos - ${err}`);
+      await pedidoService.delete(selected);
+      clearSelections();
+      refreshData();
+    } catch {
+      setError("Error al dar de baja los pedidos");
     }
   };
 
-  // UseEffect que se ejecuta una vez cuando el componente se monta
-  useEffect(() => {
-    fetchPedidos();
-  }, []);
-
-  const handleChange = (e) => {
-    setFormData((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
-  };
-
-  // Handler para la selección total
-  const handleSelectAll = () => {
-    const newSelectAll = !selectAll;
-    setSelectAll(newSelectAll);
-    if (newSelectAll) {
-      setSelectedPedidos(filteredPedidos.map((pedido) => pedido.id));
-    } else {
-      setSelectedPedidos([]);
-    }
-  };
-
-  const handleSearch = () => {
-    let filtered = allPedidos;
-
-    if (formData.fechaInicio) {
-      filtered = filtered.filter(
-        (pedido) => new Date(pedido.fecha) >= new Date(formData.fechaInicio),
-      );
-    }
-
-    if (formData.fechaFin) {
-      filtered = filtered.filter(
-        (pedido) => new Date(pedido.fecha) <= new Date(formData.fechaFin),
-      );
-    }
-
-    if (formData.estado) {
-      filtered = filtered.filter((pedido) => pedido.estado === formData.estado);
-    }
-
-    if (formData.cliente) {
-      filtered = filtered.filter((pedido) =>
-        pedido.cliente.toLowerCase().includes(formData.cliente.toLowerCase()),
-      );
-    }
-
-    if (formData.referencia) {
-      filtered = filtered.filter((pedido) =>
-        pedido.referencia.includes(formData.referencia),
-      );
-    }
-
-    setFilteredPedidos(filtered);
-  };
-
-  const handleCheckboxChange = (pedidoId) => {
-    setSelectedPedidos((prev) =>
-      prev.includes(pedidoId)
-        ? prev.filter((id) => id !== pedidoId)
-        : [...prev, pedidoId],
-    );
-  };
-
-  // Handler para la creacion de pedidos
-  const handleCrearPedido = () => {
-    navigate("/home/nuevo-pedido");
-  };
-
-  // Handler para la eliminacion de pedidos
-  const handleDeletePedidos = async () => {
-    if (selectedPedidos.length === 0) {
-      alert("Por favor, selecciona al menos una factura para eliminar.");
-      return;
-    }
-    if (
-      window.confirm(
-        "¿Estás seguro de querer eliminar los pedidos seleccionados?",
-      )
-    ) {
-      try {
-        await pedidoService.delete(selectedPedidos);
-        await fetchPedidos();
-        setSelectedPedidos([]);
-        alert("Pedidos eliminados correctamente");
-      } catch (err) {
-        alert("Error al eliminar los pedidos");
-        console.error(`Error al eliminar los pedidos - ${err}`);
-      }
-    }
-  };
-
-  const handleImprimirPedidos = () => {
-    if (selectedPedidos.length === 0) {
-      alert("Selecciona al menos un pedido para imprimir.");
-      return;
-    }
-    navigate("/home/imprimir-pedido", {
-      state: { selectedPedidos: selectedPedidos },
-    });
-  };
-
+  // -- Render --
   return (
-    <div className="gestion-pedidos">
-      <h3>Listado de Pedidos</h3>
+    <div>
+      <h2 style={{ color: "white" }}>Gestión de Pedidos</h2>
 
-      <div style={{ textAlign: "left" }}>
-        <Button
-          onClick={() => setOpen(!open)}
-          aria-controls="filtros-collapse"
-          aria-expanded={open}
-          style={{
-            backgroundColor: "#cce5ff",
-            color: "#004085",
-            border: "none",
-            marginBottom: "1rem",
-          }}
-        >
-          Criterios de Búsqueda
+      {error && (
+        <Alert variant="danger" dismissible onClose={() => setError(null)}>
+          {error}
+        </Alert>
+      )}
+
+      {/* Barra de acciones */}
+      <div className="d-flex mb-3 gap-2">
+        <Button onClick={() => navigate("/home/nuevo-pedido")}>
+          Nuevo Pedido
+        </Button>
+        <Button variant="danger" onClick={handleBajaPedidos}>
+          Baja Pedido
         </Button>
       </div>
 
-      <Collapse in={open}>
-        <div
-          id="filtros-collapse"
-          className="mb-4 p-3 border rounded"
-          style={{ backgroundColor: "#e9f5ff" }}
-        >
-          <Form>
-            <div className="row">
-              <div className="col-md-3">
-                <Form.Group>
-                  <Form.Label>Fecha Inicio</Form.Label>
-                  <Form.Control
-                    type="date"
-                    name="fechaInicio"
-                    value={formData.fechaInicio}
-                    onChange={handleChange}
-                  />
-                </Form.Group>
-              </div>
-              <div className="col-md-3">
-                <Form.Group>
-                  <Form.Label>Fecha Fin</Form.Label>
-                  <Form.Control
-                    type="date"
-                    name="fechaFin"
-                    value={formData.fechaFin}
-                    onChange={handleChange}
-                  />
-                </Form.Group>
-              </div>
-              <div className="col-md-3">
-                <Form.Group>
-                  <Form.Label>Estado</Form.Label>
-                  <Form.Select
-                    name="estado"
-                    value={formData.estado}
-                    onChange={handleChange}
-                  >
-                    <option value="">Selecciona</option>
-                    <option value="Pendiente">Pendiente</option>
-                    <option value="Enviado">Enviado</option>
-                    <option value="Entregado">Entregado</option>
-                  </Form.Select>
-                </Form.Group>
-              </div>
-              <div className="col-md-3">
-                <Form.Group>
-                  <Form.Label>Cliente</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="cliente"
-                    value={formData.cliente}
-                    onChange={handleChange}
-                    placeholder="Nombre del cliente"
-                  />
-                </Form.Group>
-              </div>
-              <div className="col-md-3 mt-3">
-                <Form.Group>
-                  <Form.Label>Referencia</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="referencia"
-                    value={formData.referencia}
-                    onChange={handleChange}
-                    placeholder="Referencia de pedido"
-                  />
-                </Form.Group>
-              </div>
-            </div>
-          </Form>
-        </div>
-      </Collapse>
-
-      <div className="d-flex mb-4">
+      {/* Búsqueda + Filtros */}
+      <Form
+        onSubmit={handleSearch}
+        className="d-flex mb-3 gap-2 align-items-center flex-wrap"
+      >
         <Form.Control
           type="text"
-          placeholder="Buscar pedidos..."
-          className="me-2"
-          style={{ maxWidth: "150px" }}
+          placeholder="Buscar por código de pedido..."
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+          style={{ maxWidth: "260px" }}
         />
-        <Button
-          variant="primary"
-          onClick={handleSearch}
-          style={{ width: "auto" }}
-        >
+        <Button type="submit" variant="primary">
           Buscar
         </Button>
-      </div>
+        {searchTerm && (
+          <Button variant="outline-secondary" onClick={handleClearSearch}>
+            Limpiar
+          </Button>
+        )}
+        <Form.Control
+          type="date"
+          value={fechaInicio}
+          onChange={handleFechaInicioChange}
+          title="Fecha inicio"
+          style={{ maxWidth: "170px" }}
+        />
+        <span style={{ color: "white" }}>—</span>
+        <Form.Control
+          type="date"
+          value={fechaFin}
+          onChange={handleFechaFinChange}
+          title="Fecha fin"
+          style={{ maxWidth: "170px" }}
+        />
+        <Form.Check
+          type="checkbox"
+          label="Mostrar dados de Baja"
+          checked={mostrarBaja}
+          onChange={handleMostrarBajaChange}
+          className="ms-2"
+        />
+      </Form>
 
-      <Container>
-        <Row className="mb-3">
-          <Col className="text-end">
-            <Button onClick={handleCrearPedido} className="custom-button">
-              Nuevo Pedido
-            </Button>
-            <Button onClick={handleDeletePedidos} className="custom-button">
-              Eliminar Pedido
-            </Button>
-            <Button onClick={handleImprimirPedidos} className="custom-button">
-              Imprimir Pedidos
-            </Button>
-          </Col>
-        </Row>
-      </Container>
-
-      <Table striped bordered hover>
-        <thead>
-          <tr>
-            <th>
-              <Form.Check
-                type="checkbox"
-                checked={selectAll}
-                onChange={handleSelectAll}
-              />
-            </th>
-            <th>Referencia</th>
-            <th>Cliente</th>
-            <th>Fecha</th>
-            <th>Estado</th>
-            <th>Importe</th>
-            <th>Acción</th>
-          </tr>
-        </thead>
-        <tbody>
-          {pedidosActuales.length > 0 ? (
-            pedidosActuales.map((pedido, index) => (
-              <tr key={index}>
-                <td>
-                  <input
+      {/* Tabla */}
+      {loading ? (
+        <div className="text-center my-4">
+          <Spinner animation="border" />
+        </div>
+      ) : (
+        <>
+          <Table striped bordered hover>
+            <thead>
+              <tr>
+                <th style={{ width: "40px" }}>
+                  <Form.Check
                     type="checkbox"
-                    checked={selectedPedidos.includes(pedido.id)}
-                    onChange={() => handleCheckboxChange(pedido.id)}
-                  />
-                </td>
-                <td>{pedido.referencia}</td>
-                <td>{pedido.cliente}</td>
-                <td>{pedido.fecha}</td>
-                <td>{pedido.estado}</td>
-                <td>{pedido.importe}</td>
-                <td>
-                  <Button
-                    variant="info"
-                    onClick={() =>
-                      navigate(`/home/gestion-pedidos/detalle/${pedido.id}`)
+                    checked={
+                      selected.length === pedidos.length && pedidos.length > 0
                     }
-                  >
-                    Detalle
-                  </Button>
-                </td>
+                    onChange={() => handleSelectAll(pedidos)}
+                  />
+                </th>
+                <th>Código Pedido</th>
+                <th>Posición</th>
+                <th>Fecha</th>
+                <th>Importe</th>
+                <th>Observaciones</th>
+                <th>Estado</th>
+                <th>Acción</th>
               </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan="7">No se encontraron pedidos</td>
-            </tr>
-          )}
-        </tbody>
-      </Table>
+            </thead>
+            <tbody>
+              {pedidos.length === 0 ? (
+                <tr>
+                  <td colSpan="8" className="text-center">
+                    No se encontraron pedidos
+                  </td>
+                </tr>
+              ) : (
+                pedidos.map((pedido) => (
+                  <tr key={pedido.id_pedido}>
+                    <td>
+                      <Form.Check
+                        type="checkbox"
+                        checked={isSelected(pedido.id_pedido)}
+                        onChange={() => handleSelect(pedido.id_pedido)}
+                      />
+                    </td>
+                    <td>{pedido.codigo_pedido ?? "—"}</td>
+                    <td>{pedido.posicion ?? "—"}</td>
+                    <td>
+                      {pedido.fecha
+                        ? new Date(pedido.fecha).toLocaleDateString("es-ES")
+                        : "—"}
+                    </td>
+                    <td>{pedido.importe != null ? `${pedido.importe} €` : "—"}</td>
+                    <td
+                      className="text-truncate"
+                      style={{ maxWidth: "200px" }}
+                      title={pedido.observaciones}
+                    >
+                      {pedido.observaciones ?? "—"}
+                    </td>
+                    <td>
+                      {pedido.fecha_baja ? (
+                        <span className="text-danger">Baja</span>
+                      ) : (
+                        <span className="text-success">Activo</span>
+                      )}
+                    </td>
+                    <td>
+                      <Button
+                        size="sm"
+                        variant="info"
+                        onClick={() =>
+                          navigate(
+                            `/home/gestion-pedidos/detalle/${pedido.id_pedido}`,
+                          )
+                        }
+                      >
+                        Ver Detalle
+                      </Button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </Table>
 
-      <PaginationControl
-        currentPage={currentPage}
-        totalPaginas={totalPaginas}
-        paginasVisibles={paginasVisibles}
-        startPage={startPage}
-        endPage={endPage}
-        onPageChange={handlePageChange}
-      />
+          <PaginationControl
+            currentPage={pagination.currentPage}
+            totalPaginas={pagination.totalPaginas}
+            paginasVisibles={pagination.paginasVisibles}
+            startPage={pagination.startPage}
+            endPage={pagination.endPage}
+            onPageChange={pagination.handlePageChange}
+          />
+        </>
+      )}
     </div>
   );
 }

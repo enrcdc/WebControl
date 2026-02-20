@@ -13,5 +13,5 @@ export const compraService = {
     apiClient.patch(`${API_ENDPOINTS.FACTURA_COMPRA}/${id}`, data),
 
   delete: (ids) =>
-    apiClient.delete(API_ENDPOINTS.FACTURA_COMPRA, { data: { ids } }),
+    apiClient.delete(API_ENDPOINTS.FACTURA_COMPRA, { data: { idFacturas: ids } }),
 };
