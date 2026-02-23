@@ -1,0 +1,2 @@
+### Obtener todos los tipos de iva
+GET http://localhost:3002/api/tipo-iva

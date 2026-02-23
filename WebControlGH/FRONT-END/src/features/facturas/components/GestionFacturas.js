@@ -358,7 +358,7 @@ function GestionFacturas() {
             Baja Factura
           </Button>
           <Button onClick={handleCopiarFacturas} className="custom-button">
-            Importar Facturas desde DQEMS
+            Importar facturas desde FacturaDirecta
           </Button>
           <Button onClick={handleImprimirFacturas} className="custom-button">
             Imprimir Facturas

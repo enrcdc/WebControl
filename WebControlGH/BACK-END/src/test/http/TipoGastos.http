@@ -1,0 +1,5 @@
+### Obtener los tipos de gastos
+GET http://localhost:3002/api/tipo-gasto
+
+### Obtener gastos filtrados
+GET http://localhost:3002/api/tipo-gasto
