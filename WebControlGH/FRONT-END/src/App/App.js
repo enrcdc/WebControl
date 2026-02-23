@@ -79,6 +79,13 @@ import { HorasList, DetalleHora, NuevaHora } from "../features/horas";
 // -- GASTOS -- \\
 import { GastosList } from "../features/gastos";
 
+// -- TIPO GASTO -- \\
+import {
+  GestionTipoGastos,
+  CrearTipoGasto,
+  DetalleTipoGasto,
+} from "../features/tipoGasto";
+
 // Componente principal de la aplicación
 function App() {
   return (
@@ -172,6 +179,16 @@ function MainLayout() {
           />
           {/*Gastos  */}
           <Route path="gastos-obras" element={<GastosList />} />
+          {/* Tipos de Gasto */}
+          <Route
+            path="gestion-tipos-gasto"
+            element={<GestionTipoGastos />}
+          />
+          <Route path="nuevo-tipo-gasto" element={<CrearTipoGasto />} />
+          <Route
+            path="gestion-tipos-gasto/detalle/:id"
+            element={<DetalleTipoGasto />}
+          />
         </Routes>
       </div>
     </div>

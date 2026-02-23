@@ -23,6 +23,8 @@ import rentabilidadRouter from "./rentabilidad.routes.js";
 import facturaCompraRouter from "./factura-compra.routes.js";
 import pedidoObraRouter from "./pedido-obra.routes.js";
 import proveedorRouter from "./proveedor.routes.js";
+import tipoGastoRouter from "./tipo-gasto.routes.js";
+import tipoIvaRouter from "./tipo-iva.routes.js";
 import gastoRouter from "./gasto.routes.js";
 import horasRouter from "./hora.routes.js";
 import movimientosAlmacenRouter from "./movimiento-almacen.routes.js";
@@ -64,6 +66,8 @@ router.use("/movimientos-almacen", movimientosAlmacenRouter);
 router.use("/tipo-obra", tipoObraRouter);
 router.use("/tipo-facturable", tipoFacturableRouter);
 router.use("/tipo-factura", tipoFacRouter);
+router.use("/tipo-gasto", tipoGastoRouter);
+router.use("/tipo-iva", tipoIvaRouter);
 router.use("/estado-obra", estadoObraRouter);
 router.use("/responsables", responsablesRouter);
 

@@ -122,7 +122,7 @@ function Navbar() {
                 <Link to="/home/gestion-proveedores">Gestión de Proveedores</Link>
                 <Link to="/home/gestion-complejos">Gestión de Complejos</Link>
                 <Link to="/home/gestion-contactos">Gestión de Contactos</Link>
-                <a href="#seguridad">Gestión de Tipos de gasto</a>
+                <Link to="/home/gestion-tipos-gasto">Gestión de Tipos de gasto</Link>
                 <a href="#datos">Gestión de Tareas</a>
                 <a href="#backup">Gestión de Calendarios</a>
                 <a href="#actualizaciones">Configuración Variables</a>
