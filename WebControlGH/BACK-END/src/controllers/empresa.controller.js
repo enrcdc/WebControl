@@ -35,8 +35,8 @@ export class EmpresaController {
 
   static async create(req, res, next) {
     try {
-      const empresa = await EmpresaService.create(req.body);
-      res.status(201).json({ success: true, data: empresa });
+      const { data, sync } = await EmpresaService.create(req.body);
+      res.status(201).json({ success: true, data, sync });
     } catch (error) {
       next(error);
     }
@@ -45,15 +45,12 @@ export class EmpresaController {
   static async update(req, res, next) {
     try {
       const { idEmpresa } = req.params;
-      const updateData = req.body;
-      const empresaActualizada = await EmpresaService.update(
-        idEmpresa,
-        updateData,
-      );
+      const { data, sync } = await EmpresaService.update(idEmpresa, req.body);
       res.json({
         success: true,
         message: "Empresa actualizada exitosamente",
-        data: empresaActualizada,
+        data,
+        sync,
       });
     } catch (error) {
       next(error);

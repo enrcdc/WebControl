@@ -58,7 +58,7 @@ export class ProveedorService {
       );
     }
 
-    return { ...nuevoProveedor, fdSync };
+    return { data: nuevoProveedor, sync: fdSync };
   }
 
   static async update(idProveedor, updateData) {
@@ -82,7 +82,7 @@ export class ProveedorService {
       await ProveedorModel.saveFdContactId(validID, fdSync.fdContactId);
     }
 
-    return { ...proveedorActualizado, fdSync };
+    return { data: proveedorActualizado, sync: fdSync };
   }
 
   static async delete(idProveedores) {

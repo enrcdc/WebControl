@@ -135,12 +135,7 @@ export class EmpresaModel {
 
     await db("empresas_contactos").insert(rows);
 
-    const empresa = await db("empresas")
-      .select("*")
-      .where("id_empresa", idEmpresa)
-      .first();
-
-    return empresa ?? null;
+    return EmpresaModel.getById({ idEmpresa });
   }
 
   static async update({ idEmpresa, input }) {

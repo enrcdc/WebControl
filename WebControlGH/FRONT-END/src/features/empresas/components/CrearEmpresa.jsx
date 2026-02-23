@@ -136,7 +136,8 @@ function CrearEmpresa() {
 
       // 1. Crear empresa con contactos existentes
       const res = await empresaService.create(payload);
-      const { id_empresa: empresaId, fdSync } = res.data.data;
+      const empresaId = res.data.data?.id;
+      const fdSync = res.data.sync;
       if (fdSync && !fdSync.ok) {
         setFdSyncWarning(fdSync.error ?? "Error desconocido en FacturaDirecta");
       }

@@ -222,7 +222,7 @@ function DetalleEmpresa() {
       payload.contactos = todosIds;
 
       const resUpdate = await empresaService.update(id, payload);
-      const fdSync = resUpdate.data?.data?.fdSync;
+      const fdSync = resUpdate.data?.sync;
       if (fdSync && !fdSync.ok) {
         setFdSyncWarning(fdSync.error ?? "Error desconocido en FacturaDirecta");
       } else {

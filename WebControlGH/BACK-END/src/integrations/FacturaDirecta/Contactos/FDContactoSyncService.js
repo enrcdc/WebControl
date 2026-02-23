@@ -17,6 +17,36 @@ import { mapEmpresaToFD, mapProveedorToFD } from "./contacto.mapper.js";
  */
 export class FDContactoSyncService {
   /**
+   * Método genérico interno de sincronización.
+   * Crea o actualiza un contacto en FD según si fdContactId existe o no.
+   *
+   * @param {string}      entityName  - Nombre descriptivo para los logs
+   * @param {Function}    mapFn       - Función sin argumentos que devuelve el payload FD
+   * @param {string|null} cif         - CIF de la entidad (sin CIF → sync omitida)
+   * @param {string|null} fdContactId - ID FD existente (null → creación)
+   */
+  static async #sync(entityName, mapFn, cif, fdContactId) {
+    if (!cif) return { ok: true, skipped: true };
+
+    try {
+      const payload = mapFn();
+
+      const result = fdContactId
+        ? await contactoFDService.updateContacto(fdContactId, payload)
+        : await contactoFDService.createContacto(payload);
+
+      const newFdContactId = result.data?.content?.uuid ?? fdContactId;
+
+      return { ok: true, fdContactId: newFdContactId };
+    } catch (err) {
+      const error =
+        err.response?.data?.message ?? err.message ?? "Error desconocido";
+      console.error(`[FD Sync] Error sincronizando ${entityName}:`, error);
+      return { ok: false, error };
+    }
+  }
+
+  /**
    * Sincroniza una empresa ERP como contacto cliente en FacturaDirecta.
    *
    * @param {Object}      empresaData  - Datos camelCase de la empresa
@@ -24,25 +54,12 @@ export class FDContactoSyncService {
    * @param {string|null} fdContactId  - ID FD existente (null → creación)
    */
   static async syncEmpresa(empresaData, contactos, fdContactId) {
-    if (!empresaData.cif) return { ok: true, skipped: true };
-
-    try {
-      const payload = mapEmpresaToFD(empresaData, contactos);
-
-      const result = fdContactId
-        ? await contactoFDService.updateContacto(fdContactId, payload)
-        : await contactoFDService.createContacto(payload);
-
-      // FD devuelve el id en result.data.content.uuid
-      const newFdContactId = result.data?.content?.uuid ?? fdContactId;
-
-      return { ok: true, fdContactId: newFdContactId };
-    } catch (err) {
-      const error =
-        err.response?.data?.message ?? err.message ?? "Error desconocido";
-      console.error("[FD Sync] Error sincronizando empresa:", error);
-      return { ok: false, error };
-    }
+    return FDContactoSyncService.#sync(
+      "empresa",
+      () => mapEmpresaToFD(empresaData, contactos),
+      empresaData.cif,
+      fdContactId,
+    );
   }
 
   /**
@@ -53,23 +70,11 @@ export class FDContactoSyncService {
    * @param {string|null} fdContactId   - ID FD existente (null → creación)
    */
   static async syncProveedor(proveedorData, entityId, fdContactId) {
-    if (!proveedorData.cif) return { ok: true, skipped: true };
-
-    try {
-      const payload = mapProveedorToFD(proveedorData, entityId);
-
-      const result = fdContactId
-        ? await contactoFDService.updateContacto(fdContactId, payload)
-        : await contactoFDService.createContacto(payload);
-
-      const newFdContactId = result.data?.content?.uuid ?? fdContactId;
-
-      return { ok: true, fdContactId: newFdContactId };
-    } catch (err) {
-      const error =
-        err.response?.data?.message ?? err.message ?? "Error desconocido";
-      console.error("[FD Sync] Error sincronizando proveedor:", error);
-      return { ok: false, error };
-    }
+    return FDContactoSyncService.#sync(
+      "proveedor",
+      () => mapProveedorToFD(proveedorData, entityId),
+      proveedorData.cif,
+      fdContactId,
+    );
   }
 }

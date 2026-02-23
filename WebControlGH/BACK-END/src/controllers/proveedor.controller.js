@@ -34,8 +34,8 @@ export class ProveedorController {
 
   static async create(req, res, next) {
     try {
-      const proveedor = await ProveedorService.create(req.body);
-      res.status(201).json({ success: true, data: proveedor });
+      const { data, sync } = await ProveedorService.create(req.body);
+      res.status(201).json({ success: true, data, sync });
     } catch (error) {
       next(error);
     }
@@ -44,15 +44,15 @@ export class ProveedorController {
   static async update(req, res, next) {
     try {
       const { idProveedor } = req.params;
-      const updateData = req.body;
-      const proveedorActualizado = await ProveedorService.update(
+      const { data, sync } = await ProveedorService.update(
         idProveedor,
-        updateData,
+        req.body,
       );
       res.json({
         success: true,
         message: "Proveedor actualizado exitosamente",
-        data: proveedorActualizado,
+        data,
+        sync,
       });
     } catch (error) {
       next(error);

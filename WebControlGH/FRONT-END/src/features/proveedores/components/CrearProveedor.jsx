@@ -83,7 +83,7 @@ function CrearProveedor() {
         payload.observaciones = formData.observaciones;
 
       const res = await proveedorService.create(payload);
-      const fdSync = res.data?.data?.fdSync;
+      const fdSync = res.data?.sync;
       if (fdSync && !fdSync.ok) {
         setFdSyncWarning(fdSync.error ?? "Error desconocido en FacturaDirecta");
       } else {

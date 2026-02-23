@@ -50,29 +50,23 @@ export class EmpresaService {
   static async create(empresaData) {
     this._validateEmpresaData(empresaData);
 
+    // create() devuelve getById() internamente → id normalizado + contactos incluidos
     const nuevaEmpresa = await EmpresaModel.create(empresaData);
 
     if (!nuevaEmpresa) {
       throw new Error("Error al crear la empresa");
     }
 
-    // FD Sync — obtener empresa con contactos completos para el mapper
-    const empresaCompleta = await EmpresaModel.getById({
-      idEmpresa: nuevaEmpresa.id_empresa,
-    });
-    const contactos = parseContactos(empresaCompleta?.contactos);
+    const contactos = parseContactos(nuevaEmpresa.contactos);
     const fdSync = await FDContactoSyncService.syncEmpresa(
       empresaData,
       contactos,
       null,
     );
-    // TODO: Establecer un convenio para los ids de las entidades (id ó id_entidad)
     if (fdSync.ok && fdSync.fdContactId) {
-      console.log("Creación de empresa satisfactoria");
       await EmpresaModel.saveFdContactId(nuevaEmpresa.id, fdSync.fdContactId);
     }
-
-    return { ...nuevaEmpresa, fdSync };
+    return { data: nuevaEmpresa, sync: fdSync };
   }
 
   static async update(idEmpresa, updateData) {
@@ -98,7 +92,7 @@ export class EmpresaService {
       await EmpresaModel.saveFdContactId(validID, fdSync.fdContactId);
     }
 
-    return { ...empresaActualizada, fdSync };
+    return { data: empresaActualizada, sync: fdSync };
   }
 
   static async delete(idEmpresas) {
