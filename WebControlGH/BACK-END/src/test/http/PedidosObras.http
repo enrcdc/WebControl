@@ -1,5 +1,8 @@
 ###### ENDPOINTS PEDIDOS #############
 
+### Obtener un pedido
+GET http://localhost:3002/api/pedidoObra/50
+
 ### Obtener pedidos asociados a una obra
 POST http://localhost:3002/api/pedidoObra/filtrar
 Content-Type: application/json

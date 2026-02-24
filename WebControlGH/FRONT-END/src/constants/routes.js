@@ -12,16 +12,15 @@ export const ROUTES = {
   NUEVA_OBRA: "nuevo-obra",
   IMPRIMIR_OBRA: "imprimir-obra",
 
-  // Facturas de obra
+  // Facturas de obra (solo lectura — se crean desde FacturaDirecta)
   GESTION_FACTURAS: "gestion-facturas",
-  DETALLE_FACTURA: "gestion-facturas/detalle/:cod",
-  NUEVA_FACTURA: "nueva-factura",
+  DETALLE_FACTURA: "gestion-facturas/detalle/:id",
   IMPRIMIR_FACTURA: "imprimir-factura",
 
   // Pedidos
   GESTION_PEDIDOS: "gestion-pedidos",
   DETALLE_PEDIDO: "gestion-pedidos/detalle/:id",
-  NUEVO_PEDIDO: "nuevo-pedido",
+  CREAR_PEDIDO: "nuevo-pedido",
   IMPRIMIR_PEDIDO: "imprimir-pedido",
 
   // Compras

@@ -13,6 +13,7 @@ export class ObraModel {
    * @param {string} [filters.empresa] - filtrar por nombre de empresa (like)
    * @param {string} [filters.complejo] - filtrar por nombre de edificio (like)
    * @param {string} [filters.descripcion] - filtrar por descripción de obra (like)
+   * @param {string} [filters.codigo] - filtrar por codigo de obra (like)
    * @param {Array<string>} [filters.estados] - filtrar por descripciones de estado [Array]
    * @param {Array<string>} [filters.tipos] - filtrar por descripciones de tipo [Array]
    * @param {boolean} [filters.enSeguimiento] - true: con fecha_seg, false: sin fecha_seg
@@ -125,6 +126,10 @@ export class ObraModel {
 
     if (filters.descripcion) {
       query.where("o.descripcion_obra", "like", `%${filters.descripcion}%`);
+    }
+
+    if (filters.codigo) {
+      query.where("o.codigo_obra", "like", `%${filters.codigo}%`)
     }
 
     if (filters.estados) {

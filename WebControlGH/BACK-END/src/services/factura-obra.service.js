@@ -20,6 +20,18 @@ export class FacturaObraService {
     return { data, pagination };
   }
 
+  static async getById(id) {
+    const validId = validateId(id, "ID de factura");
+
+    const factura = await FacturaObraModel.getById({ id: validId });
+
+    if (!factura) {
+      throw new NotFoundError("Factura de obra", id);
+    }
+
+    return factura;
+  }
+
   static async create(facturaData) {
     validateNotEmpty(facturaData, "datos de la factura");
 
@@ -69,6 +81,10 @@ export class FacturaObraService {
     }
 
     return facturaEliminada;
+  }
+
+  static async deleteMany(idFacturas) {
+    return FacturaObraModel.deleteMany({ idFacturas });
   }
 
   // ============================================

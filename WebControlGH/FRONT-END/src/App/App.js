@@ -54,7 +54,6 @@ import {
 import {
   GestionFacturas,
   DetalleFactura,
-  NuevaFactura,
   ImprimirFacturas,
 } from "../features/facturas";
 
@@ -62,7 +61,7 @@ import {
 import {
   GestionPedidos,
   DetallePedido,
-  NuevoPedido,
+  CrearPedido,
   ImprimirPedido,
 } from "../features/pedidos";
 
@@ -119,15 +118,15 @@ function MainLayout() {
         <Routes>
           <Route path="gestion-obras" element={<ListaObras />} />
           <Route path="nuevo-obra" element={<CrearObra />} />
-          <Route path="nueva-factura" element={<NuevaFactura />} />
-          <Route path="nuevo-pedido" element={<NuevoPedido />} />
+          {/* Facturas se crean desde FacturaDirecta, no desde el ERP */}
+          <Route path="nuevo-pedido" element={<CrearPedido />} />
           {<Route path="nueva-compra" element={<NuevaCompra />} />}
           <Route path="nueva-hora" element={<NuevaHora />} />
           <Route path="profitability" element={<ProfitabilityTable />} />
           <Route path="gestion-facturas" element={<GestionFacturas />} />
           <Route path="imprimir-obra" element={<ImprimirObras />} />
           <Route
-            path="gestion-facturas/detalle/:cod"
+            path="gestion-facturas/detalle/:id"
             element={<DetalleFactura />}
           />
           <Route

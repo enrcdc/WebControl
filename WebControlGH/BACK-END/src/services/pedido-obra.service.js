@@ -17,6 +17,18 @@ export class PedidoObraService {
     return { data, pagination };
   }
 
+  static async getById(id) {
+    const validId = validateId(id, "ID de pedido");
+
+    const pedido = await PedidoObraModel.getById({ idPedido: validId });
+
+    if (!pedido) {
+      throw new NotFoundError("Pedido", id);
+    }
+
+    return pedido;
+  }
+
   static async create(pedidoData) {
     validateNotEmpty(pedidoData, "datos del pedido");
 

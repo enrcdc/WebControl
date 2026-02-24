@@ -167,7 +167,7 @@ function DetalleContacto() {
 
   return (
     <Card className="p-3 mb-3">
-      <h2 style={{ color: "white" }}>
+      <h2 style={{ color: "black" }}>
         Detalle de Contacto — {formData.nombre} {formData.apellido1}
       </h2>
 

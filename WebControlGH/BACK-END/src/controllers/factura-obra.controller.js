@@ -21,6 +21,16 @@ export class FacturaObraController {
     }
   }
 
+  static async getById(req, res, next) {
+    try {
+      const { idFactura } = req.params;
+      const factura = await FacturaObraService.getById(idFactura);
+      res.json({ success: true, data: factura });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   static async create(req, res, next) {
     try {
       const facturaData = req.body;
@@ -47,6 +57,19 @@ export class FacturaObraController {
         success: true,
         message: "Factura actualizada exitosamente",
         data: facturaActualizada,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async deleteMany(req, res, next) {
+    try {
+      const { idFacturas } = req.body;
+      await FacturaObraService.deleteMany(idFacturas);
+      res.json({
+        success: true,
+        message: "Factura(s) eliminada(s) exitosamente",
       });
     } catch (error) {
       next(error);

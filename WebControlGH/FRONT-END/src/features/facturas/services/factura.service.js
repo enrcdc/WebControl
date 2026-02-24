@@ -28,6 +28,6 @@ export const facturaService = {
   update: (id, data) =>
     apiClient.patch(`${API_ENDPOINTS.FACTURA_OBRA}/${id}`, data),
 
-  delete: (ids) =>
-    apiClient.delete(API_ENDPOINTS.FACTURA_OBRA, { data: { ids } }),
+  delete: (idFacturas) =>
+    apiClient.delete(API_ENDPOINTS.FACTURA_OBRA, { data: { idFacturas } }),
 };

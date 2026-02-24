@@ -21,6 +21,16 @@ export class PedidoObraController {
     }
   }
 
+  static async getById(req, res, next) {
+    try {
+      const { idPedido } = req.params;
+      const pedido = await PedidoObraService.getById(idPedido);
+      res.json({ success: true, data: pedido });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   static async create(req, res, next) {
     try {
       const pedidoData = req.body;

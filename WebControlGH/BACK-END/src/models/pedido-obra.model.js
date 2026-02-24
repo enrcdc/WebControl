@@ -66,8 +66,20 @@ export class PedidoObraModel {
 
   static async getById({ idPedido }) {
     return (
-      db("ecopedido")
-        .select("*")
+      db("ecopedido as p")
+        .select(
+          "p.id_pedido",
+          "p.id_obra",
+          "o.codigo_obra",
+          "o.descripcion_obra",
+          "p.codigo_pedido",
+          "p.posicion",
+          "p.importe",
+          "p.fecha",
+          "p.observaciones",
+          "p.fecha_baja",
+        )
+        .leftJoin("obras as o", "p.id_obra", "o.id_obra")
         .where("id_pedido", idPedido)
         .first() ?? null
     );
@@ -75,7 +87,7 @@ export class PedidoObraModel {
 
   static async create({ input }) {
     const [insertId] = await db("ecopedido").insert({
-      fecha: input.fechaPedido.split("T")[0],
+      fecha: input.fecha.split("T")[0],
       codigo_pedido: input.codigoPedido,
       posicion: input.posicion,
       importe: input.importe,
@@ -87,13 +99,15 @@ export class PedidoObraModel {
   }
 
   static async update({ idPedido, input }) {
-    await db("ecopedido").where("id_pedido", idPedido).update({
-      fecha: input.fechaPedido.split("T")[0],
-      codigo_pedido: input.codigoPedido,
-      posicion: input.posicion,
-      importe: input.importe,
-      observaciones: input.observaciones,
-    });
+    await db("ecopedido")
+      .where("id_pedido", idPedido)
+      .update({
+        fecha: input.fecha.split("T")[0],
+        codigo_pedido: input.codigoPedido,
+        posicion: input.posicion,
+        importe: input.importe,
+        observaciones: input.observaciones,
+      });
 
     return db("ecopedido").where("id_pedido", idPedido).first() ?? null;
   }
@@ -101,12 +115,10 @@ export class PedidoObraModel {
   // TODO: De momento el codigo de usuario que da de baja esta hardcodeado
   // Habría que extraer el usuario logeado y asignarle como el que lo da de baja
   static async deleteMany({ idPedidos }) {
-    return db("ecopedido")
-      .whereIn("id_pedido", idPedidos)
-      .update({
-        fecha_baja: db.fn.now(),
-        codigo_usuario_baja: 67, // TODO: extraer del usuario logueado
-      });
+    return db("ecopedido").whereIn("id_pedido", idPedidos).update({
+      fecha_baja: db.fn.now(),
+      codigo_usuario_baja: 67, // TODO: extraer del usuario logueado
+    });
   }
 
   static async delete({ idPedido, codigoUsuarioBaja = 67 }) {
@@ -123,7 +135,12 @@ export class PedidoObraModel {
 
     return (
       db("ecopedido")
-        .select("id_pedido", "codigo_pedido", "fecha_baja", "codigo_usuario_baja")
+        .select(
+          "id_pedido",
+          "codigo_pedido",
+          "fecha_baja",
+          "codigo_usuario_baja",
+        )
         .where("id_pedido", idPedido)
         .first() ?? null
     );

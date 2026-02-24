@@ -81,9 +81,27 @@ export class FacturaObraModel {
 
   static async getById({ id }) {
     return (
-      db("ecofactura")
-        .select("*")
-        .where("id_factura", id)
+      db("ecofactura as f")
+        .select(
+          "f.id_factura",
+          "f.id_pedido",
+          "f.id_obra",
+          "o.codigo_obra",
+          "o.descripcion_obra",
+          "p.codigo_pedido",
+          "f.fecha",
+          "f.codigo_factura",
+          "f.posicion",
+          "f.importe",
+          "f.concepto_linea",
+          "f.concepto_factura",
+          "f.observaciones",
+          "f.fecha_cobro",
+          "f.fecha_baja",
+        )
+        .leftJoin("obras as o", "f.id_obra", "o.id_obra")
+        .leftJoin("ecopedido as p", "f.id_pedido", "p.id_pedido")
+        .where("f.id_factura", id)
         .first() ?? null
     );
   }
@@ -123,6 +141,13 @@ export class FacturaObraModel {
 
   // TODO: De momento el codigo de usuario que da de baja esta hardcodeado
   // Habría que extraer el usuario logeado y asignarle como el que lo da de baja
+  static async deleteMany({ idFacturas }) {
+    return db("ecofactura").whereIn("id_factura", idFacturas).update({
+      fecha_baja: db.fn.now(),
+      codigo_usuario_baja: 67, // TODO: extraer del usuario logueado
+    });
+  }
+
   static async delete({ idFactura, codigoUsuarioBaja = 67 }) {
     const affectedRows = await db("ecofactura")
       .where("id_factura", idFactura)

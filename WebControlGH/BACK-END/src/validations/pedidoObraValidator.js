@@ -1,7 +1,7 @@
 import zod from "zod";
 
 const pedidoObraSchema = zod.object({
-  fechaPedido: zod
+  fecha: zod
     .string({
       required_error: "La fecha del pedido es requerida",
     })
