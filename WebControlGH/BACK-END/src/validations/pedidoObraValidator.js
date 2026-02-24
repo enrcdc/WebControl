@@ -15,8 +15,8 @@ const pedidoObraSchema = zod.object({
   }),
 
   posicion: zod
-    .string({
-      invalid_type_error: "La posición debe ser una cadena de texto",
+    .number({
+      invalid_type_error: "La posición debe ser un número",
     })
     .optional(),
 

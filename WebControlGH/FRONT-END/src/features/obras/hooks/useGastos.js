@@ -44,6 +44,8 @@ export const useGastos = (idObra) => {
         observaciones: "",
         idObra: idObra,
       },
+      camposNumericos: ["idReferencia", "usuarioAlta", "tipoMovimiento", "conceptoMovimiento", "cantidad", "importe"],
+
       // Transformación de datos de BD a formulario
       transformAfterFetch: (gastos) =>
         gastos.map((gasto) => ({

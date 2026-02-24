@@ -58,6 +58,29 @@ Notas de la sesion en curso. Al finalizar el dia, archivar como `sesiones/SESION
   - DN-3: Codificacion de obra/pedido en lineas de factura FD
   - DN-4: Tipos de factura (obras vs compras)
 
+### Fix: validaciones Zod fallaban en modales CRUD de DetalleObra
+
+**Problema:** Al crear pedido desde DetalleObra (via usePedidos → useCrudEntidad), error 400:
+- `fecha`: "Expected string, received undefined" (hook enviaba `fechaPedido`, validator esperaba `fecha`)
+- `idObra`: "expected number, received string" (useParams devuelve strings, campo no pasaba por handleChange)
+
+**Fixes del usuario (modulo pedidos standalone):**
+- `pedidoObraValidator.js`: `posicion` de `string` → `number` (alineado con el tipo real del campo)
+- `CrearPedido.jsx`: anadido `camposNumericos: ["importe", "posicion"]` a useFormulario
+- `DetallePedido.jsx`: anadido `camposNumericos: ["importe", "posicion"]` a useFormulario
+
+**Fix centralizado en `useCrudEntidad.js`:**
+- Anadida coercion automatica de `camposNumericos` en `handleGuardar`, justo antes de enviar al API
+- Convierte campos declarados como numericos a `Number()` (resuelve strings de useParams/initialForm)
+
+**Fix en `usePedidos.js`:**
+- Anadido `transformBeforeSave` para mapear `fechaPedido` → `fecha` (nombre de formulario → nombre de API)
+
+**Propagacion a otros hooks afectados:**
+- `useFacturas.js`: anadido `camposNumericos: ["idPedido", "importe", "idObra"]`
+- `useGastos.js` (almacen): anadido `camposNumericos: ["idReferencia", "usuarioAlta", "tipoMovimiento", "conceptoMovimiento", "cantidad", "importe"]`
+- `useGastos.js` (compras): ya tenia `camposNumericos` + `Number()` manual — no requeria cambios
+
 ### Actualizaciones de documentacion (Directriz 7)
 
 - `CLAUDE.md`: Anadido puntero a DECISIONES_NEGOCIO.md, anadido evento "decision de negocio" en tabla Directriz 7
@@ -70,9 +93,13 @@ Notas de la sesion en curso. Al finalizar el dia, archivar como `sesiones/SESION
 ## Archivos modificados
 
 ### Frontend
+- `hooks/useCrudEntidad.js` (coercion automatica camposNumericos en handleGuardar)
+- `features/obras/hooks/usePedidos.js` (transformBeforeSave fechaPedido→fecha)
+- `features/obras/hooks/useFacturas.js` (camposNumericos anadido)
+- `features/obras/hooks/useGastos.js` (camposNumericos anadido en almacen hook)
 - `features/pedidos/components/FormPedido.jsx` (fix name + empty Row)
-- `features/pedidos/components/DetallePedido.jsx` (fix payload)
-- `features/pedidos/components/CrearPedido.jsx` (nuevo)
+- `features/pedidos/components/DetallePedido.jsx` (fix payload + camposNumericos)
+- `features/pedidos/components/CrearPedido.jsx` (nuevo + camposNumericos)
 - `features/pedidos/components/ImprimirPedido.jsx` (reescrito)
 - `features/pedidos/index.js` (actualizado)
 - `features/facturas/components/GestionFacturas.jsx` (reescrito)
@@ -85,6 +112,7 @@ Notas de la sesion en curso. Al finalizar el dia, archivar como `sesiones/SESION
 - `constants/routes.js` (actualizado)
 
 ### Backend
+- `validations/pedidoObraValidator.js` (posicion: string → number)
 - `models/factura-obra.model.js` (getById con JOIN, deleteMany)
 - `services/factura-obra.service.js` (getById, deleteMany)
 - `controllers/factura-obra.controller.js` (getById, deleteMany)

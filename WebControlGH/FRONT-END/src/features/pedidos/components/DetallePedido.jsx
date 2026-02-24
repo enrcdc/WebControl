@@ -33,7 +33,10 @@ function DetallePedido() {
   const [saving, setSaving] = useState(false);
   const [editando, setEditando] = useState(false);
 
-  const { formData, handleChange, setFormData } = useFormulario(INITIAL_FORM);
+  const { formData, handleChange, setFormData } = useFormulario(INITIAL_FORM, [
+    "importe",
+    "posicion",
+  ]);
   const [formOriginal, setFormOriginal] = useState(INITIAL_FORM);
 
   // Obra del pedido (inmutable, solo lectura)

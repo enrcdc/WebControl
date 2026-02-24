@@ -1,6 +1,7 @@
 // Hook refactorizado para gestión de pedidos usando useCrudEntidad
 import { useCrudEntidad } from "../../../hooks/useCrudEntidad";
 import { pedidoService } from "../../pedidos";
+import { fechaHoyFormateada } from "utils/fechasHelper";
 
 /**
  * Hook para gestión completa de pedidos (CRUD)
@@ -22,13 +23,15 @@ export const usePedidos = (idObra) => {
 
     // Formulario inicial
     initialForm: {
-      fechaPedido: "",
+      fechaPedido: fechaHoyFormateada(),
       codigoPedido: "",
       posicion: "",
       importe: "",
       observaciones: "",
       idObra: idObra,
     },
+
+    camposNumericos: ["posicion", "importe", "idObra"],
 
     // Transformación de datos de BD a formulario (solo para edición)
     transformAfterFetch: (pedidos) =>
@@ -41,6 +44,16 @@ export const usePedidos = (idObra) => {
         idObra: pedido.id_obra,
         id_pedido: pedido.id_pedido, // Mantener ID para edición
       })),
+
+    // Transformación de formulario a payload API (fechaPedido → fecha)
+    transformBeforeSave: (data) => ({
+      fecha: data.fechaPedido,
+      codigoPedido: data.codigoPedido,
+      posicion: data.posicion,
+      importe: data.importe,
+      observaciones: data.observaciones,
+      idObra: data.idObra,
+    }),
 
     // Validación
     validarForm: (form) => {

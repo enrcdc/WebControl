@@ -37,6 +37,8 @@ export const useFacturas = (idObra, pedidos = []) => {
       fechaCobro: new Date().toISOString().split("T")[0],
     },
 
+    camposNumericos: ["idPedido", "importe", "idObra"],
+
     // Transformación de datos de BD a formulario (solo para edición)
     transformAfterFetch: (facturas) =>
       facturas.map((factura) => ({

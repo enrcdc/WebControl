@@ -151,6 +151,15 @@ export const useCrudEntidad = (config) => {
         dataToSave = transformBeforeSave(dataToSave);
       }
 
+      // Coerción automática de campos numéricos (resuelve strings de useParams/initialForm)
+      if (camposNumericos.length > 0) {
+        camposNumericos.forEach((campo) => {
+          if (dataToSave[campo] !== undefined && dataToSave[campo] !== "") {
+            dataToSave[campo] = Number(dataToSave[campo]);
+          }
+        });
+      }
+
       if (modal.isEditMode()) {
         // Actualizar
         const result = await updateFunction(modal.editID, dataToSave);

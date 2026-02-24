@@ -22,7 +22,10 @@ function CrearPedido() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const { formData, handleChange } = useFormulario(INITIAL_FORM);
+  const { formData, handleChange } = useFormulario(INITIAL_FORM, [
+    "importe",
+    "posicion",
+  ]);
 
   const obra = useBusquedaEntidad(
     (termino) => obraService.getAll({ descripcion: termino, limit: 10 }),
@@ -32,8 +35,7 @@ function CrearPedido() {
   const handleGuardar = async () => {
     if (!formData.codigoPedido.trim())
       return alert("El código de pedido es obligatorio");
-    if (!obra.entidadSeleccionada)
-      return alert("Debes seleccionar una obra");
+    if (!obra.entidadSeleccionada) return alert("Debes seleccionar una obra");
 
     setLoading(true);
     setError(null);
@@ -52,9 +54,7 @@ function CrearPedido() {
       const nuevoPedido = res.data?.data;
 
       if (nuevoPedido?.id_pedido) {
-        navigate(
-          `/home/gestion-pedidos/detalle/${nuevoPedido.id_pedido}`,
-        );
+        navigate(`/home/gestion-pedidos/detalle/${nuevoPedido.id_pedido}`);
       } else {
         navigate("/home/gestion-pedidos");
       }
@@ -85,9 +85,7 @@ function CrearPedido() {
             onChange={obra.handleBuscar}
             suggestions={obra.sugerencias}
             onSelect={obra.seleccionar}
-            renderSuggestion={(o) =>
-              `${o.codigo_obra} — ${o.descripcion_obra}`
-            }
+            renderSuggestion={(o) => `${o.codigo_obra} — ${o.descripcion_obra}`}
             keyField="id_obra"
             selected={obra.entidadSeleccionada}
             renderSelected={(o) => (

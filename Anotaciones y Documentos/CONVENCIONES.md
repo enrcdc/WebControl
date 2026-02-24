@@ -239,6 +239,29 @@ const contactos = useBusquedaMultiple(
 
 Incluye race condition protection (`requestRef`). Compatible con `SearchableMultiSelect`.
 
+### `useCrudEntidad` (modales CRUD en DetalleObra)
+
+```javascript
+const hook = useCrudEntidad({
+  fetchFunction, fetchParams,
+  createFunction, updateFunction, deleteFunction,
+  initialForm: { /* campos del formulario */ },
+  camposNumericos: ["idObra", "importe"],  // Coercion automatica antes de enviar al API
+  transformBeforeSave: (data) => ({        // Mapeo nombres formulario → nombres API
+    fecha: data.fechaPedido,
+    ...data,
+  }),
+  transformAfterFetch: (items) => items.map(/* BD → formulario */),
+  validarForm: (form) => null,             // null = OK, string = error
+  confirmDelete: "¿Seguro?",
+});
+```
+
+**Reglas:**
+- **`camposNumericos`**: Obligatorio si el formulario incluye IDs o importes. `handleGuardar` aplica `Number()` automaticamente antes de enviar al API. Resuelve el problema de `useParams()` devolviendo strings y de valores iniciales que no pasan por `handleChange`.
+- **`transformBeforeSave`**: Obligatorio si los nombres de campo del formulario difieren de los que espera el validator Zod. Ejemplo: formulario usa `fechaPedido` pero el validator espera `fecha`.
+- **`transformAfterFetch`**: Para mapear nombres de BD (snake_case) a nombres de formulario (camelCase) al editar.
+
 ### `SearchableMultiSelect` vs `SearchableSelect`
 
 - `SearchableMultiSelect`: `selectedItems` (array), `onRemove(item)` recibe item completo, renderiza `ListGroup` con boton "Quitar"
